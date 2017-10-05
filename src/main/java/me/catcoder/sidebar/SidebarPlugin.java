@@ -1,12 +1,17 @@
 package me.catcoder.sidebar;
 
+import com.google.common.base.Joiner;
+import me.catcoder.sidebar.utilities.updater.SidebarUpdater;
 import me.catcoder.sidebar.wrapper.WrapperPlayServerScoreboardObjective;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.concurrent.Executors;
 
 public final class SidebarPlugin extends JavaPlugin implements Listener {
 
@@ -36,26 +41,31 @@ public final class SidebarPlugin extends JavaPlugin implements Listener {
 
         Player player = event.getPlayer();
 
-        later(() -> player.sendMessage("Начинаем тест"), 20);
+        SidebarUpdater sidebarUpdater = SidebarUpdater.newUpdater(sidebar, Executors.newSingleThreadExecutor());
+
+        sidebarUpdater
+                .newTask(
+                        bar -> bar.setLine(1, "Время: " + player.getWorld().getTime()),
+                        2L
+                )
+                .newTask(
+                        bar -> bar.setLine(2, "XYZ: " + toString(player.getLocation())),
+                        5L
+                );
+
+        sidebarUpdater.start();
 
         later(() -> {
-            player.sendMessage("Изменяем тайтл");
-            sidebar.getObjective().setDisplayName("Изменено", sidebar);
-        }, 40);
+            player.sendMessage("Остановка updater'а");
+            sidebarUpdater.stop();
+        }, (int) (5 * 20L));
 
-        later(() -> {
-            player.sendMessage("Изменяем строку");
-            sidebar.setLine(2, "Изменено");
-        }, 60);
+    }
 
-        later(() -> {
-            player.sendMessage("Изменяем objective");
-            sidebar.setObjective(new SidebarObjective(
-                    "test2",
-                    WrapperPlayServerScoreboardObjective.HealthDisplay.INTEGER,
-                    "Objective #2"
-            ));
-        }, 80);
+    private static String toString(Location location) {
+        return Joiner
+                .on('/')
+                .join((int) location.getX(), (int) location.getY(), (int) location.getZ());
     }
 
     private void later(Runnable task, int delay) {
