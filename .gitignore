@@ -1,5 +1,5 @@
 # Created by .ignore support plugin (hsz.mobi)
 target/
-ProtocolSidebar.iml
+*.iml
 src/test/
 /.idea/

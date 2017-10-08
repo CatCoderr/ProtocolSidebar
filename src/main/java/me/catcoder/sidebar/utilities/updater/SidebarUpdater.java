@@ -105,6 +105,7 @@ public class SidebarUpdater {
 
         Runnable updater = () -> {
             while (true) {
+                if (executorService.isShutdown() || executorService.isTerminated()) return;
                 try {
                     Thread.sleep(50L);
                 } catch (InterruptedException ignored) {
