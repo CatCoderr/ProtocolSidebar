@@ -20,17 +20,11 @@ public final class SidebarPlugin extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents(this, this);
     }
 
-    /**
-     * Тестирование
-     *
-     * @param event - Событие {@link PlayerJoinEvent}
-     */
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         Sidebar sidebar = new Sidebar();
         sidebar.setObjective(new SidebarObjective(
                 "test",
-                WrapperPlayServerScoreboardObjective.HealthDisplay.INTEGER,
                 "Test"));
 
         sidebar.setLine(1, "Первая линия");
@@ -41,7 +35,7 @@ public final class SidebarPlugin extends JavaPlugin implements Listener {
 
         Player player = event.getPlayer();
 
-        SidebarUpdater sidebarUpdater = SidebarUpdater.newUpdater(sidebar, Executors.newSingleThreadExecutor());
+        SidebarUpdater sidebarUpdater = new SidebarUpdater(sidebar);
 
         sidebarUpdater
                 .newTask(

@@ -18,7 +18,6 @@ public class SidebarObjective {
     private static final int SIDEBAR = 1;
 
     private final String name;
-    private final WrapperPlayServerScoreboardObjective.HealthDisplay healthDisplay;
     private String displayName;
 
     public void setDisplayName(String displayName, Sidebar sidebar) {
@@ -55,7 +54,7 @@ public class SidebarObjective {
         WrapperPlayServerScoreboardObjective packet = new WrapperPlayServerScoreboardObjective();
         packet.setDisplayName(displayName);
         packet.setName(name);
-        packet.setHealthDisplay(healthDisplay);
+        packet.setHealthDisplay(WrapperPlayServerScoreboardObjective.HealthDisplay.INTEGER);
         return packet;
     }
 }

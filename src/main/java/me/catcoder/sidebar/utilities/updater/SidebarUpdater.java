@@ -8,9 +8,9 @@ import lombok.Getter;
 import lombok.NonNull;
 import me.catcoder.sidebar.Sidebar;
 
-import java.util.ArrayList;
-import java.util.concurrent.ExecutorService;
+import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 
 /**
  * Автоматический апдейтер для скорборда.
@@ -20,15 +20,12 @@ import java.util.concurrent.atomic.AtomicLong;
 public class SidebarUpdater {
 
 
-    private final Multimap<Long, Task> tasks =
-            Multimaps.synchronizedListMultimap(
-                    Multimaps.newListMultimap(
-                            Maps.newHashMap(),
-                            ArrayList::new));
+    private final Multimap<Long, Consumer<Sidebar>> tasks;
+
     @Getter
     private final Sidebar sidebar;
-    @Getter
-    private final ExecutorService executorService;
+
+    private Thread executionThread;
 
     @Getter
     private volatile boolean started;
@@ -36,24 +33,20 @@ public class SidebarUpdater {
     /**
      * Конструктор апдейтера
      *
-     * @param sidebar  - скорборд
-     * @param executor - выполнитель
+     * @param sidebar - скорборд
      */
-    SidebarUpdater(@NonNull Sidebar sidebar, @NonNull ExecutorService executor) {
+    public SidebarUpdater(@NonNull Sidebar sidebar) {
         this.sidebar = sidebar;
-        this.executorService = executor;
+        this.tasks = Multimaps.synchronizedSetMultimap(Multimaps.newSetMultimap(Maps.newHashMap(), HashSet::new));
     }
 
-    public static SidebarUpdater newUpdater(Sidebar sidebar, ExecutorService executorService) {
-        return new SidebarUpdater(sidebar, executorService);
-    }
 
     /**
      * Получение списка задач.
      *
      * @return список задач
      */
-    public Multimap<Long, Task> getTasks() {
+    public Multimap<Long, Consumer<Sidebar>> getTasks() {
         return Multimaps.unmodifiableMultimap(tasks);
     }
 
@@ -69,7 +62,9 @@ public class SidebarUpdater {
      */
     public void stop() {
         Preconditions.checkState(isStarted(), "Updating is not started.");
-        executorService.shutdownNow();
+
+        executionThread.interrupt();
+        if (!executionThread.isInterrupted()) executionThread.stop();
     }
 
     /**
@@ -79,7 +74,7 @@ public class SidebarUpdater {
      * @param delay - период ее вызова
      * @return инстанс этого класса
      */
-    public SidebarUpdater newTask(@NonNull Task task, long delay) {
+    public SidebarUpdater newTask(@NonNull Consumer<Sidebar> task, long delay) {
         if (delay < 0) throw new IllegalArgumentException("Delay value must be > 0");
         tasks.put(delay, task);
         return this;
@@ -90,7 +85,6 @@ public class SidebarUpdater {
      */
     public void start() {
         Preconditions.checkState(!isStarted(), "Updating already started.");
-        Preconditions.checkState(!executorService.isTerminated(), "Executor service is terminated.");
 
         startTaskExecution(); //Lets rock!
 
@@ -104,8 +98,7 @@ public class SidebarUpdater {
         AtomicLong time = new AtomicLong();
 
         Runnable updater = () -> {
-            while (true) {
-                if (executorService.isShutdown() || executorService.isTerminated()) return;
+            while (!Thread.interrupted()) {
                 try {
                     Thread.sleep(50L);
                 } catch (InterruptedException ignored) {
@@ -113,28 +106,13 @@ public class SidebarUpdater {
                 tasks.asMap().entrySet()
                         .stream()
                         .filter(entry -> time.get() % entry.getKey() == 0)
-                        .forEach(entry -> entry.getValue().forEach(this::execute));
+                        .forEach(entry -> entry.getValue().forEach(consumer -> consumer.accept(sidebar)));
 
-                if (time.incrementAndGet() == Long.MAX_VALUE) { //Хм, кек
-                    time.set(0); //Фиксим
-                }
+                time.incrementAndGet();
             }
         };
-
-        executorService.execute(updater);
-    }
-
-    /**
-     * Выполнение задачи и обработка исключений при ее выполнении.
-     *
-     * @param task - задача
-     */
-    public void execute(@NonNull Task task) {
-        try {
-            task.update(sidebar);
-        } catch (Exception ex) {
-            throw new UpdaterException("An exception occurred while executing task.", ex);
-        }
+        executionThread = new Thread(updater, String.format("%s-Updater", sidebar.getObjective().getName()));
+        executionThread.start();
     }
 
 }

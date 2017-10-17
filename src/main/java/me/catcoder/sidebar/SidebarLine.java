@@ -4,6 +4,7 @@ import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import lombok.Getter;
+import lombok.NonNull;
 import me.catcoder.sidebar.wrapper.AbstractPacket;
 import me.catcoder.sidebar.wrapper.WrapperPlayServerScoreboardScore;
 import me.catcoder.sidebar.wrapper.WrapperPlayServerScoreboardTeam;
@@ -31,10 +32,11 @@ public class SidebarLine {
      * @param text    - текст линии
      * @param sidebar - текущий скорборд
      */
-    public SidebarLine(int index, String text, Sidebar sidebar) {
+    SidebarLine(int index, @NonNull String text, @NonNull Sidebar sidebar) {
         this.index = index;
         this.text = text;
         this.sidebar = sidebar;
+        Preconditions.checkArgument(sidebar.getObjective() != null, "Objective cannot be null.");
         show();
     }
 
@@ -43,7 +45,7 @@ public class SidebarLine {
      *
      * @param text - строка
      */
-    public void setText(String text) {
+    public void setText(@NonNull String text) {
         this.text = text;
         AbstractPacket teamPacket = getTeamPacket(WrapperPlayServerScoreboardTeam.Mode.TEAM_UPDATED);
         AbstractPacket scorePacket = getScorePacket(EnumWrappers.ScoreboardAction.CHANGE);

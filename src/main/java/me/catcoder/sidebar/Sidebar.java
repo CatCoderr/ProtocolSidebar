@@ -19,8 +19,8 @@ import java.util.*;
  */
 public class Sidebar {
 
-    private final HashSet<Player> players = Sets.newHashSet();
-    private final Map<Integer, SidebarLine> lines = Maps.newHashMap();
+    private final Set<Player> players = new HashSet<>();
+    private final Map<Integer, SidebarLine> lines = new HashMap<>();
 
     @Getter
     private SidebarObjective objective;
@@ -84,7 +84,7 @@ public class Sidebar {
      *
      * @param packet - пакет, который нужно отправить
      */
-    protected void broadcastPacket(@NonNull AbstractPacket packet) {
+    void broadcastPacket(@NonNull AbstractPacket packet) {
         players.forEach(packet::sendPacket);
     }
 
@@ -109,10 +109,10 @@ public class Sidebar {
      * @return клон коллекции игроков
      */
     public Collection<Player> unregisterForAll() {
-        HashSet<Player> cloned = (HashSet<Player>) players.clone();
+        Set<Player> copied = new HashSet<>(players);
         players.forEach(this::unregister);
 
-        return cloned;
+        return copied;
     }
 
     /**
