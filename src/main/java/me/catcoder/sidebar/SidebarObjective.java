@@ -7,54 +7,56 @@ import me.catcoder.sidebar.wrapper.WrapperPlayServerScoreboardObjective;
 import org.bukkit.entity.Player;
 
 /**
- * Задача для скорборда.
+ * Encapsulates scoreboard objective
  *
  * @author CatCoder
+ * @see <a href="https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/scoreboard/Objective.html">Bukkit
+ * documentation</a>
  */
 @Getter
 @AllArgsConstructor
-public class SidebarObjective {
+class SidebarObjective {
 
-    private static final int SIDEBAR = 1;
+  private static final int SIDEBAR = 1;
 
-    private final String name;
-    private String displayName;
+  private final String name;
+  private String displayName;
 
-    public void setDisplayName(String displayName, Sidebar sidebar) {
-        this.displayName = displayName;
+  void setDisplayName(String displayName, Sidebar sidebar) {
+    this.displayName = displayName;
 
-        WrapperPlayServerScoreboardObjective packet = getPacket();
-        packet.setMode(WrapperPlayServerScoreboardObjective.Mode.UPDATE_VALUE);
-        sidebar.broadcastPacket(packet);
-    }
+    WrapperPlayServerScoreboardObjective packet = getPacket();
+    packet.setMode(WrapperPlayServerScoreboardObjective.Mode.UPDATE_VALUE);
+    sidebar.broadcastPacket(packet);
+  }
 
-    public void create(Player player) {
-        WrapperPlayServerScoreboardObjective packet = getPacket();
-        packet.setMode(WrapperPlayServerScoreboardObjective.Mode.ADD_OBJECTIVE);
+  void create(Player player) {
+    WrapperPlayServerScoreboardObjective packet = getPacket();
+    packet.setMode(WrapperPlayServerScoreboardObjective.Mode.ADD_OBJECTIVE);
 
-        packet.sendPacket(player);
-    }
+    packet.sendPacket(player);
+  }
 
-    public void remove(Player player) {
-        WrapperPlayServerScoreboardObjective packet = getPacket();
-        packet.setMode(WrapperPlayServerScoreboardObjective.Mode.REMOVE_OBJECTIVE);
+  void remove(Player player) {
+    WrapperPlayServerScoreboardObjective packet = getPacket();
+    packet.setMode(WrapperPlayServerScoreboardObjective.Mode.REMOVE_OBJECTIVE);
 
-        packet.sendPacket(player);
-    }
+    packet.sendPacket(player);
+  }
 
-    public void show(Player player) {
-        WrapperPlayServerScoreboardDisplayObjective displayObjective = new WrapperPlayServerScoreboardDisplayObjective();
-        displayObjective.setPosition(SIDEBAR);
-        displayObjective.setScoreName(name);
+  void show(Player player) {
+    WrapperPlayServerScoreboardDisplayObjective displayObjective = new WrapperPlayServerScoreboardDisplayObjective();
+    displayObjective.setPosition(SIDEBAR);
+    displayObjective.setScoreName(name);
 
-        displayObjective.sendPacket(player);
-    }
+    displayObjective.sendPacket(player);
+  }
 
-    private WrapperPlayServerScoreboardObjective getPacket() {
-        WrapperPlayServerScoreboardObjective packet = new WrapperPlayServerScoreboardObjective();
-        packet.setDisplayName(displayName);
-        packet.setName(name);
-        packet.setHealthDisplay(WrapperPlayServerScoreboardObjective.HealthDisplay.INTEGER);
-        return packet;
-    }
+  private WrapperPlayServerScoreboardObjective getPacket() {
+    WrapperPlayServerScoreboardObjective packet = new WrapperPlayServerScoreboardObjective();
+    packet.setDisplayName(displayName);
+    packet.setName(name);
+    packet.setHealthDisplay(WrapperPlayServerScoreboardObjective.HealthDisplay.INTEGER);
+    return packet;
+  }
 }
