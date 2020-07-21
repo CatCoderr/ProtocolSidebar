@@ -18,6 +18,7 @@ package me.catcoder.sidebar.wrapper;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.reflect.IntEnum;
+
 import java.util.Collection;
 import java.util.List;
 

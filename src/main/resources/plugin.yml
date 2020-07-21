@@ -1,5 +1,0 @@
-name: Sidebar
-version: ${project.version}
-main: me.catcoder.sidebar.SidebarPlugin
-authors: [CatCoder]
-depend: [ProtocolLib]

@@ -6,7 +6,7 @@
 
     <groupId>me.catcoder</groupId>
     <artifactId>Sidebar</artifactId>
-    <version>2.0</version>
+    <version>3.0.0</version>
     <packaging>jar</packaging>
 
     <name>Sidebar</name>
@@ -120,6 +120,10 @@
             <id>sonatype</id>
             <url>https://oss.sonatype.org/content/groups/public/</url>
         </repository>
+        <repository>
+            <id>viaversion-repo</id>
+            <url>https://repo.viaversion.com</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -133,6 +137,12 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.16.16</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>us.myles</groupId>
+            <artifactId>viaversion-common</artifactId>
+            <version>2.2.2</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
