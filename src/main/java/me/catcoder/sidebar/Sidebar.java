@@ -17,9 +17,8 @@ public class Sidebar {
 
 	private final ScoreboardObjective objective;
 
-	public Sidebar(@NonNull String objectiveName) {
-		checkState(objectiveName.length() <= 16, "Objective name exceeds 16 symbols limit");
-		this.objective = new ScoreboardObjective(objectiveName, ScoreboardObjective.DISPLAY_SIDEBAR);
+	public Sidebar(@NonNull String objectiveName, @NonNull String displayName) {
+		this.objective = new ScoreboardObjective(objectiveName, ScoreboardObjective.DISPLAY_SIDEBAR, displayName);
 	}
 
 	public void setDisplayName(@NonNull String displayName) {
@@ -28,7 +27,7 @@ public class Sidebar {
 	}
 
 	public void setLine(int index, @NonNull SidebarLineUpdater updater) {
-		SidebarLine line = getLine(index);
+		SidebarLine line = getLine(index).orElse(null);
 
 		if (line == null) {
 			line = new SidebarLine(index, updater, objective.getName());
@@ -42,10 +41,6 @@ public class Sidebar {
 
 	public void setLine(int index, @NonNull String text) {
 		setLine(index, (__) -> text);
-	}
-
-	public SidebarLine getLine(int index) {
-		return lines.get(index);
 	}
 
 	public void unregister(@NonNull Player... receivers) {
@@ -86,6 +81,10 @@ public class Sidebar {
 		}
 	}
 
+	public Optional<SidebarLine> getLine(int index) {
+		return Optional.ofNullable(lines.get(index));
+	}
+
 	public Set<UUID> getViewers() {
 		return Collections.unmodifiableSet(viewers);
 	}
@@ -98,12 +97,8 @@ public class Sidebar {
 		unregister(Bukkit.getPlayer(playerUuid));
 	}
 
-	public String getObjectiveName() {
-		return objective.getName();
-	}
-
-	public String getDisplayName() {
-		return objective.getDisplayName();
+	public ScoreboardObjective getObjective() {
+		return objective;
 	}
 
 	public void broadcast(@NonNull Consumer<Player> consumer) {
