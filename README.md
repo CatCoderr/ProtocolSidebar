@@ -3,7 +3,12 @@
 
 Non-flickering scoreboard (sidebar) implementation with ProtocolLib.
 
-> Tested Minecraft versions: 1.8-1.16 (with ViaVersion)
+
+Requires you to install ViaVersion on your server: https://www.spigotmc.org/resources/viaversion.19254/
+
+Dependencies: [ProtocolLib, ViaVersion]
+
+> Minecraft version: 1.8-1.16
 
 Latest release: https://jitpack.io/#CatCoderr/ProtocolSidebar/3.0.0
 
