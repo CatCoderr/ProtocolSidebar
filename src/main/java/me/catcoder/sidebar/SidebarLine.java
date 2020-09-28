@@ -1,129 +1,129 @@
 package me.catcoder.sidebar;
 
+import com.comphenix.packetwrapper.AbstractPacket;
+import com.comphenix.packetwrapper.WrapperPlayServerScoreboardScore;
+import com.comphenix.packetwrapper.WrapperPlayServerScoreboardTeam;
 import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.google.common.base.Splitter;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
-import me.catcoder.sidebar.wrapper.AbstractPacket;
-import me.catcoder.sidebar.wrapper.WrapperPlayServerScoreboardScore;
-import me.catcoder.sidebar.wrapper.WrapperPlayServerScoreboardTeam;
+import me.catcoder.sidebar.util.VersionUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import us.myles.ViaVersion.api.Via;
 
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.function.Consumer;
-
-import static me.catcoder.sidebar.wrapper.WrapperPlayServerScoreboardTeam.Mode.*;
+import java.util.function.Function;
 
 @Getter
 public class SidebarLine {
 
-	private static final ChatColor[] COLORS = ChatColor.values();
+    private static final ChatColor[] COLORS = ChatColor.values();
+    private static final Splitter SPLITTER = Splitter.fixedLength(16);
 
-	private final int index;
-	private final String objectiveName;
+    private final String objectiveName;
+    private int currentIndex = -1;
+    private final boolean staticText;
 
-	@Setter
-	private SidebarLineUpdater updater;
+    private Function<Player, String> updater;
 
-	SidebarLine(int index, @NonNull SidebarLineUpdater updater, @NonNull String objectiveName) {
-		this.index = index;
-		this.updater = updater;
-		this.objectiveName = objectiveName;
-	}
+    SidebarLine(@NonNull Function<Player, String> updater, @NonNull String objectiveName, boolean staticText) {
+        this.updater = updater;
+        this.objectiveName = objectiveName;
+        this.staticText = staticText;
+    }
 
-	public Consumer<Player> update() {
-		return (player) -> {
-			String text = updater.updateText(player);
-			AbstractPacket scorePacket = createScorePacket(EnumWrappers.ScoreboardAction.CHANGE);
-			AbstractPacket teamPacket = createTeamPacket(TEAM_UPDATED, player, text);
-			teamPacket.sendPacket(player);
-			scorePacket.sendPacket(player);
-		};
-	}
+    public void setUpdater(@NonNull Function<Player, String> updater) {
+        this.updater = updater;
+    }
 
-	public Consumer<Player> remove() {
-		return (player) -> {
-			AbstractPacket teamPacket = createTeamPacket(TEAM_REMOVED, null, null);
-			AbstractPacket scorePacket = createScorePacket(EnumWrappers.ScoreboardAction.REMOVE);
-			teamPacket.sendPacket(player);
-			scorePacket.sendPacket(player);
-		};
-	}
+    void updateTeam(@NonNull Player player, int previousIndex) {
+        if (!isStaticText()) {
+            String text = updater.apply(player);
+            createTeamPacket(WrapperPlayServerScoreboardTeam.Mode.TEAM_UPDATED, player, text).sendPacket(player);
+        }
+        if (previousIndex != currentIndex) {
+            createScorePacket(EnumWrappers.ScoreboardAction.CHANGE).sendPacket(player);
+        }
+    }
 
-	public Consumer<Player> render() {
-		AbstractPacket scorePacket = createScorePacket(EnumWrappers.ScoreboardAction.CHANGE);
-		return (player) -> {
-			String text = updater.updateText(player);
-			AbstractPacket teamPacket = createTeamPacket(TEAM_CREATED, player, text);
-			teamPacket.sendPacket(player);
-			scorePacket.sendPacket(player);
-		};
-	}
+    void removeTeam(@NonNull Player player) {
+        createTeamPacket(WrapperPlayServerScoreboardTeam.Mode.TEAM_REMOVED, null, null).sendPacket(player);
+        createScorePacket(EnumWrappers.ScoreboardAction.REMOVE).sendPacket(player);
+    }
 
-	public AbstractPacket createTeamPacket(int mode, Player player, String text) {
-		String teamEntry = COLORS[index].toString();
+    void createTeam(@NonNull Player player) {
+        String text = updater.apply(player);
+        createTeamPacket(WrapperPlayServerScoreboardTeam.Mode.TEAM_CREATED, player, text).sendPacket(player);
+        createScorePacket(EnumWrappers.ScoreboardAction.CHANGE).sendPacket(player);
+    }
 
-		WrapperPlayServerScoreboardTeam team = new WrapperPlayServerScoreboardTeam();
-		team.setName(objectiveName + "-text-" + index);
-		team.setMode(mode);
+    void setCurrentIndex(int currentIndex) {
+        this.currentIndex = currentIndex;
+    }
 
-		if (mode == TEAM_REMOVED) {
-			return team;
-		}
+    private AbstractPacket createTeamPacket(int mode, Player player, String text) {
+        String teamEntry = COLORS[currentIndex].toString();
 
-		int version = Via.getAPI().getPlayerVersion(player.getUniqueId());
+        WrapperPlayServerScoreboardTeam team = new WrapperPlayServerScoreboardTeam();
+        team.setName(objectiveName + currentIndex);
+        team.setMode(mode);
 
-		team.setPlayers(Collections.singletonList(teamEntry));
+        if (mode == WrapperPlayServerScoreboardTeam.Mode.TEAM_REMOVED) {
+            return team;
+        }
 
-		// Since 1.13 characters limit for prefix/suffix was removed
-		if (version >= ScoreboardObjective.MINECRAFT_1_13) {
-			team.setPrefix(text);
-			team.setSuffix(ChatColor.RESET.toString());
-			return team;
-		}
+        int version = VersionUtil.getPlayerVersion(player.getUniqueId());
 
-		Iterator<String> iterator = Splitter.fixedLength(16).split(text).iterator();
-		String prefix = iterator.next();
-		team.setPrefix(prefix);
+        team.setPlayers(Collections.singletonList(teamEntry));
 
-		if (text.length() > 16) {
-			String prefixColor = ChatColor.getLastColors(prefix);
-			String suffix = iterator.next();
+        // Since 1.13 characters limit for prefix/suffix was removed
+        if (version >= VersionUtil.MINECRAFT_1_13) {
+            if (!text.isEmpty() && text.charAt(0) != ChatColor.COLOR_CHAR) {
+                text = ChatColor.RESET + text;
+            }
+            team.setPrefix(text);
+            team.setSuffix(ChatColor.RESET.toString());
+            return team;
+        }
 
-			if (prefix.endsWith(String.valueOf(ChatColor.COLOR_CHAR))) {
-				prefix = prefix.substring(0, prefix.length() - 1);
-				team.setPrefix(prefix);
-				prefixColor = ChatColor.getByChar(suffix.charAt(0)).toString();
-				suffix = suffix.substring(1);
-			}
+        Iterator<String> iterator = SPLITTER.split(text).iterator();
+        String prefix = iterator.next();
+        team.setPrefix(prefix);
 
-			if (prefixColor == null) {
-				prefixColor = "";
-			}
+        if (text.length() > 16) {
+            String prefixColor = ChatColor.getLastColors(prefix);
+            String suffix = iterator.next();
 
-			suffix = ((prefixColor.equals("") ? ChatColor.RESET : prefixColor) + suffix);
+            if (prefix.endsWith(String.valueOf(ChatColor.COLOR_CHAR))) {
+                prefix = prefix.substring(0, prefix.length() - 1);
+                team.setPrefix(prefix);
+                prefixColor = ChatColor.getByChar(suffix.charAt(0)).toString();
+                suffix = suffix.substring(1);
+            }
 
-			if (suffix.length() > 16) {
-				suffix = suffix.substring(0, 13) + "...";
-			}
+            if (prefixColor == null) {
+                prefixColor = "";
+            }
 
-			team.setSuffix(suffix);
-		}
+            suffix = ((prefixColor.equals("") ? ChatColor.RESET : prefixColor) + suffix);
 
-		return team;
-	}
+            if (suffix.length() > 16) {
+                suffix = suffix.substring(0, 13) + "...";
+            }
 
-	public AbstractPacket createScorePacket(EnumWrappers.ScoreboardAction action) {
-		WrapperPlayServerScoreboardScore score = new WrapperPlayServerScoreboardScore();
-		score.setObjectiveName(objectiveName);
-		score.setScoreboardAction(action);
-		score.setValue(index);
-		score.setScoreName(COLORS[index].toString());
-		return score;
-	}
+            team.setSuffix(suffix);
+        }
 
+        return team;
+    }
+
+    private AbstractPacket createScorePacket(EnumWrappers.ScoreboardAction action) {
+        WrapperPlayServerScoreboardScore score = new WrapperPlayServerScoreboardScore();
+        score.setObjectiveName(objectiveName);
+        score.setScoreboardAction(action);
+        score.setValue(currentIndex);
+        score.setScoreName(COLORS[currentIndex].toString());
+        return score;
+    }
 }

@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>me.catcoder</groupId>
-    <artifactId>Sidebar</artifactId>
-    <version>3.0.0</version>
+    <artifactId>bukkit-sidebar</artifactId>
+    <version>3.1.0</version>
     <packaging>jar</packaging>
 
     <name>Sidebar</name>
@@ -27,7 +27,7 @@
     <!-- Compilation -->
     <build>
         <defaultGoal>clean package</defaultGoal>
-        <finalName>Sidebar</finalName>
+        <finalName>bukkit-sidebar</finalName>
         <plugins>
             <plugin>
                 <version>3.6.1</version>
@@ -144,6 +144,11 @@
             <artifactId>viaversion-common</artifactId>
             <version>2.2.2</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.comphenix.packetwrapper</groupId>
+            <artifactId>PacketWrapper</artifactId>
+            <version>1.12.1-R0.1-20180529.035844-6</version>
         </dependency>
         <dependency>
             <groupId>com.comphenix.protocol</groupId>
