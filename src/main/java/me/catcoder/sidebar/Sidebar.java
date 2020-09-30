@@ -3,109 +3,137 @@ package me.catcoder.sidebar;
 import lombok.NonNull;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.plugin.Plugin;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
+public class Sidebar implements Listener {
 
-public class Sidebar {
+    private final Set<UUID> viewers = new HashSet<>();
+    private final List<SidebarLine> lines = new ArrayList<>();
+    private final ScoreboardObjective objective;
 
-	private final Set<UUID> viewers = new HashSet<>();
-	private final Map<Integer, SidebarLine> lines = new HashMap<>();
+    public Sidebar(@NonNull Plugin owner, @NonNull String objective, @NonNull String title) {
+        this.objective = new ScoreboardObjective(objective, title);
 
-	private final ScoreboardObjective objective;
+        owner.getServer().getPluginManager().registerEvents(this, owner);
+    }
 
-	public Sidebar(@NonNull String objectiveName, @NonNull String displayName) {
-		this.objective = new ScoreboardObjective(objectiveName, ScoreboardObjective.DISPLAY_SIDEBAR, displayName);
-	}
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        viewers.remove(event.getPlayer().getUniqueId());
+    }
 
-	public void setDisplayName(@NonNull String displayName) {
-		objective.setDisplayName(displayName);
-		broadcast(p -> objective.updateDisplayName(p).sendPacket(p));
-	}
+    public void setTitle(@NonNull String title) {
+        objective.setDisplayName(title);
+        broadcast(objective::updateValue);
+    }
 
-	public void setLine(int index, @NonNull SidebarLineUpdater updater) {
-		SidebarLine line = getLine(index).orElse(null);
+    public SidebarLine addLine(@NonNull String text) {
+        return addLine(x -> text, true);
+    }
 
-		if (line == null) {
-			line = new SidebarLine(index, updater, objective.getName());
-			lines.put(index, line);
-			broadcast(line.render());
-		} else {
-			line.setUpdater(updater);
-			broadcast(line.update());
-		}
-	}
+    public SidebarLine addBlankLine() {
+        return addLine("");
+    }
 
-	public void setLine(int index, @NonNull String text) {
-		setLine(index, (__) -> text);
-	}
+    public SidebarLine addLine(@NonNull Function<Player, String> updater) {
+        return addLine(updater, false);
+    }
 
-	public void unregister(@NonNull Player... receivers) {
-		for (Player player : receivers) {
-			checkState(viewers.contains(player.getUniqueId()),
-					"Player %s doesn't receiving this sidebar", player.getName());
+    private SidebarLine addLine(@NonNull Function<Player, String> updater, boolean staticText) {
+        SidebarLine line = new SidebarLine(updater, objective.getName() + lines.size(), staticText);
+        lines.add(line);
+        return line;
+    }
 
-			lines.values().forEach(line -> line.remove().accept(player));
-			objective.remove(player);
-			viewers.remove(player.getUniqueId());
-		}
-	}
+    public void removeLine(@NonNull SidebarLine line) {
+        if (lines.remove(line)) {
+            broadcast(p -> line.removeTeam(p, objective.getName()));
+            update();
+        }
+    }
 
-	public void unregisterForAll() {
-		for (UUID id : new ArrayList<>(viewers)) {
-			Player player = Bukkit.getPlayer(id);
+    public Optional<SidebarLine> maxLine() {
+        return lines.stream()
+                .filter(line -> line.getCurrentIndex() != -1)
+                .max(Comparator.comparingInt(SidebarLine::getCurrentIndex));
+    }
 
-			if (player == null) {
-				continue;
-			}
+    public Optional<SidebarLine> minLine() {
+        return lines.stream()
+                .filter(line -> line.getCurrentIndex() != -1)
+                .min(Comparator.comparingInt(SidebarLine::getCurrentIndex));
+    }
 
-			unregister(player);
-		}
+    public void update() {
+        int index = lines.size();
 
-		viewers.clear();
-	}
+        for (SidebarLine line : lines) {
+            // if line is not created yet
+            if (line.getCurrentIndex() == -1) {
+                line.setCurrentIndex(index--);
+                broadcast(p -> line.createTeam(p, objective.getName()));
+                continue;
+            }
 
-	public void send(@NonNull Player... players) {
-		for (Player player : players) {
-			checkArgument(!this.viewers.contains(player.getUniqueId()),
-					"Player %s has already receiving this board", player.getName());
+            int prevIndex = line.getCurrentIndex();
+            line.setCurrentIndex(index--);
 
-			objective.create(player);
-			lines.values().forEach(line -> line.render().accept(player));
-			objective.show(player);
+            broadcast(p -> line.updateTeam(p, prevIndex, objective.getName()));
+        }
+    }
 
-			this.viewers.add(player.getUniqueId());
-		}
-	}
+    public void removeViewers() {
+        for (UUID id : new ArrayList<>(viewers)) {
+            Player player = Bukkit.getPlayer(id);
+            if (player != null) {
+                removeViewer(player);
+            }
+        }
+    }
 
-	public Optional<SidebarLine> getLine(int index) {
-		return Optional.ofNullable(lines.get(index));
-	}
+    public void addViewer(@NonNull Player player) {
+        if (viewers.add(player.getUniqueId())) {
+            update();
 
-	public Set<UUID> getViewers() {
-		return Collections.unmodifiableSet(viewers);
-	}
+            objective.create(player);
+            lines.forEach(line -> line.createTeam(player, objective.getName()));
+            objective.display(player);
+        }
+    }
 
-	public Map<Integer, SidebarLine> getLines() {
-		return Collections.unmodifiableMap(lines);
-	}
+    public void removeViewer(@NonNull Player player) {
+        if (viewers.remove(player.getUniqueId())) {
+            update();
 
-	public void unregister(@NonNull UUID playerUuid) {
-		unregister(Bukkit.getPlayer(playerUuid));
-	}
+            lines.forEach(line -> line.removeTeam(player, objective.getName()));
+            objective.remove(player);
+            viewers.remove(player.getUniqueId());
+        }
+    }
 
-	public ScoreboardObjective getObjective() {
-		return objective;
-	}
+    public Set<UUID> getViewers() {
+        return Collections.unmodifiableSet(viewers);
+    }
 
-	public void broadcast(@NonNull Consumer<Player> consumer) {
-		viewers.stream()
-				.map(Bukkit::getPlayer)
-				.filter(Objects::nonNull)
-				.forEach(consumer);
-	}
+    public List<SidebarLine> getLines() {
+        return Collections.unmodifiableList(lines);
+    }
 
+    public ScoreboardObjective getObjective() {
+        return objective;
+    }
+
+    private void broadcast(@NonNull Consumer<Player> consumer) {
+        viewers.stream()
+                .map(Bukkit::getPlayer)
+                .filter(Objects::nonNull)
+                .forEach(consumer);
+    }
 }
