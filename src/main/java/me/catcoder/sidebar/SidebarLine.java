@@ -31,17 +31,22 @@ public class SidebarLine {
     private static final int TEAM_CREATED = 0;
     private static final int TEAM_REMOVED = 1;
     private static final int TEAM_UPDATED = 2;
+    private static final int PLAYERS_ADDED = 3;
+    private static final int PLAYERS_REMOVED = 4;
 
     private final String teamName;
-    private int currentIndex = -1;
+    private int score = -1;
+
+    private final int index;
     private final boolean staticText;
 
     private Function<Player, String> updater;
 
-    SidebarLine(@NonNull Function<Player, String> updater, @NonNull String teamName, boolean staticText) {
+    SidebarLine(@NonNull Function<Player, String> updater, @NonNull String teamName, boolean staticText, int index) {
         this.updater = updater;
         this.teamName = teamName;
         this.staticText = staticText;
+        this.index = index;
     }
 
     public void setUpdater(@NonNull Function<Player, String> updater) {
@@ -49,20 +54,20 @@ public class SidebarLine {
         this.updater = updater;
     }
 
-    void updateTeam(@NonNull Player player, int previousIndex, @NonNull String objective) {
+    void updateTeam(@NonNull Player player, int previousScore, @NonNull String objective) {
         if (!isStaticText()) {
             String text = updater.apply(player);
             sendPacket(player, createTeamPacket(TEAM_UPDATED, player, text));
         }
 
-        if (previousIndex != currentIndex) {
+        if (previousScore != score) {
             sendPacket(player, createScorePacket(EnumWrappers.ScoreboardAction.CHANGE, objective));
         }
     }
 
     void removeTeam(@NonNull Player player, @NonNull String objective) {
-        sendPacket(player, createTeamPacket(TEAM_REMOVED, null, null));
         sendPacket(player, createScorePacket(EnumWrappers.ScoreboardAction.REMOVE, objective));
+        sendPacket(player, createTeamPacket(TEAM_REMOVED, null, null));
     }
 
     void createTeam(@NonNull Player player, @NonNull String objective) {
@@ -71,12 +76,12 @@ public class SidebarLine {
         sendPacket(player, createScorePacket(EnumWrappers.ScoreboardAction.CHANGE, objective));
     }
 
-    void setCurrentIndex(int currentIndex) {
-        this.currentIndex = currentIndex;
+    void setScore(int score) {
+        this.score = score;
     }
 
     private PacketContainer createTeamPacket(int mode, Player player, String text) {
-        String teamEntry = COLORS[currentIndex].toString();
+        String teamEntry = COLORS[index].toString();
 
         PacketContainer packet = getProtocolManager().createPacket(PacketType.Play.Server.SCOREBOARD_TEAM);
         packet.getModifier().writeDefaults();
@@ -148,10 +153,10 @@ public class SidebarLine {
     private PacketContainer createScorePacket(EnumWrappers.ScoreboardAction action, String objectiveName) {
         PacketContainer packet = getProtocolManager().createPacket(
                 PacketType.Play.Server.SCOREBOARD_SCORE);
-        packet.getStrings().write(0, COLORS[currentIndex].toString());
+        packet.getStrings().write(0, COLORS[index].toString());
         packet.getStrings().write(1, objectiveName);
         packet.getScoreboardActions().write(0, action);
-        packet.getIntegers().write(0, currentIndex);
+        packet.getIntegers().write(0, score);
         return packet;
     }
 

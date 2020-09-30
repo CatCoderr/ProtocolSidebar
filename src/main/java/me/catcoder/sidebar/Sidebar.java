@@ -54,13 +54,13 @@ public class Sidebar implements Listener {
     }
 
     private SidebarLine addLine(@NonNull Function<Player, String> updater, boolean staticText) {
-        SidebarLine line = new SidebarLine(updater, objective.getName() + lines.size(), staticText);
+        SidebarLine line = new SidebarLine(updater, objective.getName() + lines.size(), staticText, lines.size());
         lines.add(line);
         return line;
     }
 
     public void removeLine(@NonNull SidebarLine line) {
-        if (lines.remove(line) && line.getCurrentIndex() != -1) {
+        if (lines.remove(line) && line.getScore() != -1) {
             broadcast(p -> line.removeTeam(p, objective.getName()));
             update();
         }
@@ -68,14 +68,14 @@ public class Sidebar implements Listener {
 
     public Optional<SidebarLine> maxLine() {
         return lines.stream()
-                .filter(line -> line.getCurrentIndex() != -1)
-                .max(Comparator.comparingInt(SidebarLine::getCurrentIndex));
+                .filter(line -> line.getScore() != -1)
+                .max(Comparator.comparingInt(SidebarLine::getScore));
     }
 
     public Optional<SidebarLine> minLine() {
         return lines.stream()
-                .filter(line -> line.getCurrentIndex() != -1)
-                .min(Comparator.comparingInt(SidebarLine::getCurrentIndex));
+                .filter(line -> line.getScore() != -1)
+                .min(Comparator.comparingInt(SidebarLine::getScore));
     }
 
     public void update() {
@@ -83,14 +83,14 @@ public class Sidebar implements Listener {
 
         for (SidebarLine line : lines) {
             // if line is not created yet
-            if (line.getCurrentIndex() == -1) {
-                line.setCurrentIndex(index--);
+            if (line.getScore() == -1) {
+                line.setScore(index--);
                 broadcast(p -> line.createTeam(p, objective.getName()));
                 continue;
             }
 
-            int prevIndex = line.getCurrentIndex();
-            line.setCurrentIndex(index--);
+            int prevIndex = line.getScore();
+            line.setScore(index--);
 
             broadcast(p -> line.updateTeam(p, prevIndex, objective.getName()));
         }
