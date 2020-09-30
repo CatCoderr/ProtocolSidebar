@@ -1,18 +1,22 @@
 package me.catcoder.sidebar;
 
-import com.comphenix.packetwrapper.AbstractPacket;
-import com.comphenix.packetwrapper.WrapperPlayServerScoreboardScore;
-import com.comphenix.packetwrapper.WrapperPlayServerScoreboardTeam;
+import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.ProtocolManager;
+import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.wrappers.EnumWrappers;
+import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 import lombok.ToString;
 import me.catcoder.sidebar.util.VersionUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.function.Function;
@@ -23,6 +27,10 @@ public class SidebarLine {
 
     private static final ChatColor[] COLORS = ChatColor.values();
     private static final Splitter SPLITTER = Splitter.fixedLength(16);
+
+    private static final int TEAM_CREATED = 0;
+    private static final int TEAM_REMOVED = 1;
+    private static final int TEAM_UPDATED = 2;
 
     private final String teamName;
     private int currentIndex = -1;
@@ -44,57 +52,69 @@ public class SidebarLine {
     void updateTeam(@NonNull Player player, int previousIndex, @NonNull String objective) {
         if (!isStaticText()) {
             String text = updater.apply(player);
-            createTeamPacket(WrapperPlayServerScoreboardTeam.Mode.TEAM_UPDATED, player, text).sendPacket(player);
+            sendPacket(player, createTeamPacket(TEAM_UPDATED, player, text));
         }
 
         if (previousIndex != currentIndex) {
-            createScorePacket(EnumWrappers.ScoreboardAction.CHANGE, objective).sendPacket(player);
+            sendPacket(player, createScorePacket(EnumWrappers.ScoreboardAction.CHANGE, objective));
         }
     }
 
     void removeTeam(@NonNull Player player, @NonNull String objective) {
-        createTeamPacket(WrapperPlayServerScoreboardTeam.Mode.TEAM_REMOVED, null, null).sendPacket(player);
-        createScorePacket(EnumWrappers.ScoreboardAction.REMOVE, objective).sendPacket(player);
+        sendPacket(player, createTeamPacket(TEAM_REMOVED, null, null));
+        sendPacket(player, createScorePacket(EnumWrappers.ScoreboardAction.REMOVE, objective));
     }
 
     void createTeam(@NonNull Player player, @NonNull String objective) {
         String text = updater.apply(player);
-        createTeamPacket(WrapperPlayServerScoreboardTeam.Mode.TEAM_CREATED, player, text).sendPacket(player);
-        createScorePacket(EnumWrappers.ScoreboardAction.CHANGE, objective).sendPacket(player);
+        sendPacket(player, createTeamPacket(TEAM_CREATED, player, text));
+        sendPacket(player, createScorePacket(EnumWrappers.ScoreboardAction.CHANGE, objective));
     }
 
     void setCurrentIndex(int currentIndex) {
         this.currentIndex = currentIndex;
     }
 
-    private AbstractPacket createTeamPacket(int mode, Player player, String text) {
+    private PacketContainer createTeamPacket(int mode, Player player, String text) {
         String teamEntry = COLORS[currentIndex].toString();
 
-        WrapperPlayServerScoreboardTeam team = new WrapperPlayServerScoreboardTeam();
-        team.setName(teamName);
-        team.setMode(mode);
+        PacketContainer packet = getProtocolManager().createPacket(PacketType.Play.Server.SCOREBOARD_TEAM);
+        packet.getModifier().writeDefaults();
 
-        if (mode == WrapperPlayServerScoreboardTeam.Mode.TEAM_REMOVED) {
-            return team;
+        packet.getStrings().write(0, teamName);
+        packet.getIntegers().write(1, mode);
+
+        if (mode == TEAM_REMOVED) {
+            return packet;
         }
 
         int version = VersionUtil.getPlayerVersion(player.getUniqueId());
 
-        team.setPlayers(Collections.singletonList(teamEntry));
+        packet.getSpecificModifier(Collection.class).write(0, Collections.singletonList(teamEntry));
 
         // Since 1.13 character limit for prefix/suffix was removed
         if (version >= VersionUtil.MINECRAFT_1_13) {
             if (!text.isEmpty() && text.charAt(0) != ChatColor.COLOR_CHAR) {
                 text = ChatColor.RESET + text;
             }
-            team.setPrefix(text);
-            team.setSuffix(ChatColor.RESET.toString());
-            return team;
+
+            if (VersionUtil.SERVER_VERSION >= VersionUtil.MINECRAFT_1_13) {
+                packet.getChatComponents().write(1,
+                        WrappedChatComponent.fromText(text)); // prefix
+                packet.getChatComponents().write(2,
+                        WrappedChatComponent.fromText(ChatColor.RESET.toString())); // suffix
+            } else {
+                packet.getStrings().write(2, text); // prefix
+                packet.getStrings().write(3, ChatColor.RESET.toString()); // suffix
+
+            }
+            return packet;
         }
 
         Iterator<String> iterator = SPLITTER.split(text).iterator();
         String prefix = iterator.next();
-        team.setPrefix(prefix);
+
+        packet.getStrings().write(2, prefix);
 
         if (text.length() > 16) {
             String prefixColor = ChatColor.getLastColors(prefix);
@@ -102,7 +122,9 @@ public class SidebarLine {
 
             if (prefix.endsWith(String.valueOf(ChatColor.COLOR_CHAR))) {
                 prefix = prefix.substring(0, prefix.length() - 1);
-                team.setPrefix(prefix);
+
+                packet.getStrings().write(2, prefix);
+
                 prefixColor = ChatColor.getByChar(suffix.charAt(0)).toString();
                 suffix = suffix.substring(1);
             }
@@ -117,18 +139,28 @@ public class SidebarLine {
                 suffix = suffix.substring(0, 13) + "...";
             }
 
-            team.setSuffix(suffix);
+            packet.getStrings().write(3, suffix);
         }
 
-        return team;
+        return packet;
     }
 
-    private AbstractPacket createScorePacket(EnumWrappers.ScoreboardAction action, String objectiveName) {
-        WrapperPlayServerScoreboardScore score = new WrapperPlayServerScoreboardScore();
-        score.setObjectiveName(objectiveName);
-        score.setScoreboardAction(action);
-        score.setValue(currentIndex);
-        score.setScoreName(COLORS[currentIndex].toString());
-        return score;
+    private PacketContainer createScorePacket(EnumWrappers.ScoreboardAction action, String objectiveName) {
+        PacketContainer packet = getProtocolManager().createPacket(
+                PacketType.Play.Server.SCOREBOARD_SCORE);
+        packet.getStrings().write(0, COLORS[currentIndex].toString());
+        packet.getStrings().write(1, objectiveName);
+        packet.getScoreboardActions().write(0, action);
+        packet.getIntegers().write(0, currentIndex);
+        return packet;
+    }
+
+    private static ProtocolManager getProtocolManager() {
+        return ProtocolLibrary.getProtocolManager();
+    }
+
+    @SneakyThrows
+    static void sendPacket(Player player, PacketContainer packet) {
+        getProtocolManager().sendServerPacket(player, packet);
     }
 }

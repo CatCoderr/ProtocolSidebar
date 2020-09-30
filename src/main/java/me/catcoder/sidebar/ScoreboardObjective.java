@@ -1,10 +1,14 @@
 package me.catcoder.sidebar;
 
-import com.comphenix.packetwrapper.WrapperPlayServerScoreboardDisplayObjective;
-import com.comphenix.packetwrapper.WrapperPlayServerScoreboardObjective;
+import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.ProtocolManager;
+import com.comphenix.protocol.events.PacketContainer;
+import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.google.common.base.Preconditions;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 import me.catcoder.sidebar.util.VersionUtil;
 import org.bukkit.entity.Player;
 
@@ -19,6 +23,10 @@ import org.bukkit.entity.Player;
 public class ScoreboardObjective {
 
     public static final int DISPLAY_SIDEBAR = 1;
+
+    public static final int ADD_OBJECTIVE = 0;
+    public static final int REMOVE_OBJECTIVE = 1;
+    public static final int UPDATE_VALUE = 2;
 
     private final String name;
     private String displayName;
@@ -36,47 +44,64 @@ public class ScoreboardObjective {
     }
 
     void updateValue(@NonNull Player player) {
-        WrapperPlayServerScoreboardObjective packet = getPacket(player);
-        packet.setMode(WrapperPlayServerScoreboardObjective.Mode.UPDATE_VALUE);
-        packet.sendPacket(player);
+        PacketContainer packet = getPacket(player);
+        packet.getIntegers().write(0, UPDATE_VALUE);
+        sendPacket(player, packet);
     }
 
     void create(@NonNull Player player) {
-        WrapperPlayServerScoreboardObjective packet = getPacket(player);
-        packet.setMode(WrapperPlayServerScoreboardObjective.Mode.ADD_OBJECTIVE);
+        PacketContainer packet = getPacket(player);
+        packet.getIntegers().write(0, ADD_OBJECTIVE);
 
-        packet.sendPacket(player);
+        sendPacket(player, packet);
     }
 
     void remove(@NonNull Player player) {
-        WrapperPlayServerScoreboardObjective packet = getPacket(player);
-        packet.setMode(WrapperPlayServerScoreboardObjective.Mode.REMOVE_OBJECTIVE);
+        PacketContainer packet = getPacket(player);
+        packet.getIntegers().write(0, REMOVE_OBJECTIVE);
 
-        packet.sendPacket(player);
+        sendPacket(player, packet);
     }
 
     void display(@NonNull Player player) {
-        WrapperPlayServerScoreboardDisplayObjective displayObjective = new WrapperPlayServerScoreboardDisplayObjective();
-        displayObjective.setPosition(DISPLAY_SIDEBAR);
-        displayObjective.setScoreName(name);
+        PacketContainer packet = getProtocolManager().createPacket(PacketType.Play.Server.SCOREBOARD_DISPLAY_OBJECTIVE);
+        packet.getIntegers().write(0, DISPLAY_SIDEBAR);
+        packet.getStrings().write(0, name);
 
-        displayObjective.sendPacket(player);
+        sendPacket(player, packet);
     }
 
-    private WrapperPlayServerScoreboardObjective getPacket(@NonNull Player player) {
+    private PacketContainer getPacket(@NonNull Player player) {
         int version = VersionUtil.getPlayerVersion(player.getUniqueId());
 
-        WrapperPlayServerScoreboardObjective packet = new WrapperPlayServerScoreboardObjective();
+        PacketContainer packet = getProtocolManager().createPacket(PacketType.Play.Server.SCOREBOARD_OBJECTIVE);
 
         // Since 1.13 characters limit for display name was removed
         if (version < VersionUtil.MINECRAFT_1_13 && displayName.length() > 32) {
             displayName = displayName.substring(0, 32);
         }
 
-        packet.setDisplayName(displayName);
-        packet.setName(name);
-        packet.setHealthDisplay(WrapperPlayServerScoreboardObjective.HealthDisplay.INTEGER);
+        if (VersionUtil.SERVER_VERSION >= VersionUtil.MINECRAFT_1_13) {
+            packet.getChatComponents().write(0, WrappedChatComponent.fromText(displayName));
+        } else {
+            packet.getStrings().write(1, displayName);
+        }
+
+        packet.getStrings().write(0, name);
+        packet.getEnumModifier(HealthDisplay.class, 2).write(0, HealthDisplay.INTEGER);
         return packet;
     }
 
+    public enum HealthDisplay {
+        INTEGER, HEARTS
+    }
+
+    private static ProtocolManager getProtocolManager() {
+        return ProtocolLibrary.getProtocolManager();
+    }
+
+    @SneakyThrows
+    static void sendPacket(Player player, PacketContainer packet) {
+        getProtocolManager().sendServerPacket(player, packet);
+    }
 }

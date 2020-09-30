@@ -6,7 +6,7 @@
 
     <groupId>me.catcoder</groupId>
     <artifactId>bukkit-sidebar</artifactId>
-    <version>3.1.0</version>
+    <version>3.1.1</version>
     <packaging>jar</packaging>
 
     <name>Sidebar</name>
@@ -144,11 +144,6 @@
             <artifactId>viaversion-common</artifactId>
             <version>2.2.2</version>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.comphenix.packetwrapper</groupId>
-            <artifactId>PacketWrapper</artifactId>
-            <version>1.12.1-R0.1-20180529.035844-6</version>
         </dependency>
         <dependency>
             <groupId>com.comphenix.protocol</groupId>
