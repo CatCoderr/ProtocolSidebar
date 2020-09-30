@@ -1,13 +1,12 @@
 # ProtocolSidebar
 [![Build Status](https://travis-ci.org/CatCoderr/ProtocolSidebar.svg?branch=master)](https://travis-ci.org/CatCoderr/ProtocolSidebar) 
+[![](https://jitpack.io/v/CatCoderr/ProtocolSidebar.svg)](https://jitpack.io/#CatCoderr/ProtocolSidebar)
 
 Non-flickering scoreboard (sidebar) implementation using ProtocolLib.
 Also supports ViaVersion.
 
 > Minecraft version: [1.8-1.16]
-
-Latest releases: https://jitpack.io/#CatCoderr/ProtocolSidebar/
-
+>
 ## Example usage
 
 ```java
