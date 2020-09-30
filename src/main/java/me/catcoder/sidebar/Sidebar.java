@@ -34,6 +34,13 @@ public class Sidebar implements Listener {
         broadcast(objective::updateValue);
     }
 
+    public void shiftLine(SidebarLine line, int offset) {
+        lines.remove(line);
+        lines.add(offset, line);
+
+        update(); // recalculate indices
+    }
+
     public SidebarLine addLine(@NonNull String text) {
         return addLine(x -> text, true);
     }
@@ -53,7 +60,7 @@ public class Sidebar implements Listener {
     }
 
     public void removeLine(@NonNull SidebarLine line) {
-        if (lines.remove(line)) {
+        if (lines.remove(line) && line.getCurrentIndex() != -1) {
             broadcast(p -> line.removeTeam(p, objective.getName()));
             update();
         }
