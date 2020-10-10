@@ -18,10 +18,18 @@ public class Sidebar implements Listener {
     private final List<SidebarLine> lines = new ArrayList<>();
     private final ScoreboardObjective objective;
 
+    @Deprecated
     public Sidebar(@NonNull Plugin owner, @NonNull String objective, @NonNull String title) {
         this.objective = new ScoreboardObjective(objective, title);
+        addListener(owner);
+    }
 
-        owner.getServer().getPluginManager().registerEvents(this, owner);
+    public Sidebar(@NonNull String objective, @NonNull String title) {
+        this.objective = new ScoreboardObjective(objective, title);
+    }
+
+    public void addListener(@NonNull Plugin plugin) {
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @EventHandler

@@ -6,7 +6,7 @@
 
     <groupId>me.catcoder</groupId>
     <artifactId>bukkit-sidebar</artifactId>
-    <version>3.1.1</version>
+    <version>3.1.2</version>
     <packaging>jar</packaging>
 
     <name>Sidebar</name>
