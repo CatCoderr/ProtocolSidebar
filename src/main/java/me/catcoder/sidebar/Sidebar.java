@@ -61,7 +61,7 @@ public class Sidebar implements Listener {
         return addLine(updater, false);
     }
 
-    private SidebarLine addLine(@NonNull Function<Player, String> updater, boolean staticText) {
+    public SidebarLine addLine(@NonNull Function<Player, String> updater, boolean staticText) {
         SidebarLine line = new SidebarLine(updater, objective.getName() + lines.size(), staticText, lines.size());
         lines.add(line);
         return line;
