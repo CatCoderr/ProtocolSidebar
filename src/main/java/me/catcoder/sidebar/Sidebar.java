@@ -7,6 +7,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -47,6 +48,10 @@ public class Sidebar implements Listener {
         lines.add(offset, line);
 
         update(); // recalculate indices
+    }
+
+    public BukkitTask updatePeriodically(long delay, long period, @NonNull Plugin plugin) {
+        return Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this::update, delay, period);
     }
 
     public SidebarLine addLine(@NonNull String text) {
