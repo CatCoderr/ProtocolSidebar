@@ -134,7 +134,6 @@ public class Sidebar implements Listener {
 
             lines.forEach(line -> line.removeTeam(player, objective.getName()));
             objective.remove(player);
-            viewers.remove(player.getUniqueId());
         }
     }
 
