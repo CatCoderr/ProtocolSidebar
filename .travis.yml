@@ -10,22 +10,9 @@ script: mvn verify -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 ### Maven basic build ###
 jobs:
   include:
-    # 1. Test project against various JDKs
-    - stage: Test against various JDKs
-      name: Default JDK
-      install: source ./install-jdk.sh --verbose
-    - name: JDK 8 # LTS
-      install: source ./install-jdk.sh --verbose --feature 11
-    - name: JDK 11 # LTS
-      install: source ./install-jdk.sh --verbose --feature 11
-    - name: JDK 14 # Latest GA experimental
-      install: source ./install-jdk.sh --verbose --feature 14
-    - name: JDK 15 # Latest non-GA experimental
-      install: source ./install-jdk.sh --verbose --feature 15
-    # 2. Deploy
     - stage: deploy
       jdk: openjdk8 # Use the minimal supported version (this assures that no version-specific bytecode gets generated)
-      if: repo = CatCoderr/ProtocolSidebar AND branch IN (master, development) AND type != pull_request
+      if: repo = CatCoderr/ProtocolSidebar AND branch IN (master, dev) AND type != pull_request
       script: source ./attempt-travis-deploy.sh
 
 # Cached directories
