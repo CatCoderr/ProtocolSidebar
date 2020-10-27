@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-readonly SNAPSHOTS_BRANCH='development'
+readonly SNAPSHOTS_BRANCH='dev'
 readonly RELEASES_BRANCH='master'
 
 echo 'Attempting to deploy artifacts'
