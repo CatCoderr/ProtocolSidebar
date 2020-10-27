@@ -6,11 +6,12 @@
 
     <groupId>me.catcoder</groupId>
     <artifactId>bukkit-sidebar</artifactId>
-    <version>3.1.3</version>
+    <version>3.1.4</version>
     <packaging>jar</packaging>
 
     <name>Sidebar</name>
     <description>Non-flickering Minecraft sidebar implementation for ProtocolLib</description>
+    <url>https://github.com/CatCoderr/ProtocolSidebar</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -44,11 +45,9 @@
         <connection>scm:git:git://github.com:CatCoderr/ProtocolSidebar</connection>
         <developerConnection>scm:git:git@github.com:CatCoderr/ProtocolSidebar.git</developerConnection>
     </scm>
-
-    <!-- Compilation -->
     <build>
-        <defaultGoal>clean package</defaultGoal>
-        <finalName>bukkit-sidebar</finalName>
+        <defaultGoal>verify install</defaultGoal>
+
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -77,6 +76,7 @@
                     <groupId>org.sonatype.plugins</groupId>
                     <artifactId>nexus-staging-maven-plugin</artifactId>
                     <version>1.6.8</version>
+                    <extensions>true</extensions>
                     <configuration>
                         <serverId>sonatype-ossrh</serverId>
                         <nexusUrl>https://oss.sonatype.org/</nexusUrl>
@@ -119,13 +119,6 @@
                 </plugin>
             </plugins>
         </pluginManagement>
-
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
     </build>
 
     <repositories>
@@ -174,9 +167,7 @@
         </dependency>
     </dependencies>
 
-    <!-- Repository profiles -->
     <profiles>
-
         <!-- Deployment-related profiles -->
         <profile>
             <id>build-extras</id>
@@ -230,6 +221,8 @@
             </build>
         </profile>
 
+        <!-- Repository profiles -->
+
         <profile>
             <id>sonatype-ossrh-deployment</id>
             <distributionManagement>
@@ -251,16 +244,6 @@
                     </plugin>
                 </plugins>
             </build>
-        </profile>
-
-        <profile>
-            <id>github-package-registry-deployment</id>
-            <distributionManagement>
-                <repository>
-                    <id>github-package-registry</id>
-                    <url>https://maven.pkg.github.com/CatCoderr/ProtocolSidebar</url>
-                </repository>
-            </distributionManagement>
         </profile>
     </profiles>
 
