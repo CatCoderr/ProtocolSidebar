@@ -22,8 +22,8 @@ public class Sidebar implements Listener {
     /**
      * Construct a new sidebar instance.
      *
-     * @param objective - a name of scoreboard objective
-     * @param title     - a title of sidebar
+     * @param objective a name of scoreboard objective
+     * @param title     a title of sidebar
      */
     public Sidebar(@NonNull String objective, @NonNull String title) {
         this.objective = new ScoreboardObjective(objective, title);
@@ -32,7 +32,7 @@ public class Sidebar implements Listener {
     /**
      * Automatically remove players from viewers set when they quit from server.
      *
-     * @param plugin - plugin for which listener will be registered.
+     * @param plugin plugin for which listener will be registered.
      */
     public void addListener(@NonNull Plugin plugin) {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
@@ -46,7 +46,7 @@ public class Sidebar implements Listener {
     /**
      * Update the title of the sidebar.
      *
-     * @param title - title to be updated
+     * @param title title to be updated
      */
     public void setTitle(@NonNull String title) {
         objective.setDisplayName(title);
@@ -56,8 +56,8 @@ public class Sidebar implements Listener {
     /**
      * Updates the index of the line shifting it by an offset.
      *
-     * @param line   - the line
-     * @param offset - the offset
+     * @param line   the line
+     * @param offset the offset
      */
     public void shiftLine(SidebarLine line, int offset) {
         lines.remove(line);
@@ -69,9 +69,9 @@ public class Sidebar implements Listener {
     /**
      * Schedules the task to update all dynamic lines at fixed rate.
      *
-     * @param delay  - delay in ticks
-     * @param period - period in ticks
-     * @param plugin - target plugin
+     * @param delay  delay in ticks
+     * @param period period in ticks
+     * @param plugin target plugin
      * @return the scheduled task
      */
     public BukkitTask updatePeriodically(long delay, long period, @NonNull Plugin plugin) {
@@ -103,7 +103,7 @@ public class Sidebar implements Listener {
     /**
      * Removes line from sidebar.
      *
-     * @param line - the line
+     * @param line the line
      */
     public void removeLine(@NonNull SidebarLine line) {
         if (lines.remove(line) && line.getScore() != -1) {
@@ -127,7 +127,7 @@ public class Sidebar implements Listener {
     /**
      * Update the single line.
      *
-     * @param line - target line.
+     * @param line target line.
      */
     public void updateLine(@NonNull SidebarLine line) {
         if (lines.contains(line)) {
@@ -171,7 +171,7 @@ public class Sidebar implements Listener {
     /**
      * Sends this sidebar with all lines to the player.
      *
-     * @param player - target player
+     * @param player target player
      */
     public void addViewer(@NonNull Player player) {
         if (viewers.add(player.getUniqueId())) {
@@ -186,7 +186,7 @@ public class Sidebar implements Listener {
     /**
      * Removes sidebar for the target player.
      *
-     * @param player - target player
+     * @param player target player
      */
     public void removeViewer(@NonNull Player player) {
         if (viewers.remove(player.getUniqueId())) {
