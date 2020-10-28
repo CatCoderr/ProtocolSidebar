@@ -47,11 +47,11 @@ public class Sidebar implements Listener {
         lines.remove(line);
         lines.add(offset, line);
 
-        update(); // recalculate indices
+        updateAllLines(); // recalculate indices
     }
 
     public BukkitTask updatePeriodically(long delay, long period, @NonNull Plugin plugin) {
-        return Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this::update, delay, period);
+        return Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this::updateAllLines, delay, period);
     }
 
     public SidebarLine addLine(@NonNull String text) {
@@ -62,11 +62,15 @@ public class Sidebar implements Listener {
         return addLine("");
     }
 
-    public SidebarLine addLine(@NonNull Function<Player, String> updater) {
+    public SidebarLine addDynamicLine(@NonNull Function<Player, String> updater) {
         return addLine(updater, false);
     }
 
-    public SidebarLine addLine(@NonNull Function<Player, String> updater, boolean staticText) {
+    public SidebarLine addStaticLine(@NonNull Function<Player, String> updater) {
+        return addLine(updater, true);
+    }
+
+    private SidebarLine addLine(@NonNull Function<Player, String> updater, boolean staticText) {
         SidebarLine line = new SidebarLine(updater, objective.getName() + lines.size(), staticText, lines.size());
         lines.add(line);
         return line;
@@ -75,7 +79,7 @@ public class Sidebar implements Listener {
     public void removeLine(@NonNull SidebarLine line) {
         if (lines.remove(line) && line.getScore() != -1) {
             broadcast(p -> line.removeTeam(p, objective.getName()));
-            update();
+            updateAllLines();
         }
     }
 
@@ -91,7 +95,21 @@ public class Sidebar implements Listener {
                 .min(Comparator.comparingInt(SidebarLine::getScore));
     }
 
-    public void update() {
+    /**
+     * Update the single line.
+     *
+     * @param line - target line.
+     */
+    public void updateLine(@NonNull SidebarLine line) {
+        if (lines.contains(line)) {
+            broadcast(p -> line.updateTeam(p, line.getScore(), objective.getName()));
+        }
+    }
+
+    /**
+     * Update all dynamic lines of the sidebar.
+     */
+    public void updateAllLines() {
         int index = lines.size();
 
         for (SidebarLine line : lines) {
@@ -120,7 +138,7 @@ public class Sidebar implements Listener {
 
     public void addViewer(@NonNull Player player) {
         if (viewers.add(player.getUniqueId())) {
-            update();
+            updateAllLines();
 
             objective.create(player);
             lines.forEach(line -> line.createTeam(player, objective.getName()));
@@ -130,7 +148,7 @@ public class Sidebar implements Listener {
 
     public void removeViewer(@NonNull Player player) {
         if (viewers.remove(player.getUniqueId())) {
-            update();
+            updateAllLines();
 
             lines.forEach(line -> line.removeTeam(player, objective.getName()));
             objective.remove(player);

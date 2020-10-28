@@ -13,8 +13,11 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.ToString;
 import me.catcoder.sidebar.util.VersionUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -47,6 +50,10 @@ public class SidebarLine {
         this.teamName = teamName;
         this.staticText = staticText;
         this.index = index;
+    }
+
+    public BukkitTask updatePeriodically(long delay, long period, @NonNull Plugin plugin, @NonNull Sidebar sidebar) {
+        return Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> sidebar.updateLine(this), delay, period);
     }
 
     public void setUpdater(@NonNull Function<Player, String> updater) {
