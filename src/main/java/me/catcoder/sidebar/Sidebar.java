@@ -141,7 +141,7 @@ public class Sidebar implements Listener {
     public void updateAllLines() {
         int index = lines.size();
 
-        for (SidebarLine line : lines) {
+        for (SidebarLine line : new ArrayList<>(lines)) {
             // if line is not created yet
             if (line.getScore() == -1) {
                 line.setScore(index--);
