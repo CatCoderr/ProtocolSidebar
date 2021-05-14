@@ -173,6 +173,8 @@ public class SidebarLine {
 
     @SneakyThrows
     static void sendPacket(Player player, PacketContainer packet) {
-        getProtocolManager().sendServerPacket(player, packet);
+        if (player.isOnline()) {
+            getProtocolManager().sendServerPacket(player, packet);
+        }
     }
 }

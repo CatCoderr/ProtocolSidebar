@@ -3,19 +3,17 @@ package me.catcoder.sidebar;
 import lombok.NonNull;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public class Sidebar implements Listener {
+public class Sidebar {
 
-    private final Set<UUID> viewers = new HashSet<>();
+    private final Set<UUID> viewers = Collections.newSetFromMap(new ConcurrentHashMap<>());
     private final List<SidebarLine> lines = new ArrayList<>();
     private final ScoreboardObjective objective;
 
@@ -27,20 +25,6 @@ public class Sidebar implements Listener {
      */
     public Sidebar(@NonNull String objective, @NonNull String title) {
         this.objective = new ScoreboardObjective(objective, title);
-    }
-
-    /**
-     * Automatically remove players from viewers set when they quit from server.
-     *
-     * @param plugin plugin for which listener will be registered.
-     */
-    public void addListener(@NonNull Plugin plugin) {
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
-    }
-
-    @EventHandler
-    public void onPlayerQuit(PlayerQuitEvent event) {
-        viewers.remove(event.getPlayer().getUniqueId());
     }
 
     /**
@@ -141,7 +125,7 @@ public class Sidebar implements Listener {
     public void updateAllLines() {
         int index = lines.size();
 
-        for (SidebarLine line : new ArrayList<>(lines)) {
+        for (SidebarLine line : lines) {
             // if line is not created yet
             if (line.getScore() == -1) {
                 line.setScore(index--);
@@ -160,7 +144,7 @@ public class Sidebar implements Listener {
      * Remove all viewers currently receiving this sidebar.
      */
     public void removeViewers() {
-        for (UUID id : new ArrayList<>(viewers)) {
+        for (UUID id : viewers) {
             Player player = Bukkit.getPlayer(id);
             if (player != null) {
                 removeViewer(player);
@@ -210,9 +194,16 @@ public class Sidebar implements Listener {
     }
 
     private void broadcast(@NonNull Consumer<Player> consumer) {
-        viewers.stream()
-                .map(Bukkit::getPlayer)
-                .filter(Objects::nonNull)
-                .forEach(consumer);
+        viewers.removeIf(uuid -> Bukkit.getPlayer(uuid) == null);
+
+        for (UUID id : viewers) {
+            // double check
+            Player player = Bukkit.getPlayer(id);
+            if (player == null) {
+                continue;
+            }
+
+            consumer.accept(player);
+        }
     }
 }
