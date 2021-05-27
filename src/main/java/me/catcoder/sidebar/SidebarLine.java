@@ -104,8 +104,9 @@ public class SidebarLine {
 
         packet.getSpecificModifier(Collection.class).write(0, Collections.singletonList(teamEntry));
 
+
         // Since 1.13 character limit for prefix/suffix was removed
-        if (version >= VersionUtil.MINECRAFT_1_13) {
+        if (version >= VersionUtil.MINECRAFT_1_13 || VersionUtil.SERVER_VERSION >= VersionUtil.MINECRAFT_1_13) {
             if (!text.isEmpty() && text.charAt(0) != ChatColor.COLOR_CHAR) {
                 text = ChatColor.RESET + text;
             }
