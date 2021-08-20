@@ -12,13 +12,18 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.ToString;
+import me.catcoder.sidebar.util.ReflectionUtil;
+import me.catcoder.sidebar.util.UnsafeUtil;
 import me.catcoder.sidebar.util.VersionUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.function.Function;
 
 @Getter
@@ -81,19 +86,21 @@ public class SidebarLine {
     }
 
     private PacketContainer createTeamPacket(int mode, Player player, String text) {
+        int version = VersionUtil.getPlayerVersion(player.getUniqueId());
         String teamEntry = COLORS[index].toString();
 
         PacketContainer packet = getProtocolManager().createPacket(PacketType.Play.Server.SCOREBOARD_TEAM);
         packet.getModifier().writeDefaults();
 
         packet.getStrings().write(0, teamName);
-        packet.getIntegers().write(1, mode);
+        if (version >= VersionUtil.MINECRAFT_1_17)
+            packet.getIntegers().write(0, mode);
+        else
+            packet.getIntegers().write(1, mode);
 
         if (mode == TEAM_REMOVED) {
             return packet;
         }
-
-        int version = VersionUtil.getPlayerVersion(player.getUniqueId());
 
         packet.getSpecificModifier(Collection.class).write(0, Collections.singletonList(teamEntry));
 
@@ -104,10 +111,28 @@ public class SidebarLine {
             }
 
             if (VersionUtil.SERVER_VERSION >= VersionUtil.MINECRAFT_1_13) {
-                packet.getChatComponents().write(1,
-                        WrappedChatComponent.fromText(text)); // prefix
-                packet.getChatComponents().write(2,
-                        WrappedChatComponent.fromText(ChatColor.RESET.toString())); // suffix
+                if (VersionUtil.SERVER_VERSION >= VersionUtil.MINECRAFT_1_17) {
+                    try {
+                        Object entryObject = UnsafeUtil.getUnsafe().allocateInstance(Class.forName("net.minecraft.network.protocol.game.PacketPlayOutScoreboardTeam$b"));
+                        ReflectionUtil.setField(entryObject, "a", WrappedChatComponent.fromText(teamName).getHandle());
+                        ReflectionUtil.setField(entryObject, "b", WrappedChatComponent.fromText(text).getHandle());
+                        ReflectionUtil.setField(entryObject, "c", WrappedChatComponent.fromText(ChatColor.RESET.toString()).getHandle());
+                        ReflectionUtil.setField(entryObject, "d", "always");
+                        ReflectionUtil.setField(entryObject, "e", "always");
+                        Method method = Class.forName("net.minecraft.EnumChatFormat").getDeclaredMethod("b", String.class);
+                        method.setAccessible(true);
+                        ReflectionUtil.setField(entryObject, "f", method.invoke(null, "reset"));
+                        ReflectionUtil.setField(entryObject, "g", 2);
+                        packet.getSpecificModifier(Optional.class).write(0, Optional.of(entryObject));
+                    } catch(ClassNotFoundException | InstantiationException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                        throw new RuntimeException(e);
+                    }
+                } else {
+                    packet.getChatComponents().write(1,
+                            WrappedChatComponent.fromText(text)); // prefix
+                    packet.getChatComponents().write(2,
+                            WrappedChatComponent.fromText(ChatColor.RESET.toString())); // suffix
+                }
             } else {
                 packet.getStrings().write(2, text); // prefix
                 packet.getStrings().write(3, ChatColor.RESET.toString()); // suffix

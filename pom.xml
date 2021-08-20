@@ -6,7 +6,7 @@
 
     <groupId>me.catcoder</groupId>
     <artifactId>bukkit-sidebar</artifactId>
-    <version>3.1.4</version>
+    <version>3.1.5</version>
     <packaging>jar</packaging>
 
     <name>Sidebar</name>
@@ -128,7 +128,7 @@
         </repository>
         <repository>
             <id>dmulloy2-repo</id>
-            <url>http://repo.dmulloy2.net/content/groups/public/</url>
+            <url>https://repo.dmulloy2.net/content/groups/public/</url>
         </repository>
         <repository>
             <id>sonatype</id>
@@ -150,7 +150,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.18.8</version>
+            <version>1.18.20</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

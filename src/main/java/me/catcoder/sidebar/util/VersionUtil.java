@@ -10,6 +10,7 @@ import java.util.UUID;
 public final class VersionUtil {
 
     public static final int MINECRAFT_1_13 = 393;
+    public static final int MINECRAFT_1_17 = 755;
     public static final int SERVER_VERSION = MinecraftProtocolVersion.getCurrentVersion();
 
     public static int getPlayerVersion(@NonNull UUID id) {
