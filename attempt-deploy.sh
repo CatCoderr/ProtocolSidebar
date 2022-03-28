@@ -20,18 +20,18 @@ echo "Got project version: ${project_version}"
 if [[ ${project_version} == *-SNAPSHOT ]]; then # Try to deploy snapshot if version ends with '-SNAPSHOT'
     echo 'This is a snapshot version'
     # Snapshots deployment happens only for `development` branch excluding pull requests to it (but including merges)
-    if [[ "${TRAVIS_BRANCH}" = "${SNAPSHOTS_BRANCH}" ]]; then
+    if [[ "${GITHUB_REF_NAME}" = "${SNAPSHOTS_BRANCH}" ]]; then
         echo "Deploying version ${project_version} to snapshot repositories"
-        bash .travis/scripts/deploy-snapshot-to-maven-repositories.sh
+        bash ./scripts/deploy-snapshot-to-maven-repositories.sh
     else
         echo "Not deploying snapshot as branch is not ${SNAPSHOTS_BRANCH}"
     fi
 else # Try to deploy release if version doesn't end with '-SNAPSHOT'
     echo 'This is a release version'
     # Release deployment happens only for `release` branch excluding pull requests to it (but including merges)
-    if [[ "${TRAVIS_BRANCH}" = "${RELEASES_BRANCH}" ]]; then
+    if [[ "${GITHUB_REF_NAME}" = "${RELEASES_BRANCH}" ]]; then
         echo "Deploying version ${project_version} to release repositories"
-        bash .travis/scripts/deploy-release-to-maven-repositories.sh
+        bash ./scripts/deploy-release-to-maven-repositories.sh
     else
         echo "Not deploying release as branch is not \`${SNAPSHOTS_BRANCH}\`"
     fi
