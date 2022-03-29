@@ -1,4 +1,4 @@
-package me.catcoder.sidebar.protocol;
+package me.catcoder.sidebar.protocol.minecraft117;
 
 import com.comphenix.protocol.reflect.FieldUtils;
 import com.comphenix.protocol.utility.Constants;
@@ -27,10 +27,10 @@ import static org.mockito.Mockito.when;
  *
  * @author Kristian
  */
-public class BukkitInitialization {
-    private static final BukkitInitialization instance = new BukkitInitialization();
+public class BukkitInitialization_117 {
+    private static final BukkitInitialization_117 instance = new BukkitInitialization_117();
 
-    private BukkitInitialization() {
+    private BukkitInitialization_117() {
         System.out.println("Created new BukkitInitialization on " + Thread.currentThread().getName());
     }
 

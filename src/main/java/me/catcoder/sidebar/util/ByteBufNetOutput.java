@@ -122,6 +122,13 @@ public class ByteBufNetOutput implements NetOutput {
     }
 
     @Override
+    public byte[] toByteArray() {
+        byte[] bytes = new byte[this.buf.readableBytes()];
+        this.buf.readBytes(bytes);
+        return bytes;
+    }
+
+    @Override
     public void writeString(String s) {
         if (s == null) {
             throw new IllegalArgumentException("String cannot be null!");

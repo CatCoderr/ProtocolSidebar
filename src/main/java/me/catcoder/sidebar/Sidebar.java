@@ -1,15 +1,27 @@
 package me.catcoder.sidebar;
 
-import lombok.NonNull;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+
+import javax.annotation.Nullable;
+
+import org.apache.commons.lang.RandomStringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
-import java.util.function.Function;
+import lombok.NonNull;
+import lombok.SneakyThrows;
+import me.catcoder.sidebar.text.TextIterator;
+import me.catcoder.sidebar.util.lang.ThrowingConsumer;
+import me.catcoder.sidebar.util.lang.ThrowingFunction;
 
 public class Sidebar {
 
@@ -17,14 +29,23 @@ public class Sidebar {
     private final List<SidebarLine> lines = new ArrayList<>();
     private final ScoreboardObjective objective;
 
+    private TextIterator titleText;
+    private BukkitTask titleUpdater;
+
     /**
      * Construct a new sidebar instance.
      *
      * @param objective a name of scoreboard objective
      * @param title     a title of sidebar
      */
-    public Sidebar(@NonNull String objective, @NonNull String title) {
-        this.objective = new ScoreboardObjective(objective, title);
+    public Sidebar(@NonNull String title) {
+        this.objective = new ScoreboardObjective(RandomStringUtils.random(5), title);
+    }
+
+    public Sidebar(@NonNull TextIterator titleIterator, @NonNull Plugin plugin) {
+        this.objective = new ScoreboardObjective(RandomStringUtils.random(5), titleIterator.next());
+
+        setTitleIter(titleIterator, plugin);
     }
 
     /**
@@ -33,8 +54,34 @@ public class Sidebar {
      * @param title title to be updated
      */
     public void setTitle(@NonNull String title) {
+        setTitleIter(null, null); // cancel previous updater
+
         objective.setDisplayName(title);
         broadcast(objective::updateValue);
+    }
+
+    public void setTitle(@NonNull TextIterator iterator, @NonNull Plugin plugin) {
+        setTitleIter(iterator, plugin);
+    }
+
+    private void setTitleIter(@Nullable TextIterator iterator, @Nullable Plugin plugin) {
+        if (titleUpdater != null) {
+            titleUpdater.cancel();
+            titleUpdater = null;
+        }
+
+        this.titleText = iterator;
+
+        if (iterator != null) {
+            titleUpdater = plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, () -> {
+                String next = titleText.next();
+
+                if (!next.equals(objective.getDisplayName())) {
+                    objective.setDisplayName(next);
+                    broadcast(objective::updateValue);
+                }
+            }, 0, 1);
+        }
     }
 
     /**
@@ -58,8 +105,8 @@ public class Sidebar {
      * @param plugin target plugin
      * @return the scheduled task
      */
-    public BukkitTask updatePeriodically(long delay, long period, @NonNull Plugin plugin) {
-        return Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this::updateAllLines, delay, period);
+    public BukkitTask updateLinesPeriodically(long delay, long period, @NonNull Plugin plugin) {
+        return Bukkit.getScheduler().runTaskTimer(plugin, this::updateAllLines, delay, period);
     }
 
     public SidebarLine addLine(@NonNull String text) {
@@ -70,15 +117,15 @@ public class Sidebar {
         return addLine("");
     }
 
-    public SidebarLine addDynamicLine(@NonNull Function<Player, String> updater) {
+    public SidebarLine addDynamicLine(@NonNull ThrowingFunction<Player, String, Throwable> updater) {
         return addLine(updater, false);
     }
 
-    public SidebarLine addStaticLine(@NonNull Function<Player, String> updater) {
+    public SidebarLine addStaticLine(@NonNull ThrowingFunction<Player, String, Throwable> updater) {
         return addLine(updater, true);
     }
 
-    private SidebarLine addLine(@NonNull Function<Player, String> updater, boolean staticText) {
+    private SidebarLine addLine(@NonNull ThrowingFunction<Player, String, Throwable> updater, boolean staticText) {
         SidebarLine line = new SidebarLine(updater, objective.getName() + lines.size(), staticText, lines.size());
         lines.add(line);
         return line;
@@ -157,13 +204,22 @@ public class Sidebar {
      *
      * @param player target player
      */
+
+    @SneakyThrows
     public void addViewer(@NonNull Player player) {
-        if (viewers.add(player.getUniqueId())) {
+        if (!viewers.contains(player.getUniqueId())) {
             updateAllLines();
 
             objective.create(player);
-            lines.forEach(line -> line.createTeam(player, objective.getName()));
+
+            for (SidebarLine line : lines) {
+                line.createTeam(player, objective.getName());
+            }
+
             objective.display(player);
+
+            viewers.add(player.getUniqueId());
+
         }
     }
 
@@ -193,7 +249,7 @@ public class Sidebar {
         return objective;
     }
 
-    private void broadcast(@NonNull Consumer<Player> consumer) {
+    private void broadcast(@NonNull ThrowingConsumer<Player, Throwable> consumer) {
         viewers.removeIf(uuid -> Bukkit.getPlayer(uuid) == null);
 
         for (UUID id : viewers) {
@@ -203,7 +259,12 @@ public class Sidebar {
                 continue;
             }
 
-            consumer.accept(player);
+            try {
+                consumer.accept(player);
+            } catch (Throwable e) {
+                throw new RuntimeException("An error occurred while updating sidebar for player: " + player.getName(),
+                        e);
+            }
         }
     }
 }

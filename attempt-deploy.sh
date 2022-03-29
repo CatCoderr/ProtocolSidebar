@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e 
+
 readonly SNAPSHOTS_BRANCH='dev'
 readonly RELEASES_BRANCH='master'
 
@@ -22,7 +24,7 @@ if [[ ${project_version} == *-SNAPSHOT ]]; then # Try to deploy snapshot if vers
     # Snapshots deployment happens only for `development` branch excluding pull requests to it (but including merges)
     if [[ "${GITHUB_REF_NAME}" = "${SNAPSHOTS_BRANCH}" ]]; then
         echo "Deploying version ${project_version} to snapshot repositories"
-        bash ./scripts/deploy-snapshot-to-maven-repositories.sh
+        bash ./scripts/deploy-to-sonatype-ossrh.sh
     else
         echo "Not deploying snapshot as branch is not ${SNAPSHOTS_BRANCH}"
     fi
@@ -31,7 +33,7 @@ else # Try to deploy release if version doesn't end with '-SNAPSHOT'
     # Release deployment happens only for `release` branch excluding pull requests to it (but including merges)
     if [[ "${GITHUB_REF_NAME}" = "${RELEASES_BRANCH}" ]]; then
         echo "Deploying version ${project_version} to release repositories"
-        bash ./scripts/deploy-release-to-maven-repositories.sh
+        bash ./scripts/deploy-to-sonatype-ossrh.sh
     else
         echo "Not deploying release as branch is not \`${SNAPSHOTS_BRANCH}\`"
     fi

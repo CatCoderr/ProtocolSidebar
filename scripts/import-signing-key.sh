@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e 
+
 echo 'Decrypting encryption key'
 openssl aes-256-cbc -K ${ENCRYPTED_CODESIGNING_KEY} -iv ${ENCRYPTED_CODESIGNING_IV} \
 -in ./gpg/codesigning.asc.enc -out ./gpg/codesigning.asc -d

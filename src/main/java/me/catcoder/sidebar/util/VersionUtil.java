@@ -1,13 +1,13 @@
 package me.catcoder.sidebar.util;
 
+import java.util.UUID;
+
 import com.comphenix.protocol.utility.MinecraftProtocolVersion;
 import com.viaversion.viaversion.ViaVersionPlugin;
-import com.viaversion.viaversion.api.ViaAPI;
-import lombok.NonNull;
-import org.bukkit.Bukkit;
-import us.myles.ViaVersion.api.Via;
 
-import java.util.UUID;
+import org.bukkit.Bukkit;
+
+import lombok.NonNull;
 
 public final class VersionUtil {
 

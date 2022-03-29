@@ -155,4 +155,11 @@ public interface NetOutput {
      *
      */
     public void flush();
+
+    /**
+     * Creates a new byte array with current data.
+     * 
+     * @return New byte array.
+     */
+    public byte[] toByteArray();
 }

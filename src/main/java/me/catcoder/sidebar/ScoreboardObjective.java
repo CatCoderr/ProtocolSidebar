@@ -22,8 +22,8 @@ import org.bukkit.entity.Player;
 @Getter
 public class ScoreboardObjective {
 
-    public static final int DISPLAY_SIDEBAR = 1;
 
+    public static final int DISPLAY_SIDEBAR = 1;
     public static final int ADD_OBJECTIVE = 0;
     public static final int REMOVE_OBJECTIVE = 1;
     public static final int UPDATE_VALUE = 2;

@@ -2,3 +2,10 @@
 target/
 *.iml
 /.idea/
+.DS_Store
+/.vscode/
+*.log
+*.log.gz
+plugin.yml
+TestSidebarPlugin.java
+*.asc
