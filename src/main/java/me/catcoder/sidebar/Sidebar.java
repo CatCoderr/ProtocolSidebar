@@ -25,6 +25,8 @@ import me.catcoder.sidebar.util.lang.ThrowingFunction;
 
 public class Sidebar {
 
+    private static final String OBJECTIVE_PREFIX = "PS-";
+
     private final Set<UUID> viewers = Collections.newSetFromMap(new ConcurrentHashMap<>());
     private final List<SidebarLine> lines = new ArrayList<>();
     private final ScoreboardObjective objective;
@@ -35,15 +37,14 @@ public class Sidebar {
     /**
      * Construct a new sidebar instance.
      *
-     * @param objective a name of scoreboard objective
      * @param title     a title of sidebar
      */
     public Sidebar(@NonNull String title) {
-        this.objective = new ScoreboardObjective(RandomStringUtils.random(5), title);
+        this.objective = new ScoreboardObjective(OBJECTIVE_PREFIX + RandomStringUtils.random(3), title);
     }
 
     public Sidebar(@NonNull TextIterator titleIterator, @NonNull Plugin plugin) {
-        this.objective = new ScoreboardObjective(RandomStringUtils.random(5), titleIterator.next());
+        this.objective = new ScoreboardObjective(OBJECTIVE_PREFIX + RandomStringUtils.random(3), titleIterator.next());
 
         setTitleIter(titleIterator, plugin);
     }

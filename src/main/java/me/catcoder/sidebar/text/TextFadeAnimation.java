@@ -1,17 +1,14 @@
-package me.catcoder.sidebar.text.impl;
+package me.catcoder.sidebar.text;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Iterators;
 
 import org.bukkit.ChatColor;
 
 import lombok.NonNull;
-import me.catcoder.sidebar.text.TextFrame;
-import me.catcoder.sidebar.text.TextIterator;
+import lombok.experimental.Delegate;
 
 /**
  * Simple text animation with 3 colors.
@@ -21,18 +18,16 @@ import me.catcoder.sidebar.text.TextIterator;
  */
 public class TextFadeAnimation extends TextIterator {
 
-    private static final long TICKS_PER_SECOND = 20L;
-
     private final String text;
     private final ChatColor primaryColor; 
     private final ChatColor fadeColor; 
     private final ChatColor secondaryColor;
 
-    private final Iterator<TextFrame> frameIterator;
     private final String colorCodes;
 
-    private long currentFrameDelayTicks = 0;
-    private TextFrame currentFrame;
+    @Delegate(types = { FrameIterator.class })
+    private final FrameIterator frameIterator;
+
 
     public TextFadeAnimation(
             @NonNull String text,
@@ -47,15 +42,17 @@ public class TextFadeAnimation extends TextIterator {
         this.secondaryColor = secondaryColor;
         this.colorCodes = ChatColor.getLastColors(text);
 
-        this.frameIterator = Iterators.cycle(createAnimationFrames());
+        this.frameIterator = new FrameIterator(createAnimationFrames());
 
     }
 
-    void start(List<TextFrame> frames) {
-        frames.add(TextFrame.of(primaryColor + colorCodes + text, 3 * TICKS_PER_SECOND));
+    @Override
+    protected void start(List<TextFrame> frames) {
+        frames.add(TextFrame.of(primaryColor + colorCodes + text, 3 * 20));
     }
 
-    void end(List<TextFrame> frames) {
+    @Override
+    protected void end(List<TextFrame> frames) {
         // flick
         TextFrame secondary = TextFrame.of(secondaryColor + colorCodes + text, 8);
         TextFrame primary = TextFrame.of(primaryColor + colorCodes + text, 8);
@@ -110,16 +107,6 @@ public class TextFadeAnimation extends TextIterator {
         end(frames);
 
         return frames;
-    }
-
-    @Override
-    public String next() {
-        if (currentFrame == null || --currentFrameDelayTicks <= 0) {
-            currentFrame = frameIterator.next();
-            currentFrameDelayTicks = currentFrame.getDelay();
-        }
-
-        return currentFrame.getText();
     }
 
 }

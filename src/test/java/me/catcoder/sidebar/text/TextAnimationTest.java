@@ -7,8 +7,6 @@ import java.util.List;
 import org.bukkit.ChatColor;
 import org.junit.Test;
 
-import me.catcoder.sidebar.text.impl.TextFadeAnimation;
-
 public class TextAnimationTest {
 
     @Test
