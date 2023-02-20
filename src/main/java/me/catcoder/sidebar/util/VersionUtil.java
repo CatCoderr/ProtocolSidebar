@@ -1,11 +1,13 @@
 package me.catcoder.sidebar.util;
 
-import com.comphenix.protocol.utility.MinecraftProtocolVersion;
-import lombok.NonNull;
-import org.bukkit.Bukkit;
-import us.myles.ViaVersion.api.Via;
-
 import java.util.UUID;
+
+import com.comphenix.protocol.utility.MinecraftProtocolVersion;
+import com.viaversion.viaversion.ViaVersionPlugin;
+
+import org.bukkit.Bukkit;
+
+import lombok.NonNull;
 
 public final class VersionUtil {
 
@@ -14,6 +16,6 @@ public final class VersionUtil {
 
     public static int getPlayerVersion(@NonNull UUID id) {
         boolean isVia = Bukkit.getPluginManager().isPluginEnabled("ViaVersion");
-        return isVia ? Via.getAPI().getPlayerVersion(id) : SERVER_VERSION;
+        return isVia ? ViaVersionPlugin.getInstance().getApi().getPlayerVersion(id) : SERVER_VERSION;
     }
 }

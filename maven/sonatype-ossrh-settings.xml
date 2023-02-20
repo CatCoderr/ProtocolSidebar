@@ -3,13 +3,13 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
 
-    <!-- Maven settings to be used on Maven build in TravisCI -->
+    <!-- Maven settings to be used on Maven build -->
 
     <servers>
         <server>
-            <id>github-package-registry</id>
-            <username>${env.GITHUB_PACKAGE_REGISTRY_DEPLOYER}</username>
-            <password>${env.GITHUB_PACKAGE_REGISTRY_TOKEN}</password>
+            <id>sonatype-ossrh</id>
+            <username>${env.SONATYPE_OSSRH_DEPLOYER}</username>
+            <password>${env.SONATYPE_OSSRH_TOKEN}</password>
         </server>
     </servers>
 
