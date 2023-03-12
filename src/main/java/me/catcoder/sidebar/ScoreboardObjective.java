@@ -1,16 +1,19 @@
 package me.catcoder.sidebar;
 
-import com.comphenix.protocol.PacketType;
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.ProtocolManager;
-import com.comphenix.protocol.events.PacketContainer;
+import com.comphenix.protocol.injector.netty.WirePacket;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.google.common.base.Preconditions;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.SneakyThrows;
+import me.catcoder.sidebar.util.ByteBufNetOutput;
+import me.catcoder.sidebar.util.NetOutput;
+import me.catcoder.sidebar.protocol.PacketIds;
 import me.catcoder.sidebar.util.VersionUtil;
 import org.bukkit.entity.Player;
+
+import static me.catcoder.sidebar.SidebarLine.sendWirePacket;
 
 /**
  * Encapsulates scoreboard objective
@@ -44,37 +47,38 @@ public class ScoreboardObjective {
     }
 
     void updateValue(@NonNull Player player) {
-        PacketContainer packet = getPacket(player);
-        packet.getIntegers().write(0, UPDATE_VALUE);
-        sendPacket(player, packet);
+        WirePacket packet = getPacket(player, UPDATE_VALUE);
+        sendWirePacket(player, packet);
     }
 
     void create(@NonNull Player player) {
-        PacketContainer packet = getPacket(player);
-        packet.getIntegers().write(0, ADD_OBJECTIVE);
-
-        sendPacket(player, packet);
+        WirePacket packet = getPacket(player, ADD_OBJECTIVE);
+        sendWirePacket(player, packet);
     }
 
     void remove(@NonNull Player player) {
-        PacketContainer packet = getPacket(player);
-        packet.getIntegers().write(0, REMOVE_OBJECTIVE);
-
-        sendPacket(player, packet);
+        WirePacket packet = getPacket(player, REMOVE_OBJECTIVE);
+        sendWirePacket(player, packet);
     }
 
     void display(@NonNull Player player) {
-        PacketContainer packet = getProtocolManager().createPacket(PacketType.Play.Server.SCOREBOARD_DISPLAY_OBJECTIVE);
-        packet.getIntegers().write(0, DISPLAY_SIDEBAR);
-        packet.getStrings().write(0, name);
+        ByteBuf buf = Unpooled.buffer();
+        NetOutput output = new ByteBufNetOutput(buf);
 
-        sendPacket(player, packet);
+        output.writeByte(DISPLAY_SIDEBAR);
+        output.writeString(name);
+
+        sendWirePacket(player, new WirePacket(PacketIds.OBJECTIVE_DISPLAY.getPacketId(VersionUtil.SERVER_VERSION), output.toByteArray()));
     }
 
-    private PacketContainer getPacket(@NonNull Player player) {
+    private WirePacket getPacket(@NonNull Player player, int mode) {
         int version = VersionUtil.getPlayerVersion(player.getUniqueId());
 
-        PacketContainer packet = getProtocolManager().createPacket(PacketType.Play.Server.SCOREBOARD_OBJECTIVE);
+        ByteBuf buf = Unpooled.buffer();
+        NetOutput output = new ByteBufNetOutput(buf);
+
+        output.writeString(name);
+        output.writeByte(mode);
 
         // Since 1.13 characters limit for display name was removed
         if (version < VersionUtil.MINECRAFT_1_13 && displayName.length() > 32) {
@@ -82,26 +86,18 @@ public class ScoreboardObjective {
         }
 
         if (VersionUtil.SERVER_VERSION >= VersionUtil.MINECRAFT_1_13) {
-            packet.getChatComponents().write(0, WrappedChatComponent.fromText(displayName));
+             output.writeString(WrappedChatComponent.fromText(displayName).getJson());
         } else {
-            packet.getStrings().write(1, displayName);
+            output.writeString(displayName);
         }
 
-        packet.getStrings().write(0, name);
-        packet.getEnumModifier(HealthDisplay.class, 2).write(0, HealthDisplay.INTEGER);
-        return packet;
-    }
+        if (VersionUtil.SERVER_VERSION >= VersionUtil.MINECRAFT_1_13) {
+            output.writeVarInt(0); // Health display
+        } else {
+            output.writeString("integer"); // Health display
+        }
 
-    public enum HealthDisplay {
-        INTEGER, HEARTS
-    }
 
-    private static ProtocolManager getProtocolManager() {
-        return ProtocolLibrary.getProtocolManager();
-    }
-
-    @SneakyThrows
-    static void sendPacket(Player player, PacketContainer packet) {
-        getProtocolManager().sendServerPacket(player, packet);
+        return new WirePacket(PacketIds.OBJECTIVE.getPacketId(VersionUtil.SERVER_VERSION), output.toByteArray());
     }
 }

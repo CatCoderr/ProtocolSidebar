@@ -6,6 +6,8 @@
 Non-flickering scoreboard (sidebar) implementation using ProtocolLib.
 Also supports ViaVersion.
 
+Supported Minecraft versions: 1.12.2 - 1.19.3
+
 POM snippet:
 ```xml
 <dependency>
@@ -15,18 +17,36 @@ POM snippet:
 </dependency>
 ```
 
-## Example usage
+## How to use it?
 
 ```java
-Sidebar sidebar = new Sidebar(owner, "objective", "§2title");
-        
-sidebar.addLine("§aStatic line");
-sidebar.addLine("Lines longer than 32 characters will be automatically truncated if player version is < 1.13");
-sidebar.addLine(player -> "EXP: " + player.getExp());
+Sidebar sidebar = new Sidebar(TextIterators.textFadeHypixel("Hello World!"), this);
 
-sidebar.addViewer(player);
-        
-//...
-// update all dynamic lines 
-sidebar.update();
+sidebar.addLine("Test Static Line"); // supports legacy color codes
+sidebar.addBlankLine();
+
+// Supports modern chat components
+sidebar.addUpdatableLine(player -> new ComponentBuilder("Your Health: ")
+    .append(player.getHealth() + "")
+    .color(ChatColor.GREEN)
+    .create());
+
+sidebar.addBlankLine();
+sidebar.addUpdatableLine(player -> new ComponentBuilder("Your Hunger: ")
+    .append(player.getFoodLevel() + "")
+    .color(ChatColor.GREEN)
+    .create());
+sidebar.addBlankLine();
+
+// Long lines will be truncated if player version < 1.13
+sidebar.addLine("§ehttps://github.com/CatCoderr/ProtocolSidebar");
+
+// Update all dynamic lines every 20 ticks
+sidebar.updateLinesPeriodically(0L, 20L, this);
 ```
+
+## Sidebar title animations
+
+Library has built-in title animations (like Hypixel), but you can also create your [own](https://github.com/CatCoderr/ProtocolSidebar/blob/master/src/main/java/me/catcoder/sidebar/text/TextIterator.java).
+
+![Hypixel-like animation](https://raw.githubusercontent.com/CatCoderr/ProtocolSidebar/master/assets/example_animation.gif)

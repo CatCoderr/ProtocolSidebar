@@ -1,16 +1,13 @@
 package me.catcoder.sidebar;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.apache.commons.lang.RandomStringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -37,14 +34,14 @@ public class Sidebar {
     /**
      * Construct a new sidebar instance.
      *
-     * @param title     a title of sidebar
+     * @param title a title of sidebar
      */
     public Sidebar(@NonNull String title) {
-        this.objective = new ScoreboardObjective(OBJECTIVE_PREFIX + RandomStringUtils.random(3), title);
+        this.objective = new ScoreboardObjective(OBJECTIVE_PREFIX + RandomStringUtils.randomAlphabetic(3), title);
     }
 
     public Sidebar(@NonNull TextIterator titleIterator, @NonNull Plugin plugin) {
-        this.objective = new ScoreboardObjective(OBJECTIVE_PREFIX + RandomStringUtils.random(3), titleIterator.next());
+        this.objective = new ScoreboardObjective(OBJECTIVE_PREFIX + RandomStringUtils.randomAlphabetic(3), titleIterator.next());
 
         setTitleIter(titleIterator, plugin);
     }
@@ -55,7 +52,7 @@ public class Sidebar {
      * @param title title to be updated
      */
     public void setTitle(@NonNull String title) {
-        setTitleIter(null, null); // cancel previous updater
+        cancelTitleUpdater();
 
         objective.setDisplayName(title);
         broadcast(objective::updateValue);
@@ -65,24 +62,30 @@ public class Sidebar {
         setTitleIter(iterator, plugin);
     }
 
-    private void setTitleIter(@Nullable TextIterator iterator, @Nullable Plugin plugin) {
+    private void cancelTitleUpdater() {
+        if (titleUpdater != null) {
+            titleUpdater.cancel();
+            titleUpdater = null;
+        }
+
+        this.titleText = null;
+    }
+
+    private void setTitleIter(@NonNull TextIterator iterator, @NonNull Plugin plugin) {
         if (titleUpdater != null) {
             titleUpdater.cancel();
             titleUpdater = null;
         }
 
         this.titleText = iterator;
+        this.titleUpdater = plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, () -> {
+            String next = titleText.next();
 
-        if (iterator != null) {
-            titleUpdater = plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, () -> {
-                String next = titleText.next();
-
-                if (!next.equals(objective.getDisplayName())) {
-                    objective.setDisplayName(next);
-                    broadcast(objective::updateValue);
-                }
-            }, 0, 1);
-        }
+            if (!next.equals(objective.getDisplayName())) {
+                objective.setDisplayName(next);
+                broadcast(objective::updateValue);
+            }
+        }, 0, 1);
     }
 
     /**
@@ -111,6 +114,19 @@ public class Sidebar {
     }
 
     public SidebarLine addLine(@NonNull String text) {
+        return addLine(TextComponent.fromLegacyText(text));
+    }
+
+    @Deprecated
+    public SidebarLine addUpdatableLineLegacy(@NonNull ThrowingFunction<Player, String, Throwable> updater) {
+        return addLine((player) -> TextComponent.fromLegacyText(updater.apply(player)), false);
+    }
+
+    public SidebarLine addUpdatableLine(@NonNull ThrowingFunction<Player, BaseComponent[], Throwable> updater) {
+        return addLine(updater, false);
+    }
+
+    public SidebarLine addLine(@NonNull BaseComponent[] text) {
         return addLine(x -> text, true);
     }
 
@@ -118,15 +134,7 @@ public class Sidebar {
         return addLine("");
     }
 
-    public SidebarLine addDynamicLine(@NonNull ThrowingFunction<Player, String, Throwable> updater) {
-        return addLine(updater, false);
-    }
-
-    public SidebarLine addStaticLine(@NonNull ThrowingFunction<Player, String, Throwable> updater) {
-        return addLine(updater, true);
-    }
-
-    private SidebarLine addLine(@NonNull ThrowingFunction<Player, String, Throwable> updater, boolean staticText) {
+    private SidebarLine addLine(@NonNull ThrowingFunction<Player, BaseComponent[], Throwable> updater, boolean staticText) {
         SidebarLine line = new SidebarLine(updater, objective.getName() + lines.size(), staticText, lines.size());
         lines.add(line);
         return line;
