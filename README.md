@@ -1,6 +1,5 @@
 # ProtocolSidebar
 [![Build Status](https://github.com/CatCoderr/ProtocolSidebar/actions/workflows/maven-publish.yaml/badge.svg?branch=dev)](https://github.com/CatCoderr/ProtocolSidebar/actions/workflows/maven-publish.yaml)
-![Maven Central](https://img.shields.io/maven-central/v/me.catcoder/bukkit-sidebar)
 ![Sonatype Nexus (Snapshots)](https://img.shields.io/nexus/s/me.catcoder/bukkit-sidebar?server=https%3A%2F%2Foss.sonatype.org)
 
 Non-flickering scoreboard (sidebar) implementation using ProtocolLib.
