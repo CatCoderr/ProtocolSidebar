@@ -2,7 +2,6 @@
 
 set -e 
 
-readonly SNAPSHOTS_BRANCH='dev'
 readonly RELEASES_BRANCH='master'
 
 echo 'Attempting to deploy artifacts'
@@ -21,13 +20,8 @@ echo "Got project version: ${project_version}"
 
 if [[ ${project_version} == *-SNAPSHOT ]]; then # Try to deploy snapshot if version ends with '-SNAPSHOT'
     echo 'This is a snapshot version'
-    # Snapshots deployment happens only for `development` branch excluding pull requests to it (but including merges)
-    if [[ "${GITHUB_REF_NAME}" = "${SNAPSHOTS_BRANCH}" ]]; then
-        echo "Deploying version ${project_version} to snapshot repositories"
-        bash ./scripts/deploy-to-sonatype-ossrh.sh
-    else
-        echo "Not deploying snapshot as branch is not ${SNAPSHOTS_BRANCH}"
-    fi
+    echo "Deploying version ${project_version} to snapshot repositories"
+    bash ./scripts/deploy-to-sonatype-ossrh.sh
 else # Try to deploy release if version doesn't end with '-SNAPSHOT'
     echo 'This is a release version'
     # Release deployment happens only for `release` branch excluding pull requests to it (but including merges)
