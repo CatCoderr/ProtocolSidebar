@@ -18,7 +18,7 @@
         <!-- Testing -->
         <powermock.version>2.0.7</powermock.version>
         <spigot.version>1.17.1-R0.1-SNAPSHOT</spigot.version>
-        <bukkit.sidebar.version>5.0.1-SNAPSHOT</bukkit.sidebar.version>
+        <bukkit.sidebar.version>5.1.1-SNAPSHOT</bukkit.sidebar.version>
     </properties>
 
     <developers>

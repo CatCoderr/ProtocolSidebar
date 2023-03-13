@@ -12,12 +12,14 @@ import lombok.SneakyThrows;
 import lombok.ToString;
 import me.catcoder.sidebar.protocol.PacketIds;
 import me.catcoder.sidebar.protocol.ProtocolUtil;
-import me.catcoder.sidebar.util.*;
+import me.catcoder.sidebar.util.ByteBufNetOutput;
+import me.catcoder.sidebar.util.NetOutput;
+import me.catcoder.sidebar.util.VersionUtil;
 import me.catcoder.sidebar.util.lang.ThrowingFunction;
 import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 
 @Getter
@@ -30,6 +32,9 @@ public class SidebarLine {
     private final int index;
     private final boolean staticText;
 
+    // for internal use
+    BukkitTask updateTask;
+
     private ThrowingFunction<Player, BaseComponent[], Throwable> updater;
 
     SidebarLine(@NonNull ThrowingFunction<Player, BaseComponent[], Throwable> updater, @NonNull String teamName,
@@ -40,8 +45,16 @@ public class SidebarLine {
         this.index = index;
     }
 
-    public BukkitTask updatePeriodically(long delay, long period, @NonNull Plugin plugin, @NonNull Sidebar sidebar) {
-        BukkitTask task = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> sidebar.updateLine(this), delay, period);
+    public BukkitTask updatePeriodically(long delay, long period, @NonNull Sidebar sidebar) {
+        Preconditions.checkState(!isStaticText(), "Cannot set updater for static text line");
+
+        if (updateTask != null && !updateTask.isCancelled()) {
+            throw new IllegalStateException("Update task for line " + this + " is already running. Cancel it first.");
+        }
+
+        BukkitTask task = Bukkit.getScheduler().runTaskTimerAsynchronously(sidebar.getPlugin(), () -> sidebar.updateLine(this), delay, period);
+
+        this.updateTask = task;
 
         sidebar.taskIds.add(task.getTaskId());
 

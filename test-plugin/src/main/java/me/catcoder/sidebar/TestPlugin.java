@@ -2,7 +2,6 @@ package me.catcoder.sidebar;
 
 import me.catcoder.sidebar.text.TextIterator;
 import me.catcoder.sidebar.text.TextIterators;
-import me.catcoder.sidebar.text.impl.TextTypingAnimation;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bukkit.event.EventHandler;
@@ -39,13 +38,13 @@ public class TestPlugin extends JavaPlugin implements Listener {
         sidebar.addBlankLine();
 
         sidebar.addUpdatableLine(typingAnimation.asLineUpdater())
-                .updatePeriodically(0, 1, this, sidebar);
+                .updatePeriodically(0, 1, sidebar);
 
         sidebar.addBlankLine();
         sidebar.addUpdatableLine(lineFade.asLineUpdater())
-                .updatePeriodically(0, 1, this, sidebar);
+                .updatePeriodically(0, 1, sidebar);
 
-        sidebar.updateLinesPeriodically(0L, 20L, this);
+        sidebar.updateLinesPeriodically(0L, 20L);
     }
 
 

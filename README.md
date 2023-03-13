@@ -14,7 +14,7 @@ POM snippet:
 <dependency>
   <groupId>me.catcoder</groupId>
   <artifactId>bukkit-sidebar</artifactId>
-  <version>5.0.1-SNAPSHOT</version>
+  <version>5.1.1-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -27,7 +27,7 @@ TextIterator lineFade = TextIterators.textFadeHypixel("https://github.com/CatCod
 TextIterator title = TextIterators.textFadeHypixel("Hello World!");
 
 // create sidebar
-Sidebar sidebar = new Sidebar(title, this);
+Sidebar sidebar = new Sidebar(title, plugin);
 
 // let's add some lines
 sidebar.addLine("Test Static Line");
@@ -46,13 +46,13 @@ sidebar.addBlankLine();
 
 // animations also available for lines
 sidebar.addUpdatableLine(typingAnimation.asLineUpdater())
-    .updatePeriodically(0, 1, this, sidebar);
+    .updatePeriodically(0, 1, sidebar);
 
 sidebar.addBlankLine();
 sidebar.addUpdatableLine(lineFade.asLineUpdater())
-    .updatePeriodically(0, 1, this, sidebar);
+    .updatePeriodically(0, 1, sidebar);
 
-sidebar.updateLinesPeriodically(0L, 20L, this);
+sidebar.updateLinesPeriodically(0L, 20L);
 ```
 
 ![Example](https://github.com/CatCoderr/ProtocolSidebar/raw/master/assets/nice_example.gif)
@@ -69,6 +69,6 @@ Animations also can be used in updatable lines:
 TextIterator animation = TextIterators.textFadeHypixel("Hello World!");
 SidebarLine line = sidebar.addUpdatableLine(animation.asLineUpdater());
 
-line.updatePeriodically(0, 1, this, sidebar);
+line.updatePeriodically(0, 1, sidebar);
 
 ```

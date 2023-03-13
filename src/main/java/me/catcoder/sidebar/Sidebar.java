@@ -6,6 +6,8 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import com.google.common.base.Preconditions;
+import lombok.Getter;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.apache.commons.lang.RandomStringUtils;
@@ -20,11 +22,17 @@ import me.catcoder.sidebar.text.TextIterator;
 import me.catcoder.sidebar.util.lang.ThrowingConsumer;
 import me.catcoder.sidebar.util.lang.ThrowingFunction;
 
+/**
+ * Represents a sidebar.
+ * <p>
+ * Sidebar is a scoreboard with a title and lines.
+ * <p>
+ */
 public class Sidebar {
 
     private static final String OBJECTIVE_PREFIX = "PS-";
 
-    private final Set<UUID> viewers = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    private final Set<UUID> viewers = Collections.synchronizedSet(new HashSet<>());
     private final List<SidebarLine> lines = new ArrayList<>();
     private final ScoreboardObjective objective;
 
@@ -33,19 +41,32 @@ public class Sidebar {
 
     final Set<Integer> taskIds = new HashSet<>();
 
+    @Getter
+    private final Plugin plugin;
+
     /**
      * Construct a new sidebar instance.
      *
-     * @param title a title of sidebar
+     * @param title  a title of sidebar
+     * @param plugin plugin instance
      */
-    public Sidebar(@NonNull String title) {
+    public Sidebar(@NonNull String title, @NonNull Plugin plugin) {
+        this.plugin = plugin;
         this.objective = new ScoreboardObjective(OBJECTIVE_PREFIX + RandomStringUtils.randomAlphabetic(3), title);
     }
 
+    /**
+     * Construct a new sidebar instance.
+     *
+     * @param titleIterator a title iterator of sidebar
+     * @param plugin        plugin instance
+     */
     public Sidebar(@NonNull TextIterator titleIterator, @NonNull Plugin plugin) {
+        this.plugin = plugin;
+
         this.objective = new ScoreboardObjective(OBJECTIVE_PREFIX + RandomStringUtils.randomAlphabetic(3), titleIterator.next());
 
-        setTitleIter(titleIterator, plugin);
+        setTitleIter(titleIterator);
     }
 
     /**
@@ -60,8 +81,13 @@ public class Sidebar {
         broadcast(objective::updateValue);
     }
 
-    public void setTitle(@NonNull TextIterator iterator, @NonNull Plugin plugin) {
-        setTitleIter(iterator, plugin);
+    /**
+     * Update the title of the sidebar.
+     *
+     * @param iterator - title iterator
+     */
+    public void setTitle(@NonNull TextIterator iterator) {
+        setTitleIter(iterator);
     }
 
     private void cancelTitleUpdater() {
@@ -73,11 +99,8 @@ public class Sidebar {
         this.titleText = null;
     }
 
-    private void setTitleIter(@NonNull TextIterator iterator, @NonNull Plugin plugin) {
-        if (titleUpdater != null) {
-            titleUpdater.cancel();
-            titleUpdater = null;
-        }
+    private void setTitleIter(@NonNull TextIterator iterator) {
+        cancelTitleUpdater();
 
         this.titleText = iterator;
         this.titleUpdater = plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, () -> {
@@ -108,10 +131,9 @@ public class Sidebar {
      *
      * @param delay  delay in ticks
      * @param period period in ticks
-     * @param plugin target plugin
      * @return the scheduled task
      */
-    public BukkitTask updateLinesPeriodically(long delay, long period, @NonNull Plugin plugin) {
+    public BukkitTask updateLinesPeriodically(long delay, long period) {
         BukkitTask task = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this::updateAllLines, delay, period);
 
         this.taskIds.add(task.getTaskId());
@@ -119,23 +141,53 @@ public class Sidebar {
         return task;
     }
 
+    /**
+     * Add a line with static text.
+     *
+     * @param text - the text
+     * @return SidebarLine instance
+     */
     public SidebarLine addLine(@NonNull String text) {
         return addLine(TextComponent.fromLegacyText(text));
     }
 
+    /**
+     * Add a line to the sidebar with dynamic text.
+     *
+     * @param updater - the function that updates the text
+     * @return SidebarLine instance
+     * @deprecated use {@link #addUpdatableLine(ThrowingFunction)} )}
+     */
     @Deprecated
     public SidebarLine addUpdatableLineLegacy(@NonNull ThrowingFunction<Player, String, Throwable> updater) {
         return addLine((player) -> TextComponent.fromLegacyText(updater.apply(player)), false);
     }
 
+    /**
+     * Add a line to the sidebar with dynamic text.
+     *
+     * @param updater - the function that updates the text
+     * @return SidebarLine instance
+     */
     public SidebarLine addUpdatableLine(@NonNull ThrowingFunction<Player, BaseComponent[], Throwable> updater) {
         return addLine(updater, false);
     }
 
+    /**
+     * Add a line to the sidebar with static text.
+     *
+     * @param text the text
+     * @return SidebarLine instance
+     */
     public SidebarLine addLine(@NonNull BaseComponent[] text) {
         return addLine(x -> text, true);
     }
 
+    /**
+     * Add a blank line to the sidebar.
+     *
+     * @return SidebarLine instance
+     */
     public SidebarLine addBlankLine() {
         return addLine("");
     }
@@ -158,12 +210,22 @@ public class Sidebar {
         }
     }
 
+    /**
+     * Get line with maximum score.
+     *
+     * @return SidebarLine
+     */
     public Optional<SidebarLine> maxLine() {
         return lines.stream()
                 .filter(line -> line.getScore() != -1)
                 .max(Comparator.comparingInt(SidebarLine::getScore));
     }
 
+    /**
+     * Get the line with minimum score.
+     *
+     * @return SidebarLine
+     */
     public Optional<SidebarLine> minLine() {
         return lines.stream()
                 .filter(line -> line.getScore() != -1)
@@ -176,13 +238,14 @@ public class Sidebar {
      * @param line target line.
      */
     public void updateLine(@NonNull SidebarLine line) {
-        if (lines.contains(line)) {
-            broadcast(p -> line.updateTeam(p, line.getScore(), objective.getName()));
-        }
+        Preconditions.checkArgument(lines.contains(line), "Line %s is not a part of this sidebar", line);
+
+        broadcast(p -> line.updateTeam(p, line.getScore(), objective.getName()));
     }
 
     /**
      * Update all dynamic lines of the sidebar.
+     * Except lines with their own update task. (see {@link SidebarLine#updatePeriodically(long, long, Sidebar)})
      */
     public void updateAllLines() {
         int index = lines.size();
@@ -192,6 +255,11 @@ public class Sidebar {
             if (line.getScore() == -1) {
                 line.setScore(index--);
                 broadcast(p -> line.createTeam(p, objective.getName()));
+                continue;
+            }
+
+            if (line.updateTask != null && !line.updateTask.isCancelled()) {
+                // Don't update the line if it's already has its own update task
                 continue;
             }
 
@@ -223,12 +291,13 @@ public class Sidebar {
      * <p>
      */
     public void destroy() {
-        removeViewers();
         cancelTitleUpdater();
 
         for (int taskId : taskIds) {
             Bukkit.getScheduler().cancelTask(taskId);
         }
+
+        removeViewers();
 
         taskIds.clear();
     }
@@ -271,14 +340,29 @@ public class Sidebar {
         }
     }
 
+    /**
+     * Returns the set of all players currently receiving this sidebar.
+     *
+     * @return a set with player UUIDs
+     */
     public Set<UUID> getViewers() {
         return Collections.unmodifiableSet(viewers);
     }
 
+    /**
+     * Returns the list of all lines in this sidebar.
+     *
+     * @return a list of lines
+     */
     public List<SidebarLine> getLines() {
         return Collections.unmodifiableList(lines);
     }
 
+    /**
+     * Returns the scoreboard objective used by this sidebar.
+     *
+     * @return the scoreboard objective
+     */
     public ScoreboardObjective getObjective() {
         return objective;
     }
