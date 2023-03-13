@@ -7,6 +7,8 @@ Also supports ViaVersion.
 
 Supported Minecraft versions: 1.12.2 - 1.19.3
 
+![Sidebar](https://github.com/CatCoderr/ProtocolSidebar/raw/master/assets/sidebar.gif)
+
 POM snippet:
 ```xml
 <dependency>
@@ -19,12 +21,13 @@ POM snippet:
 ## How to use it?
 
 ```java
-Sidebar sidebar = new Sidebar(TextIterators.textFadeHypixel("Hello World!"), this);
+TextIterator animation = new TextPrintAnimation("Hello World!", "_", 10);
 
-sidebar.addLine("Test Static Line"); // supports legacy color codes
+sidebar = new Sidebar(animation, this);
+
+sidebar.addLine("Test Static Line");
 sidebar.addBlankLine();
 
-// Supports modern chat components
 sidebar.addUpdatableLine(player -> new ComponentBuilder("Your Health: ")
     .append(player.getHealth() + "")
     .color(ChatColor.GREEN)
@@ -37,11 +40,14 @@ sidebar.addUpdatableLine(player -> new ComponentBuilder("Your Hunger: ")
     .create());
 sidebar.addBlankLine();
 
-// Long lines will be truncated if player version < 1.13
+SidebarLine line = sidebar.addUpdatableLine(animation.asLineUpdater());
+
+line.updatePeriodically(0, 1, this, sidebar);
+
+sidebar.addBlankLine();
 sidebar.addLine("§ehttps://github.com/CatCoderr/ProtocolSidebar");
 
-// Update all dynamic lines every 20 ticks
-sidebar.updateLinesPeriodically(0L, 20L, this);
+sidebar.updateLinesPeriodically(0, 20, this);
 ```
 
 ## Sidebar title animations
@@ -59,5 +65,3 @@ SidebarLine line = sidebar.addUpdatableLine(animation.asLineUpdater());
 line.updatePeriodically(0, 1, this, sidebar);
 
 ```
-
-![Sidebar](https://github.com/CatCoderr/ProtocolSidebar/raw/master/assets/sidebar.gif)
