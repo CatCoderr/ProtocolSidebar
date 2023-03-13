@@ -2,6 +2,7 @@ package me.catcoder.sidebar;
 
 import me.catcoder.sidebar.text.TextIterator;
 import me.catcoder.sidebar.text.TextIterators;
+import me.catcoder.sidebar.text.impl.TextTypingAnimation;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bukkit.event.EventHandler;
@@ -17,9 +18,11 @@ public class TestPlugin extends JavaPlugin implements Listener {
     public void onEnable() {
         getServer().getPluginManager().registerEvents(this, this);
 
-        TextIterator animation = TextIterators.textFadeHypixel("Hello World!");
+        TextIterator typingAnimation = TextIterators.textTypingOldSchool("Hello World! It's a test plugin for ProtocolSidebar!");
+        TextIterator lineFade = TextIterators.textFadeHypixel("https://github.com/CatCoderr/ProtocolSidebar");
+        TextIterator title = TextIterators.textFadeHypixel("Hello World!");
 
-        sidebar = new Sidebar(animation, this);
+        sidebar = new Sidebar(title, this);
 
         sidebar.addLine("Test Static Line");
         sidebar.addBlankLine();
@@ -35,14 +38,12 @@ public class TestPlugin extends JavaPlugin implements Listener {
                 .create());
         sidebar.addBlankLine();
 
-
-        SidebarLine line = sidebar.addUpdatableLine(animation.asLineUpdater());
-
-        line.updatePeriodically(0, 1, this, sidebar);
+        sidebar.addUpdatableLine(typingAnimation.asLineUpdater())
+                .updatePeriodically(0, 1, this, sidebar);
 
         sidebar.addBlankLine();
-        sidebar.addLine("§ehttps://github.com/CatCoderr/ProtocolSidebar");
-
+        sidebar.addUpdatableLine(lineFade.asLineUpdater())
+                .updatePeriodically(0, 1, this, sidebar);
 
         sidebar.updateLinesPeriodically(0L, 20L, this);
     }

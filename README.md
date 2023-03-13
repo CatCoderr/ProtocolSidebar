@@ -21,13 +21,17 @@ POM snippet:
 ## How to use it?
 
 ```java
-TextIterator animation = new TextPrintAnimation("Hello World!", "_", 10);
+// some cool inbuilt animations
+TextIterator typingAnimation = TextIterators.textTypingOldSchool("Hello World! It's a test plugin for ProtocolSidebar!");
+TextIterator lineFade = TextIterators.textFadeHypixel("https://github.com/CatCoderr/ProtocolSidebar");
+TextIterator title = TextIterators.textFadeHypixel("Hello World!");
 
-sidebar = new Sidebar(animation, this);
+// create sidebar
+Sidebar sidebar = new Sidebar(title, this);
 
+// let's add some lines
 sidebar.addLine("Test Static Line");
 sidebar.addBlankLine();
-
 sidebar.addUpdatableLine(player -> new ComponentBuilder("Your Health: ")
     .append(player.getHealth() + "")
     .color(ChatColor.GREEN)
@@ -40,15 +44,18 @@ sidebar.addUpdatableLine(player -> new ComponentBuilder("Your Hunger: ")
     .create());
 sidebar.addBlankLine();
 
-SidebarLine line = sidebar.addUpdatableLine(animation.asLineUpdater());
-
-line.updatePeriodically(0, 1, this, sidebar);
+// animations also available for lines
+sidebar.addUpdatableLine(typingAnimation.asLineUpdater())
+    .updatePeriodically(0, 1, this, sidebar);
 
 sidebar.addBlankLine();
-sidebar.addLine("§ehttps://github.com/CatCoderr/ProtocolSidebar");
+sidebar.addUpdatableLine(lineFade.asLineUpdater())
+    .updatePeriodically(0, 1, this, sidebar);
 
-sidebar.updateLinesPeriodically(0, 20, this);
+sidebar.updateLinesPeriodically(0L, 20L, this);
 ```
+
+![Example](https://github.com/CatCoderr/ProtocolSidebar/raw/master/assets/nice_example.gif)
 
 ## Sidebar title animations
 

@@ -1,10 +1,13 @@
-package me.catcoder.sidebar.text;
+package me.catcoder.sidebar.text.impl;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.base.Preconditions;
 
+import me.catcoder.sidebar.text.FrameIterator;
+import me.catcoder.sidebar.text.TextFrame;
+import me.catcoder.sidebar.text.TextIterator;
 import org.bukkit.ChatColor;
 
 import lombok.NonNull;
