@@ -12,7 +12,7 @@ POM snippet:
 <dependency>
   <groupId>me.catcoder</groupId>
   <artifactId>bukkit-sidebar</artifactId>
-  <version>LATEST_VERSION</version>
+  <version>5.0.1-SNAPSHOT</version>
 </dependency>
 ```
 
