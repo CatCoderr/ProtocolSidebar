@@ -49,3 +49,15 @@ sidebar.updateLinesPeriodically(0L, 20L, this);
 Library has built-in title animations (like Hypixel), but you can also create your [own](https://github.com/CatCoderr/ProtocolSidebar/blob/master/src/main/java/me/catcoder/sidebar/text/TextIterator.java).
 
 ![Hypixel-like animation](https://github.com/CatCoderr/ProtocolSidebar/raw/master/assets/animation_example.gif)
+
+Animations also can be used in updatable lines:
+
+```java
+TextIterator animation = TextIterators.textFadeHypixel("Hello World!");
+SidebarLine line = sidebar.addUpdatableLine(animation.asLineUpdater());
+
+line.updatePeriodically(0, 1, this, sidebar);
+
+```
+
+![Sidebar](https://github.com/CatCoderr/ProtocolSidebar/raw/master/assets/sidebar.gif)

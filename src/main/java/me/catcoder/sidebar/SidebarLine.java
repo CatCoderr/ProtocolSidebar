@@ -33,7 +33,7 @@ public class SidebarLine {
     private ThrowingFunction<Player, BaseComponent[], Throwable> updater;
 
     SidebarLine(@NonNull ThrowingFunction<Player, BaseComponent[], Throwable> updater, @NonNull String teamName,
-            boolean staticText, int index) {
+                boolean staticText, int index) {
         this.updater = updater;
         this.teamName = teamName;
         this.staticText = staticText;
@@ -41,7 +41,11 @@ public class SidebarLine {
     }
 
     public BukkitTask updatePeriodically(long delay, long period, @NonNull Plugin plugin, @NonNull Sidebar sidebar) {
-        return Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> sidebar.updateLine(this), delay, period);
+        BukkitTask task = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> sidebar.updateLine(this), delay, period);
+
+        sidebar.taskIds.add(task.getTaskId());
+
+        return task;
     }
 
     public void setUpdater(@NonNull ThrowingFunction<Player, BaseComponent[], Throwable> updater) {

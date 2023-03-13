@@ -31,6 +31,8 @@ public class Sidebar {
     private TextIterator titleText;
     private BukkitTask titleUpdater;
 
+    final Set<Integer> taskIds = new HashSet<>();
+
     /**
      * Construct a new sidebar instance.
      *
@@ -110,7 +112,11 @@ public class Sidebar {
      * @return the scheduled task
      */
     public BukkitTask updateLinesPeriodically(long delay, long period, @NonNull Plugin plugin) {
-        return Bukkit.getScheduler().runTaskTimer(plugin, this::updateAllLines, delay, period);
+        BukkitTask task = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this::updateAllLines, delay, period);
+
+        this.taskIds.add(task.getTaskId());
+
+        return task;
     }
 
     public SidebarLine addLine(@NonNull String text) {
@@ -206,6 +212,25 @@ public class Sidebar {
                 removeViewer(player);
             }
         }
+    }
+
+    /**
+     * Remove all viewers and cancel all tasks.
+     * <p>
+     * This method should be called when the sidebar is no longer needed.
+     * Otherwise, the sidebar will be kept in memory and will be updated
+     * for all players.
+     * <p>
+     */
+    public void destroy() {
+        removeViewers();
+        cancelTitleUpdater();
+
+        for (int taskId : taskIds) {
+            Bukkit.getScheduler().cancelTask(taskId);
+        }
+
+        taskIds.clear();
     }
 
     /**

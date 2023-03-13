@@ -17,7 +17,9 @@ public class TestPlugin extends JavaPlugin implements Listener {
     public void onEnable() {
         getServer().getPluginManager().registerEvents(this, this);
 
-        sidebar = new Sidebar(TextIterators.textFadeHypixel("Hello World!"), this);
+        TextIterator animation = TextIterators.textFadeHypixel("Hello World!");
+
+        sidebar = new Sidebar(animation, this);
 
         sidebar.addLine("Test Static Line");
         sidebar.addBlankLine();
@@ -32,7 +34,15 @@ public class TestPlugin extends JavaPlugin implements Listener {
                 .color(ChatColor.GREEN)
                 .create());
         sidebar.addBlankLine();
+
+
+        SidebarLine line = sidebar.addUpdatableLine(animation.asLineUpdater());
+
+        line.updatePeriodically(0, 1, this, sidebar);
+
+        sidebar.addBlankLine();
         sidebar.addLine("§ehttps://github.com/CatCoderr/ProtocolSidebar");
+
 
         sidebar.updateLinesPeriodically(0L, 20L, this);
     }
