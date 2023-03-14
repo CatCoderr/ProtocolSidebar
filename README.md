@@ -2,8 +2,7 @@
 [![Build Status](https://github.com/CatCoderr/ProtocolSidebar/actions/workflows/maven-publish.yaml/badge.svg?branch=dev)](https://github.com/CatCoderr/ProtocolSidebar/actions/workflows/maven-publish.yaml)
 ![Sonatype Nexus (Snapshots)](https://img.shields.io/nexus/s/me.catcoder/bukkit-sidebar?server=https%3A%2F%2Foss.sonatype.org)
 
-Non-flickering scoreboard (sidebar) implementation using ProtocolLib.
-Also supports ViaVersion.
+Non-flickering scoreboard (sidebar) implementation. Requires ProtocolLib. Optionally supports ViaVersion.
 
 Supported Minecraft versions: 1.12.2 - 1.19.3
 
@@ -14,7 +13,7 @@ POM snippet:
 <dependency>
   <groupId>me.catcoder</groupId>
   <artifactId>bukkit-sidebar</artifactId>
-  <version>5.1.1-SNAPSHOT</version>
+  <version>5.1.2-SNAPSHOT</version>
 </dependency>
 ```
 
