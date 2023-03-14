@@ -6,6 +6,18 @@ Non-flickering scoreboard (sidebar) implementation. Requires ProtocolLib. Option
 
 Supported Minecraft versions: 1.12.2 - 1.19.3
 
+## Features
+* No flickering (without using a buffer)
+* Easy to use
+* Cool inbuilt animations
+* Inbuilt pager for showing multiple sidebars to the player
+* Automatic score management system: sidebar reorders lines automatically
+* Everything is at the packet level, so it works with other plugins using scoreboard and/or teams
+* Can be used asynchronously
+* Supports up to 30 characters per line on 1.12.2 and below
+* No character limit on 1.13 and higher
+* Supports hex colors on 1.16 and higher
+
 ![Sidebar](https://github.com/CatCoderr/ProtocolSidebar/raw/master/assets/sidebar.gif)
 
 POM snippet:
