@@ -111,7 +111,10 @@ public class SidebarLine {
         }
 
         output.writeString(objectiveName);
-        output.writeVarInt(score);
+
+        if (action != 1) {
+            output.writeVarInt(score);
+        }
 
         return new WirePacket(PacketIds.UPDATE_SCORE.getPacketId(VersionUtil.SERVER_VERSION), output.toByteArray());
     }

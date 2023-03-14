@@ -80,21 +80,23 @@ public class ScoreboardObjective {
         output.writeString(name);
         output.writeByte(mode);
 
-        // Since 1.13 characters limit for display name was removed
-        if (version < VersionUtil.MINECRAFT_1_13 && displayName.length() > 32) {
-            displayName = displayName.substring(0, 32);
-        }
+        if (mode == ADD_OBJECTIVE || mode == UPDATE_VALUE) {
+            // Since 1.13 characters limit for display name was removed
+            if (version < VersionUtil.MINECRAFT_1_13 && displayName.length() > 32) {
+                displayName = displayName.substring(0, 32);
+            }
 
-        if (VersionUtil.SERVER_VERSION >= VersionUtil.MINECRAFT_1_13) {
-             output.writeString(WrappedChatComponent.fromText(displayName).getJson());
-        } else {
-            output.writeString(displayName);
-        }
+            if (VersionUtil.SERVER_VERSION >= VersionUtil.MINECRAFT_1_13) {
+                output.writeString(WrappedChatComponent.fromText(displayName).getJson());
+            } else {
+                output.writeString(displayName);
+            }
 
-        if (VersionUtil.SERVER_VERSION >= VersionUtil.MINECRAFT_1_13) {
-            output.writeVarInt(0); // Health display
-        } else {
-            output.writeString("integer"); // Health display
+            if (VersionUtil.SERVER_VERSION >= VersionUtil.MINECRAFT_1_13) {
+                output.writeVarInt(0); // Health display
+            } else {
+                output.writeString("integer"); // Health display
+            }
         }
 
 

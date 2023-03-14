@@ -72,3 +72,32 @@ SidebarLine line = sidebar.addUpdatableLine(animation.asLineUpdater());
 line.updatePeriodically(0, 1, sidebar);
 
 ```
+
+## Sidebar Pager
+
+You can also use sidebar pager, which allows you to show player multiple pages of information.
+```java
+Sidebar sidebar = new Sidebar(title, this);
+Sidebar testSidebar = new Sidebar(TextIterators.textFadeHypixel("Test"), this);
+
+// create a new sidebar pager
+SidebarPager pager = new SidebarPager(
+        Arrays.asList(sidebar, testSidebar), 3 * 20L, this);
+
+// ... populate sidebar with lines
+// first page was taken from code above
+        
+// add page status line to all sidebars in pager
+pager.addPageLine(new ComponentBuilder("Page: ")
+                    .color(ChatColor.YELLOW),
+        "%d/%d", // currentPage/totalPages
+        builder -> builder.bold(true).color(ChatColor.GREEN));
+
+// show to the player
+pager.show(player);
+
+// hide from the player
+pager.hide(player);
+```
+
+![Pager example](https://github.com/CatCoderr/ProtocolSidebar/raw/master/assets/pager_example.gif)
