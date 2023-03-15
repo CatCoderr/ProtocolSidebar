@@ -1,26 +1,23 @@
 package me.catcoder.sidebar.protocol;
 
-import java.util.Iterator;
-
 import com.comphenix.protocol.injector.netty.WirePacket;
 import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
-
-import me.catcoder.sidebar.util.ByteBufNetOutput;
-import me.catcoder.sidebar.util.NetOutput;
-import me.catcoder.sidebar.util.VersionUtil;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.chat.ComponentSerializer;
-import org.bukkit.ChatColor;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
+import me.catcoder.sidebar.text.TextProvider;
+import me.catcoder.sidebar.util.ByteBufNetOutput;
+import me.catcoder.sidebar.util.NetOutput;
+import me.catcoder.sidebar.util.VersionUtil;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.chat.ComponentSerializer;
+import org.bukkit.ChatColor;
+
+import java.util.Iterator;
 
 @UtilityClass
 public class ProtocolUtil {
@@ -34,13 +31,22 @@ public class ProtocolUtil {
     public static final int TEAM_CREATED = 0;
     public static final int TEAM_REMOVED = 1;
     public static final int TEAM_UPDATED = 2;
-    public WirePacket createTeamPacket(int mode, int index, String teamName, int clientVersion, BaseComponent[] components) {
-        return createTeamPacket(mode, index, teamName, VersionUtil.SERVER_VERSION, clientVersion, components);
+
+    public <R> WirePacket createTeamPacket(int mode, int index,
+                                           @NonNull String teamName,
+                                           int clientVersion,
+                                           R text,
+                                           @NonNull TextProvider<R> textProvider) {
+        return createTeamPacket(mode, index, teamName, VersionUtil.SERVER_VERSION, clientVersion, text, textProvider);
     }
 
     @SneakyThrows
-    public WirePacket createTeamPacket(int mode, int index, String teamName, int serverVersion,
-                                       int clientVersion, BaseComponent[] components) {
+    public <R> WirePacket createTeamPacket(int mode, int index,
+                                           @NonNull String teamName,
+                                           int serverVersion,
+                                           int clientVersion,
+                                           R text,
+                                           @NonNull TextProvider<R> provider) {
         Preconditions.checkArgument(mode >= TEAM_CREATED && mode <= TEAM_UPDATED, "Invalid team mode");
 
         String teamEntry = COLORS[index].toString();
@@ -67,16 +73,12 @@ public class ProtocolUtil {
         // Since 1.13 character limit for prefix/suffix was removed
         if (clientVersion >= VersionUtil.MINECRAFT_1_13) {
 
-            if (components.length > 0 && components[0] instanceof TextComponent textComponent) {
-                textComponent.setColor(textComponent.getColor());
-            }
-
             if (serverVersion >= VersionUtil.MINECRAFT_1_13) {
                 writeDefaults(serverVersion, packet);
-                packet.writeString(ComponentSerializer.toString(components));
+                packet.writeString(provider.asJsonMessage(text));
                 packet.writeString(JSON_TEAM_STUB);
             } else {
-                String legacyText = BaseComponent.toLegacyText(components);
+                String legacyText = provider.asLegacyMessage(text);
 
                 packet.writeString(legacyText);
                 packet.writeString(ChatColor.WHITE.toString());
@@ -94,7 +96,7 @@ public class ProtocolUtil {
         // 1.12 and below stuff :(
         // I'll remove it in future
 
-        String legacyText = BaseComponent.toLegacyText(components);
+        String legacyText = provider.asLegacyMessage(text);
 
         Iterator<String> iterator = SPLITTER.split(legacyText).iterator();
         String prefix = iterator.next();

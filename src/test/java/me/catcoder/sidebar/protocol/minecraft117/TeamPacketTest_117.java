@@ -1,26 +1,25 @@
 package me.catcoder.sidebar.protocol.minecraft117;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import com.comphenix.protocol.injector.netty.WirePacket;
-
-import net.md_5.bungee.api.chat.TextComponent;
-import net.minecraft.EnumChatFormat;
-import net.minecraft.network.chat.ChatHexColor;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import lombok.NonNull;
 import me.catcoder.sidebar.protocol.ProtocolUtil;
+import me.catcoder.sidebar.text.provider.BungeeCordChatTextProvider;
 import me.catcoder.sidebar.util.VersionUtil;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.minecraft.EnumChatFormat;
 import net.minecraft.network.PacketDataSerializer;
+import net.minecraft.network.chat.ChatHexColor;
 import net.minecraft.network.protocol.game.PacketPlayOutScoreboardTeam;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 public class TeamPacketTest_117 {
+
+    private final BungeeCordChatTextProvider textProvider = new BungeeCordChatTextProvider();
 
     @BeforeClass
     public static void beforeClass() {
@@ -30,7 +29,7 @@ public class TeamPacketTest_117 {
     @Test
     public void testTeamPacketIntegrity_remove() {
         WirePacket packet = ProtocolUtil.createTeamPacket(
-                ProtocolUtil.TEAM_REMOVED, 1, "test", VersionUtil.SERVER_VERSION, null);
+                ProtocolUtil.TEAM_REMOVED, 1, "test", VersionUtil.SERVER_VERSION, null, textProvider);
 
         ByteBuf buffer = Unpooled.wrappedBuffer(packet.getBytes());
 
@@ -45,7 +44,7 @@ public class TeamPacketTest_117 {
     public void testTeamPacketIntegrity_create() {
         WirePacket packet = ProtocolUtil.createTeamPacket(
                 ProtocolUtil.TEAM_CREATED, 1, "test", VersionUtil.SERVER_VERSION,
-                TextComponent.fromLegacyText("text"));
+                TextComponent.fromLegacyText("text"), textProvider);
         ByteBuf buffer = Unpooled.wrappedBuffer(packet.getBytes());
 
         PacketPlayOutScoreboardTeam vanillaPacket = createVanillaPacket(buffer);

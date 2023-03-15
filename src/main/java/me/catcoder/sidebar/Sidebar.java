@@ -1,26 +1,22 @@
 package me.catcoder.sidebar;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
 import com.google.common.base.Preconditions;
+import lombok.AccessLevel;
 import lombok.Getter;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.TextComponent;
+import lombok.NonNull;
+import lombok.SneakyThrows;
+import lombok.experimental.FieldDefaults;
+import me.catcoder.sidebar.text.TextIterator;
+import me.catcoder.sidebar.text.TextProvider;
+import me.catcoder.sidebar.util.lang.ThrowingConsumer;
+import me.catcoder.sidebar.util.lang.ThrowingFunction;
 import org.apache.commons.lang.RandomStringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 
-import lombok.NonNull;
-import lombok.SneakyThrows;
-import me.catcoder.sidebar.text.TextIterator;
-import me.catcoder.sidebar.util.lang.ThrowingConsumer;
-import me.catcoder.sidebar.util.lang.ThrowingFunction;
+import java.util.*;
 
 /**
  * Represents a sidebar.
@@ -28,18 +24,21 @@ import me.catcoder.sidebar.util.lang.ThrowingFunction;
  * Sidebar is a scoreboard with a title and lines.
  * <p>
  */
-public class Sidebar {
+
+@FieldDefaults(level = AccessLevel.PACKAGE)
+public class Sidebar<R> {
 
     private static final String OBJECTIVE_PREFIX = "PS-";
 
     private final Set<UUID> viewers = Collections.synchronizedSet(new HashSet<>());
-    private final List<SidebarLine> lines = new ArrayList<>();
+    private final List<SidebarLine<R>> lines = new ArrayList<>();
     private final ScoreboardObjective objective;
 
     private TextIterator titleText;
     private BukkitTask titleUpdater;
 
     final Set<Integer> taskIds = new HashSet<>();
+    final TextProvider<R> textProvider;
 
     @Getter
     private final Plugin plugin;
@@ -50,8 +49,9 @@ public class Sidebar {
      * @param title  a title of sidebar
      * @param plugin plugin instance
      */
-    public Sidebar(@NonNull String title, @NonNull Plugin plugin) {
+    Sidebar(@NonNull String title, @NonNull Plugin plugin, @NonNull TextProvider<R> textProvider) {
         this.plugin = plugin;
+        this.textProvider = textProvider;
         this.objective = new ScoreboardObjective(OBJECTIVE_PREFIX + RandomStringUtils.randomAlphabetic(3), title);
     }
 
@@ -61,12 +61,23 @@ public class Sidebar {
      * @param titleIterator a title iterator of sidebar
      * @param plugin        plugin instance
      */
-    public Sidebar(@NonNull TextIterator titleIterator, @NonNull Plugin plugin) {
+    Sidebar(@NonNull TextIterator titleIterator, @NonNull Plugin plugin, @NonNull TextProvider<R> textProvider) {
         this.plugin = plugin;
+        this.textProvider = textProvider;
 
         this.objective = new ScoreboardObjective(OBJECTIVE_PREFIX + RandomStringUtils.randomAlphabetic(3), titleIterator.next());
 
         setTitleIter(titleIterator);
+    }
+
+    /**
+     * Converts TextIterator to line updater.
+     *
+     * @param iterator - iterator
+     * @return line updater
+     */
+    public ThrowingFunction<Player, R, Throwable> toLineUpdater(@NonNull TextIterator iterator) {
+        return player -> textProvider.fromLegacyMessage(iterator.next());
     }
 
     /**
@@ -119,7 +130,7 @@ public class Sidebar {
      * @param line   the line
      * @param offset the offset
      */
-    public void shiftLine(SidebarLine line, int offset) {
+    public void shiftLine(SidebarLine<R> line, int offset) {
         lines.remove(line);
         lines.add(offset, line);
 
@@ -147,20 +158,8 @@ public class Sidebar {
      * @param text - the text
      * @return SidebarLine instance
      */
-    public SidebarLine addLine(@NonNull String text) {
-        return addLine(TextComponent.fromLegacyText(text));
-    }
-
-    /**
-     * Add a line to the sidebar with dynamic text.
-     *
-     * @param updater - the function that updates the text
-     * @return SidebarLine instance
-     * @deprecated use {@link #addUpdatableLine(ThrowingFunction)} )}
-     */
-    @Deprecated
-    public SidebarLine addUpdatableLineLegacy(@NonNull ThrowingFunction<Player, String, Throwable> updater) {
-        return addLine((player) -> TextComponent.fromLegacyText(updater.apply(player)), false);
+    public SidebarLine<R> addTextLine(@NonNull String text) {
+        return addLine(textProvider.fromLegacyMessage(text));
     }
 
     /**
@@ -169,7 +168,7 @@ public class Sidebar {
      * @param updater - the function that updates the text
      * @return SidebarLine instance
      */
-    public SidebarLine addUpdatableLine(@NonNull ThrowingFunction<Player, BaseComponent[], Throwable> updater) {
+    public SidebarLine<R> addUpdatableLine(@NonNull ThrowingFunction<Player, R, Throwable> updater) {
         return addLine(updater, false);
     }
 
@@ -179,7 +178,7 @@ public class Sidebar {
      * @param text the text
      * @return SidebarLine instance
      */
-    public SidebarLine addLine(@NonNull BaseComponent[] text) {
+    public SidebarLine<R> addLine(@NonNull R text) {
         return addLine(x -> text, true);
     }
 
@@ -188,12 +187,12 @@ public class Sidebar {
      *
      * @return SidebarLine instance
      */
-    public SidebarLine addBlankLine() {
-        return addLine("");
+    public SidebarLine<R> addBlankLine() {
+        return addTextLine("");
     }
 
-    private SidebarLine addLine(@NonNull ThrowingFunction<Player, BaseComponent[], Throwable> updater, boolean staticText) {
-        SidebarLine line = new SidebarLine(updater, objective.getName() + lines.size(), staticText, lines.size());
+    private SidebarLine<R> addLine(@NonNull ThrowingFunction<Player, R, Throwable> updater, boolean staticText) {
+        SidebarLine<R> line = new SidebarLine<>(updater, objective.getName() + lines.size(), staticText, lines.size(), textProvider);
         lines.add(line);
         return line;
     }
@@ -203,7 +202,7 @@ public class Sidebar {
      *
      * @param line the line
      */
-    public void removeLine(@NonNull SidebarLine line) {
+    public void removeLine(@NonNull SidebarLine<R> line) {
         if (lines.remove(line) && line.getScore() != -1) {
             broadcast(p -> line.removeTeam(p, objective.getName()));
             updateAllLines();
@@ -215,7 +214,7 @@ public class Sidebar {
      *
      * @return SidebarLine
      */
-    public Optional<SidebarLine> maxLine() {
+    public Optional<SidebarLine<R>> maxLine() {
         return lines.stream()
                 .filter(line -> line.getScore() != -1)
                 .max(Comparator.comparingInt(SidebarLine::getScore));
@@ -226,7 +225,7 @@ public class Sidebar {
      *
      * @return SidebarLine
      */
-    public Optional<SidebarLine> minLine() {
+    public Optional<SidebarLine<R>> minLine() {
         return lines.stream()
                 .filter(line -> line.getScore() != -1)
                 .min(Comparator.comparingInt(SidebarLine::getScore));
@@ -237,7 +236,7 @@ public class Sidebar {
      *
      * @param line target line.
      */
-    public void updateLine(@NonNull SidebarLine line) {
+    public void updateLine(@NonNull SidebarLine<R> line) {
         Preconditions.checkArgument(lines.contains(line), "Line %s is not a part of this sidebar", line);
 
         broadcast(p -> line.updateTeam(p, line.getScore(), objective.getName()));
@@ -250,7 +249,7 @@ public class Sidebar {
     public void updateAllLines() {
         int index = lines.size();
 
-        for (SidebarLine line : lines) {
+        for (SidebarLine<R> line : lines) {
             // if line is not created yet
             if (line.getScore() == -1) {
                 line.setScore(index--);
@@ -315,7 +314,7 @@ public class Sidebar {
 
             objective.create(player);
 
-            for (SidebarLine line : lines) {
+            for (SidebarLine<R> line : lines) {
                 line.createTeam(player, objective.getName());
             }
 
@@ -354,7 +353,7 @@ public class Sidebar {
      *
      * @return a list of lines
      */
-    public List<SidebarLine> getLines() {
+    public List<SidebarLine<R>> getLines() {
         return Collections.unmodifiableList(lines);
     }
 

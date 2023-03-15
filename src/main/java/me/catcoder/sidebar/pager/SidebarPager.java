@@ -3,23 +3,21 @@ package me.catcoder.sidebar.pager;
 import com.google.common.collect.Iterators;
 import lombok.NonNull;
 import me.catcoder.sidebar.Sidebar;
-import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Consumer;
 
-public class SidebarPager {
+public class SidebarPager<R> {
 
-    private final List<Sidebar> sidebars;
-    private final Iterator<Sidebar> pageIterator;
+    private final List<Sidebar<R>> sidebars;
+    private final Iterator<Sidebar<R>> pageIterator;
     private final Set<UUID> viewers;
     private final BukkitTask switchTask;
-    private Sidebar currentPage;
+    private Sidebar<R> currentPage;
 
     /**
      * Creates a new sidebar pager.
@@ -28,12 +26,16 @@ public class SidebarPager {
      * @param switchDelayTicks - delay between page switches in ticks
      * @param plugin           - plugin instance
      */
-    public SidebarPager(@NonNull List<Sidebar> sidebars, long switchDelayTicks, @NonNull Plugin plugin) {
+    public SidebarPager(@NonNull List<Sidebar<R>> sidebars, long switchDelayTicks, @NonNull Plugin plugin) {
         this.sidebars = sidebars;
         this.viewers = new HashSet<>();
         this.pageIterator = Iterators.cycle(sidebars);
         this.currentPage = pageIterator.next();
         this.switchTask = plugin.getServer().getScheduler().runTaskTimer(plugin, this::switchPage, switchDelayTicks, switchDelayTicks);
+    }
+
+    public void applyToAll(Consumer<Sidebar<R>> consumer) {
+        sidebars.forEach(consumer);
     }
 
     /**
@@ -57,56 +59,21 @@ public class SidebarPager {
         return Collections.unmodifiableSet(viewers);
     }
 
-    public List<Sidebar> getSidebars() {
+    public List<Sidebar<R>> getSidebars() {
         return Collections.unmodifiableList(sidebars);
     }
 
     /**
      * Adds a page status line to all sidebars in pager.
-     *
-     * @param builder    - component builder to use
-     * @param pageFormat - page format, e.g. "Page %d/%d", where %d is a page number, and %d is a max page number
-     * @param formatter  - formatter to use for each page, can be null
      */
-    public void addPageLine(@NonNull ComponentBuilder builder,
-                            @NonNull String pageFormat,
-                            @Nullable Consumer<ComponentBuilder> formatter) {
+    public void addPageLine(PageConsumer<R> consumer) {
         int page = 1;
         int maxPage = sidebars.size();
 
-        for (Sidebar sidebar : sidebars) {
-            builder.append(String.format(pageFormat, page, maxPage));
-
-            if (formatter != null) {
-                formatter.accept(builder);
-            }
-
-            sidebar.addLine(builder.create());
-
-            builder.removeComponent(builder.getParts().size() - 1);
-
+        for (Sidebar<R> sidebar : sidebars) {
+            consumer.accept(page, maxPage, sidebar);
             page++;
         }
-    }
-
-    /**
-     * Adds a page status line to all sidebars in pager.
-     *
-     * @param builder    - component builder to use
-     * @param pageFormat - page format, e.g. "Page %d/%d", where %d is a page number, and %d is a max page number
-     */
-    public void addPageLine(@NonNull ComponentBuilder builder,
-                            @NonNull String pageFormat) {
-        addPageLine(builder, pageFormat, null);
-    }
-
-    /**
-     * Adds a page status line to all sidebars in pager.
-     *
-     * @param builder - component builder to use
-     */
-    public void addPageLine(@NonNull ComponentBuilder builder) {
-        addPageLine(builder, "Page %d/%d");
     }
 
     /**
@@ -115,7 +82,7 @@ public class SidebarPager {
      */
     public void destroy() {
         switchTask.cancel();
-        for (Sidebar sidebar : sidebars) {
+        for (Sidebar<R> sidebar : sidebars) {
             sidebar.destroy();
         }
         sidebars.clear();

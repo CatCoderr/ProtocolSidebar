@@ -1,14 +1,30 @@
 # ProtocolSidebar
+
 [![Build Status](https://github.com/CatCoderr/ProtocolSidebar/actions/workflows/maven-publish.yaml/badge.svg?branch=dev)](https://github.com/CatCoderr/ProtocolSidebar/actions/workflows/maven-publish.yaml)
 ![Sonatype Nexus (Snapshots)](https://img.shields.io/nexus/s/me.catcoder/bukkit-sidebar?server=https%3A%2F%2Foss.sonatype.org)
 
-Non-flickering scoreboard (sidebar) implementation. Requires ProtocolLib. Optionally supports ViaVersion.
+Unleash the power of your Minecraft server's scoreboard with ProtocolSidebar - the ultimate non-flickering, feature-packed sidebar library.
+
+Requires ProtocolLib. Optionally supports ViaVersion.
 
 Supported Minecraft versions: 1.12.2 - 1.19.3
 
+* [Features](#features)
+* [Adding to your project](#adding-to-your-project)
+  * [Maven](#maven)
+  * [Gradle](#gradle)
+  * [Gradle (Kotlin DSL)](#gradle-kotlin-dsl)
+* [Basic usage](#basic-usage)
+* [Sidebar title animations](#sidebar-title-animations)
+* [Sidebar Pager](#sidebar-pager)
+
+![Sidebar](https://github.com/CatCoderr/ProtocolSidebar/raw/master/assets/sidebar.gif)
+
 ## Features
+
 * No flickering (without using a buffer)
 * Easy to use
+* Optionally supports [Adventure API](https://docs.advntr.dev/text.html), [MiniMessage](https://docs.advntr.dev/minimessage/index.html)
 * Extremely fast, can be used asynchronously
 * Cool inbuilt animations
 * Inbuilt pager for showing multiple sidebars to the player
@@ -18,95 +34,144 @@ Supported Minecraft versions: 1.12.2 - 1.19.3
 * No character limit on 1.13 and higher
 * Supports hex colors on 1.16 and higher
 
-![Sidebar](https://github.com/CatCoderr/ProtocolSidebar/raw/master/assets/sidebar.gif)
+## Adding to your project
 
-POM snippet:
+### Maven
+
+```xml
+<repository>
+    <id>sonatype-snapshots</id>
+    <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+</repository>
+```
 ```xml
 <dependency>
   <groupId>me.catcoder</groupId>
   <artifactId>bukkit-sidebar</artifactId>
-  <version>5.1.2-SNAPSHOT</version>
+  <version>6.0.0-SNAPSHOT</version>
 </dependency>
 ```
 
-## How to use it?
+### Gradle
+
+```groovy
+repositories {
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+}
+```
+```groovy
+dependencies {
+    implementation 'me.catcoder:bukkit-sidebar:6.0.0-SNAPSHOT'
+}
+```
+
+### Gradle (Kotlin DSL)
+
+```kotlin
+repositories {
+    maven("https://oss.sonatype.org/content/repositories/snapshots/")
+}
+```
+```kotlin
+dependencies {
+    implementation("me.catcoder:bukkit-sidebar:6.0.0-SNAPSHOT")
+}
+```
+
+## Basic usage
 
 ```java
-// some cool inbuilt animations
-TextIterator typingAnimation = TextIterators.textTypingOldSchool("Hello World! It's a test plugin for ProtocolSidebar!");
-TextIterator lineFade = TextIterators.textFadeHypixel("https://github.com/CatCoderr/ProtocolSidebar");
-TextIterator title = TextIterators.textFadeHypixel("Hello World!");
-
-// create sidebar
-Sidebar sidebar = new Sidebar(title, plugin);
+// create sidebar which uses Adventure API
+// you can also use other methods from ProtocolSidebar class
+// for another text providers such as BungeeCord Chat, MiniMessage...
+Sidebar<Component> sidebar = ProtocolSidebar.newAdventureSidebar(
+        TextIterators.textFadeHypixel("SIDEBAR"), this);
 
 // let's add some lines
-sidebar.addLine("Test Static Line");
+sidebar.addLine(
+    Component
+        .text("Just a static line")
+        .color(NamedTextColor.GREEN));
+// add an empty line
 sidebar.addBlankLine();
-sidebar.addUpdatableLine(player -> new ComponentBuilder("Your Health: ")
-    .append(player.getHealth() + "")
-    .color(ChatColor.GREEN)
-    .create());
+// also you can add updatable lines which applies to all players
+sidebar.addUpdatableLine(
+    player -> Component
+        .text("Your Hunger: ")
+        .append(Component.text(
+                player.getFoodLevel())
+        .color(NamedTextColor.GREEN))
+    );
 
 sidebar.addBlankLine();
-sidebar.addUpdatableLine(player -> new ComponentBuilder("Your Hunger: ")
-    .append(player.getFoodLevel() + "")
-    .color(ChatColor.GREEN)
-    .create());
+sidebar.addUpdatableLine(
+    player -> Component
+        .text("Your Health: ")
+        .append(Component.text(
+                player.getHealth())
+        .color(NamedTextColor.GREEN))
+);
 sidebar.addBlankLine();
+sidebar.addLine(
+    Component
+        .text("https://github.com/CatCoderr/ProtocolSidebar")
+        .color(NamedTextColor.YELLOW
+));
 
-// animations also available for lines
-sidebar.addUpdatableLine(typingAnimation.asLineUpdater())
-    .updatePeriodically(0, 1, sidebar);
+// update all lines every 10 ticks
+sidebar.updateLinesPeriodically(0, 10);
 
-sidebar.addBlankLine();
-sidebar.addUpdatableLine(lineFade.asLineUpdater())
-    .updatePeriodically(0, 1, sidebar);
+// ...
 
-sidebar.updateLinesPeriodically(0L, 20L);
+// show to the player
+sidebar.addViewer(player);
+// ...hide from the player
+sidebar.removeViewer(player);
 ```
 
 ![Example](https://github.com/CatCoderr/ProtocolSidebar/raw/master/assets/nice_example.gif)
 
 ## Sidebar title animations
 
-Library has built-in title animations (like Hypixel), but you can also create your [own](https://github.com/CatCoderr/ProtocolSidebar/blob/master/src/main/java/me/catcoder/sidebar/text/TextIterator.java).
-
+Library has built-in title animations, but you can also create your [own](https://github.com/CatCoderr/ProtocolSidebar/blob/master/src/main/java/me/catcoder/sidebar/text/TextIterator.java).
 ![Hypixel-like animation](https://github.com/CatCoderr/ProtocolSidebar/raw/master/assets/animation_example.gif)
 
 Animations also can be used in updatable lines:
 
 ```java
 TextIterator animation = TextIterators.textFadeHypixel("Hello World!");
-SidebarLine line = sidebar.addUpdatableLine(animation.asLineUpdater());
+SidebarLine line = sidebar.addUpdatableLine(sidebar.asLineUpdater(animation));
 
 line.updatePeriodically(0, 1, sidebar);
-
 ```
 
 ## Sidebar Pager
 
 You can also use sidebar pager, which allows you to show player multiple pages of information.
 ```java
-Sidebar sidebar = new Sidebar(title, this);
-Sidebar testSidebar = new Sidebar(TextIterators.textFadeHypixel("Test"), this);
+Sidebar<Component> anotherSidebar = ProtocolSidebar.newAdventureSidebar(
+        TextIterators.textFadeHypixel("ANOTHER SIDEBAR"), this);
 
-// create a new sidebar pager
-SidebarPager pager = new SidebarPager(
-        Arrays.asList(sidebar, testSidebar), 3 * 20L, this);
+Sidebar<Component> firstSidebar = ProtocolSidebar.newAdventureSidebar(
+        TextIterators.textFadeHypixel("SIDEBAR"), this);
 
-// ... populate sidebar with lines
-// first page was taken from code above
-        
+SidebarPager<Component> pager = new SidebarPager<>(
+        Arrays.asList(firstSidebar, anotherSidebar), 20 * 5, this);
+
 // add page status line to all sidebars in pager
-pager.addPageLine(new ComponentBuilder("Page: ")
-                    .color(ChatColor.YELLOW),
-        "%d/%d", // currentPage/totalPages
-        builder -> builder.bold(true).color(ChatColor.GREEN));
+pager.addPageLine((page, maxPage, sidebar) ->
+        sidebar.addLine(Component
+            .text("Page " + page + "/" + maxPage)
+            .color(NamedTextColor.GREEN)));
 
-// show to the player
+pager.applyToAll(Sidebar::addBlankLine);
+
+// ...add some lines
+        
+// show to player
 pager.show(player);
 
+// ...
 // hide from the player
 pager.hide(player);
 ```

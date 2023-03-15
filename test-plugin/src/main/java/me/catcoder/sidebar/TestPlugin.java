@@ -1,10 +1,9 @@
 package me.catcoder.sidebar;
 
 import me.catcoder.sidebar.pager.SidebarPager;
-import me.catcoder.sidebar.text.TextIterator;
 import me.catcoder.sidebar.text.TextIterators;
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -14,60 +13,61 @@ import java.util.Arrays;
 
 public class TestPlugin extends JavaPlugin implements Listener {
 
-    private SidebarPager pager;
 
     @Override
     public void onEnable() {
-        getServer().getPluginManager().registerEvents(this, this);
+        Sidebar<Component> anotherSidebar = ProtocolSidebar.newAdventureSidebar(
+                TextIterators.textFadeHypixel("ANOTHER SIDEBAR"), this);
 
-        TextIterator typingAnimation = TextIterators.textTypingOldSchool("Hello World! It's a test plugin for ProtocolSidebar!");
-        TextIterator lineFade = TextIterators.textFadeHypixel("https://github.com/CatCoderr/ProtocolSidebar");
-        TextIterator title = TextIterators.textFadeHypixel("Hello World!");
+        Sidebar<Component> firstSidebar = ProtocolSidebar.newAdventureSidebar(
+                TextIterators.textFadeHypixel("SIDEBAR"), this);
 
-        Sidebar sidebar = new Sidebar(title, this);
-        Sidebar testSidebar = new Sidebar(TextIterators.textFadeHypixel("Test"), this);
+        SidebarPager<Component> pager = new SidebarPager<>(Arrays.asList(firstSidebar, anotherSidebar), 20 * 5, this);
 
-        testSidebar.addBlankLine();
-        testSidebar.addLine("Test Static Line");
-        testSidebar.addLine("Test Static Line2");
-        testSidebar.addLine("Test Static Line3");
-        testSidebar.addBlankLine();
+        pager.addPageLine((page, maxPage, sidebar) ->
+                sidebar.addLine(Component
+                        .text("Page " + page + "/" + maxPage)
+                        .color(NamedTextColor.GREEN)));
 
-        ///
+        pager.applyToAll(Sidebar::addBlankLine);
 
-        pager = new SidebarPager(Arrays.asList(sidebar, testSidebar), 3 * 20L, this);
+        firstSidebar.addLine(
+                Component.text("Just a static line").color(NamedTextColor.GREEN));
+        firstSidebar.addBlankLine();
+        firstSidebar.addUpdatableLine(
+                player -> Component.text("Your Hunger: ")
+                        .append(Component.text(player.getFoodLevel()).color(NamedTextColor.GREEN))
+        );
+        firstSidebar.addBlankLine();
+        firstSidebar.addUpdatableLine(
+                player -> Component.text("Your Health: ")
+                        .append(Component.text(player.getHealth()).color(NamedTextColor.GREEN))
+        );
+        firstSidebar.addBlankLine();
+        firstSidebar.addLine(
+                Component.text("https://github.com/CatCoderr/ProtocolSidebar")
+                        .color(NamedTextColor.YELLOW
+                        ));
 
-        sidebar.addLine("Test Static Line");
-        sidebar.addBlankLine();
-        sidebar.addUpdatableLine(player -> new ComponentBuilder("Your Health: ")
-                .append(player.getHealth() + "")
-                .color(ChatColor.GREEN)
-                .create());
+        firstSidebar.updateLinesPeriodically(0, 10);
 
-        sidebar.addBlankLine();
-        sidebar.addUpdatableLine(player -> new ComponentBuilder("Your Hunger: ")
-                .append(player.getFoodLevel() + "")
-                .color(ChatColor.GREEN)
-                .create());
-        sidebar.addBlankLine();
 
-        sidebar.addUpdatableLine(typingAnimation.asLineUpdater());
+        anotherSidebar.addBlankLine();
+        anotherSidebar.addLine(
+                Component.text("Just a static line").color(NamedTextColor.GREEN));
+        anotherSidebar.addLine(
+                Component.text("Just a static line 2").color(NamedTextColor.YELLOW)
+        );
 
-        sidebar.addBlankLine();
-        sidebar.addUpdatableLine(lineFade.asLineUpdater());
-        sidebar.addBlankLine();
+        anotherSidebar.addBlankLine();
 
-        pager.addPageLine(new ComponentBuilder("Page: ")
-                .color(ChatColor.YELLOW),
-                "%d/%d",
-                builder -> builder.bold(true).color(ChatColor.GREEN));
+        getServer().getPluginManager().registerEvents(new Listener() {
+            @EventHandler
+            public void onJoin(PlayerJoinEvent event) {
+                pager.show(event.getPlayer());
+            }
+        }, this);
 
-        sidebar.updateLinesPeriodically(0L, 1L);
     }
 
-
-    @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
-        pager.show(event.getPlayer());
-    }
 }

@@ -12,19 +12,18 @@ import lombok.SneakyThrows;
 import lombok.ToString;
 import me.catcoder.sidebar.protocol.PacketIds;
 import me.catcoder.sidebar.protocol.ProtocolUtil;
+import me.catcoder.sidebar.text.TextProvider;
 import me.catcoder.sidebar.util.ByteBufNetOutput;
 import me.catcoder.sidebar.util.NetOutput;
 import me.catcoder.sidebar.util.VersionUtil;
 import me.catcoder.sidebar.util.lang.ThrowingFunction;
-import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 
 @Getter
 @ToString
-public class SidebarLine {
+public class SidebarLine<R> {
 
     private final String teamName;
     private int score = -1;
@@ -35,24 +34,27 @@ public class SidebarLine {
     // for internal use
     BukkitTask updateTask;
 
-    private ThrowingFunction<Player, BaseComponent[], Throwable> updater;
+    private ThrowingFunction<Player, R, Throwable> updater;
+    private final TextProvider<R> textProvider;
 
-    SidebarLine(@NonNull ThrowingFunction<Player, BaseComponent[], Throwable> updater, @NonNull String teamName,
-                boolean staticText, int index) {
+    SidebarLine(@NonNull ThrowingFunction<Player, R, Throwable> updater, @NonNull String teamName,
+                boolean staticText, int index, @NonNull TextProvider<R> textProvider) {
         this.updater = updater;
         this.teamName = teamName;
         this.staticText = staticText;
         this.index = index;
+        this.textProvider = textProvider;
     }
 
-    public BukkitTask updatePeriodically(long delay, long period, @NonNull Sidebar sidebar) {
+    public BukkitTask updatePeriodically(long delay, long period, @NonNull Sidebar<R> sidebar) {
         Preconditions.checkState(!isStaticText(), "Cannot set updater for static text line");
 
         if (updateTask != null && !updateTask.isCancelled()) {
             throw new IllegalStateException("Update task for line " + this + " is already running. Cancel it first.");
         }
 
-        BukkitTask task = Bukkit.getScheduler().runTaskTimerAsynchronously(sidebar.getPlugin(), () -> sidebar.updateLine(this), delay, period);
+        BukkitTask task = Bukkit.getScheduler().runTaskTimerAsynchronously(sidebar.getPlugin(),
+                () -> sidebar.updateLine(this), delay, period);
 
         this.updateTask = task;
 
@@ -61,16 +63,16 @@ public class SidebarLine {
         return task;
     }
 
-    public void setUpdater(@NonNull ThrowingFunction<Player, BaseComponent[], Throwable> updater) {
+    public void setUpdater(@NonNull ThrowingFunction<Player, R, Throwable> updater) {
         Preconditions.checkState(!isStaticText(), "Cannot set updater for static text line");
         this.updater = updater;
     }
 
     public void updateTeam(@NonNull Player player, int previousScore, @NonNull String objective) throws Throwable {
         if (!isStaticText()) {
-            BaseComponent[] text = updater.apply(player);
+            R text = updater.apply(player);
             sendWirePacket(player, ProtocolUtil.createTeamPacket(ProtocolUtil.TEAM_UPDATED, index, teamName,
-                    VersionUtil.getPlayerVersion(player.getUniqueId()), text));
+                    VersionUtil.getPlayerVersion(player.getUniqueId()), text, textProvider));
         }
 
         if (previousScore != score) {
@@ -82,14 +84,14 @@ public class SidebarLine {
         sendWirePacket(player, createScorePacket(1, objective));
 
         sendWirePacket(player, ProtocolUtil.createTeamPacket(ProtocolUtil.TEAM_REMOVED, index, teamName,
-                VersionUtil.getPlayerVersion(player.getUniqueId()), null));
+                VersionUtil.getPlayerVersion(player.getUniqueId()), null, textProvider));
     }
 
     public void createTeam(@NonNull Player player, @NonNull String objective) throws Throwable {
-        BaseComponent[] text = updater.apply(player);
+        R text = updater.apply(player);
 
         sendWirePacket(player, ProtocolUtil.createTeamPacket(ProtocolUtil.TEAM_CREATED, index, teamName,
-                VersionUtil.getPlayerVersion(player.getUniqueId()), text));
+                VersionUtil.getPlayerVersion(player.getUniqueId()), text, textProvider));
 
         sendWirePacket(player, createScorePacket(0, objective));
     }
