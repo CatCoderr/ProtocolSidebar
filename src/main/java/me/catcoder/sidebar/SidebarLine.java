@@ -21,6 +21,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
+import java.util.function.Supplier;
+
 @Getter
 @ToString
 public class SidebarLine<R> {
@@ -49,8 +51,11 @@ public class SidebarLine<R> {
     public BukkitTask updatePeriodically(long delay, long period, @NonNull Sidebar<R> sidebar) {
         Preconditions.checkState(!isStaticText(), "Cannot set updater for static text line");
 
-        if (updateTask != null && !updateTask.isCancelled()) {
-            throw new IllegalStateException("Update task for line " + this + " is already running. Cancel it first.");
+        if (updateTask != null) {
+            if (!updateTask.isCancelled()) {
+                throw new IllegalStateException("Update task for line " + this + " is already running. Cancel it first.");
+            }
+            sidebar.taskIds.remove(updateTask.getTaskId());
         }
 
         BukkitTask task = Bukkit.getScheduler().runTaskTimerAsynchronously(sidebar.getPlugin(),
@@ -58,7 +63,7 @@ public class SidebarLine<R> {
 
         this.updateTask = task;
 
-        sidebar.taskIds.add(task.getTaskId());
+        sidebar.bindBukkitTask(task);
 
         return task;
     }
@@ -66,6 +71,11 @@ public class SidebarLine<R> {
     public void setUpdater(@NonNull ThrowingFunction<Player, R, Throwable> updater) {
         Preconditions.checkState(!isStaticText(), "Cannot set updater for static text line");
         this.updater = updater;
+    }
+
+    public void setUpdater(Supplier<R> updater) {
+        Preconditions.checkState(!isStaticText(), "Cannot set updater for static text line");
+        this.updater = player -> updater.get();
     }
 
     public void updateTeam(@NonNull Player player, int previousScore, @NonNull String objective) throws Throwable {

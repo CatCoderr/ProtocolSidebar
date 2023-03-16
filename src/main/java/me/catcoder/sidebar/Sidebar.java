@@ -17,6 +17,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 /**
  * Represents a sidebar.
@@ -131,10 +132,35 @@ public class Sidebar<R> {
      * @param offset the offset
      */
     public void shiftLine(SidebarLine<R> line, int offset) {
-        lines.remove(line);
-        lines.add(offset, line);
+        synchronized (lines) {
+            lines.remove(line);
+            lines.add(offset, line);
+        }
 
         updateAllLines(); // recalculate indices
+    }
+
+    /**
+     * Binds a bukkit task to this sidebar.
+     * When the sidebar is destroyed, the task will be cancelled.
+     *
+     * @param task - task to bind
+     * @return the task
+     */
+    public BukkitTask bindBukkitTask(@NonNull BukkitTask task) {
+        this.taskIds.add(task.getTaskId());
+        return task;
+    }
+
+    /**
+     * Schedules the async task to update all dynamic lines at fixed rate.
+     *
+     * @param delay  delay in ticks
+     * @param period period in ticks
+     * @return the scheduled task
+     */
+    public BukkitTask updateLinesPeriodically(long delay, long period) {
+        return updateLinesPeriodically(delay, period, true);
     }
 
     /**
@@ -142,14 +168,15 @@ public class Sidebar<R> {
      *
      * @param delay  delay in ticks
      * @param period period in ticks
+     * @param async  whether the task should be executed asynchronously
      * @return the scheduled task
      */
-    public BukkitTask updateLinesPeriodically(long delay, long period) {
-        BukkitTask task = Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this::updateAllLines, delay, period);
-
-        this.taskIds.add(task.getTaskId());
-
-        return task;
+    public BukkitTask updateLinesPeriodically(long delay, long period, boolean async) {
+        return async ?
+                bindBukkitTask(Bukkit.getScheduler()
+                        .runTaskTimerAsynchronously(plugin, this::updateAllLines, delay, period)) :
+                bindBukkitTask(Bukkit.getScheduler()
+                        .runTaskTimer(plugin, this::updateAllLines, delay, period));
     }
 
     /**
@@ -173,6 +200,16 @@ public class Sidebar<R> {
     }
 
     /**
+     * Add a line to the sidebar with dynamic text with no player argument.
+     *
+     * @param updater - the function that updates the text
+     * @return SidebarLine instance
+     */
+    public SidebarLine<R> addUpdatableLine(Supplier<R> updater) {
+        return addUpdatableLine(player -> updater.get());
+    }
+
+    /**
      * Add a line to the sidebar with static text.
      *
      * @param text the text
@@ -192,9 +229,13 @@ public class Sidebar<R> {
     }
 
     private SidebarLine<R> addLine(@NonNull ThrowingFunction<Player, R, Throwable> updater, boolean staticText) {
-        SidebarLine<R> line = new SidebarLine<>(updater, objective.getName() + lines.size(), staticText, lines.size(), textProvider);
-        lines.add(line);
-        return line;
+        synchronized (lines) {
+            Preconditions.checkArgument(lines.size() < 15, "Cannot add more than 15 lines to a sidebar");
+
+            SidebarLine<R> line = new SidebarLine<>(updater, objective.getName() + lines.size(), staticText, lines.size(), textProvider);
+            lines.add(line);
+            return line;
+        }
     }
 
     /**
@@ -203,9 +244,11 @@ public class Sidebar<R> {
      * @param line the line
      */
     public void removeLine(@NonNull SidebarLine<R> line) {
-        if (lines.remove(line) && line.getScore() != -1) {
-            broadcast(p -> line.removeTeam(p, objective.getName()));
-            updateAllLines();
+        synchronized (lines) {
+            if (lines.remove(line) && line.getScore() != -1) {
+                broadcast(p -> line.removeTeam(p, objective.getName()));
+                updateAllLines();
+            }
         }
     }
 
@@ -215,9 +258,11 @@ public class Sidebar<R> {
      * @return SidebarLine
      */
     public Optional<SidebarLine<R>> maxLine() {
-        return lines.stream()
-                .filter(line -> line.getScore() != -1)
-                .max(Comparator.comparingInt(SidebarLine::getScore));
+        synchronized (lines) {
+            return lines.stream()
+                    .filter(line -> line.getScore() != -1)
+                    .max(Comparator.comparingInt(SidebarLine::getScore));
+        }
     }
 
     /**
@@ -226,9 +271,11 @@ public class Sidebar<R> {
      * @return SidebarLine
      */
     public Optional<SidebarLine<R>> minLine() {
-        return lines.stream()
-                .filter(line -> line.getScore() != -1)
-                .min(Comparator.comparingInt(SidebarLine::getScore));
+        synchronized (lines) {
+            return lines.stream()
+                    .filter(line -> line.getScore() != -1)
+                    .min(Comparator.comparingInt(SidebarLine::getScore));
+        }
     }
 
     /**
@@ -237,9 +284,11 @@ public class Sidebar<R> {
      * @param line target line.
      */
     public void updateLine(@NonNull SidebarLine<R> line) {
-        Preconditions.checkArgument(lines.contains(line), "Line %s is not a part of this sidebar", line);
+        synchronized (lines) {
+            Preconditions.checkArgument(lines.contains(line), "Line %s is not a part of this sidebar", line);
 
-        broadcast(p -> line.updateTeam(p, line.getScore(), objective.getName()));
+            broadcast(p -> line.updateTeam(p, line.getScore(), objective.getName()));
+        }
     }
 
     /**
@@ -247,25 +296,27 @@ public class Sidebar<R> {
      * Except lines with their own update task. (see {@link SidebarLine#updatePeriodically(long, long, Sidebar)})
      */
     public void updateAllLines() {
-        int index = lines.size();
+        synchronized (lines) {
+            int index = lines.size();
 
-        for (SidebarLine<R> line : lines) {
-            // if line is not created yet
-            if (line.getScore() == -1) {
+            for (SidebarLine<R> line : lines) {
+                // if line is not created yet
+                if (line.getScore() == -1) {
+                    line.setScore(index--);
+                    broadcast(p -> line.createTeam(p, objective.getName()));
+                    continue;
+                }
+
+                if (line.updateTask != null && !line.updateTask.isCancelled()) {
+                    // Don't update the line if it's already has its own update task
+                    continue;
+                }
+
+                int prevIndex = line.getScore();
                 line.setScore(index--);
-                broadcast(p -> line.createTeam(p, objective.getName()));
-                continue;
+
+                broadcast(p -> line.updateTeam(p, prevIndex, objective.getName()));
             }
-
-            if (line.updateTask != null && !line.updateTask.isCancelled()) {
-                // Don't update the line if it's already has its own update task
-                continue;
-            }
-
-            int prevIndex = line.getScore();
-            line.setScore(index--);
-
-            broadcast(p -> line.updateTeam(p, prevIndex, objective.getName()));
         }
     }
 
@@ -297,6 +348,10 @@ public class Sidebar<R> {
         }
 
         removeViewers();
+
+        synchronized (lines) {
+            lines.clear();
+        }
 
         taskIds.clear();
     }
@@ -354,7 +409,9 @@ public class Sidebar<R> {
      * @return a list of lines
      */
     public List<SidebarLine<R>> getLines() {
-        return Collections.unmodifiableList(lines);
+        synchronized (lines) {
+            return Collections.unmodifiableList(lines);
+        }
     }
 
     /**

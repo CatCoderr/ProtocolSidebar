@@ -46,9 +46,9 @@ Supported Minecraft versions: 1.12.2 - 1.19.3
 ```
 ```xml
 <dependency>
-  <groupId>me.catcoder</groupId>
-  <artifactId>bukkit-sidebar</artifactId>
-  <version>6.0.0-SNAPSHOT</version>
+    <groupId>me.catcoder</groupId>
+    <artifactId>bukkit-sidebar</artifactId>
+    <version>6.0.1-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -61,7 +61,7 @@ repositories {
 ```
 ```groovy
 dependencies {
-    implementation 'me.catcoder:bukkit-sidebar:6.0.0-SNAPSHOT'
+    implementation 'me.catcoder:bukkit-sidebar:6.0.1-SNAPSHOT'
 }
 ```
 
@@ -74,7 +74,7 @@ repositories {
 ```
 ```kotlin
 dependencies {
-    implementation("me.catcoder:bukkit-sidebar:6.0.0-SNAPSHOT")
+    implementation("me.catcoder:bukkit-sidebar:6.0.1-SNAPSHOT")
 }
 ```
 
@@ -129,6 +129,8 @@ sidebar.addViewer(player);
 sidebar.removeViewer(player);
 ```
 
+More examples available [here.](https://github.com/CatCoderr/ProtocolSidebar/tree/master/test-plugin/src/main/java/me/catcoder/sidebar)
+
 ![Example](https://github.com/CatCoderr/ProtocolSidebar/raw/master/assets/nice_example.gif)
 
 ## Sidebar title animations
@@ -140,7 +142,7 @@ Animations also can be used in updatable lines:
 
 ```java
 TextIterator animation = TextIterators.textFadeHypixel("Hello World!");
-SidebarLine line = sidebar.addUpdatableLine(sidebar.asLineUpdater(animation));
+SidebarLine<?> line = sidebar.addUpdatableLine(sidebar.asLineUpdater(animation));
 
 line.updatePeriodically(0, 1, sidebar);
 ```

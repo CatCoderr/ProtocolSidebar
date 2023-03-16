@@ -4,25 +4,20 @@ import me.catcoder.sidebar.pager.SidebarPager;
 import me.catcoder.sidebar.text.TextIterators;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.plugin.Plugin;
 
 import java.util.Arrays;
 
-public class TestPlugin extends JavaPlugin implements Listener {
+public class PagerExample {
 
-
-    @Override
-    public void onEnable() {
+    public SidebarPager<Component> createPager(Plugin plugin) {
         Sidebar<Component> anotherSidebar = ProtocolSidebar.newAdventureSidebar(
-                TextIterators.textFadeHypixel("ANOTHER SIDEBAR"), this);
+                TextIterators.textFadeHypixel("ANOTHER SIDEBAR"), plugin);
 
         Sidebar<Component> firstSidebar = ProtocolSidebar.newAdventureSidebar(
-                TextIterators.textFadeHypixel("SIDEBAR"), this);
+                TextIterators.textFadeHypixel("SIDEBAR"), plugin);
 
-        SidebarPager<Component> pager = new SidebarPager<>(Arrays.asList(firstSidebar, anotherSidebar), 20 * 5, this);
+        SidebarPager<Component> pager = new SidebarPager<>(Arrays.asList(firstSidebar, anotherSidebar), 20 * 5, plugin);
 
         pager.addPageLine((page, maxPage, sidebar) ->
                 sidebar.addLine(Component
@@ -61,13 +56,6 @@ public class TestPlugin extends JavaPlugin implements Listener {
 
         anotherSidebar.addBlankLine();
 
-        getServer().getPluginManager().registerEvents(new Listener() {
-            @EventHandler
-            public void onJoin(PlayerJoinEvent event) {
-                pager.show(event.getPlayer());
-            }
-        }, this);
-
+        return pager;
     }
-
 }
