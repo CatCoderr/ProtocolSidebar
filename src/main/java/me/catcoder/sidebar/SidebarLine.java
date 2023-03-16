@@ -17,11 +17,10 @@ import me.catcoder.sidebar.util.ByteBufNetOutput;
 import me.catcoder.sidebar.util.NetOutput;
 import me.catcoder.sidebar.util.VersionUtil;
 import me.catcoder.sidebar.util.lang.ThrowingFunction;
+import me.catcoder.sidebar.util.lang.ThrowingSupplier;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
-
-import java.util.function.Supplier;
 
 @Getter
 @ToString
@@ -68,21 +67,32 @@ public class SidebarLine<R> {
         return task;
     }
 
+    /**
+     * Sets updater for this line. Updater is a function that takes player as an argument and returns
+     * text that will be displayed for this player.
+     *
+     * @param updater - updater function
+     */
     public void setUpdater(@NonNull ThrowingFunction<Player, R, Throwable> updater) {
         Preconditions.checkState(!isStaticText(), "Cannot set updater for static text line");
         this.updater = updater;
     }
 
-    public void setUpdater(Supplier<R> updater) {
+    /**
+     * Sets updater for this line without player parameter
+     *
+     * @param updater - updater function
+     */
+    public void setUpdater(ThrowingSupplier<R, Throwable> updater) {
         Preconditions.checkState(!isStaticText(), "Cannot set updater for static text line");
         this.updater = player -> updater.get();
     }
 
-    public void updateTeam(@NonNull Player player, int previousScore, @NonNull String objective) throws Throwable {
+    void updateTeam(@NonNull Player player, int previousScore, @NonNull String objective) throws Throwable {
         if (!isStaticText()) {
             R text = updater.apply(player);
             sendWirePacket(player, ProtocolUtil.createTeamPacket(ProtocolUtil.TEAM_UPDATED, index, teamName,
-                    VersionUtil.getPlayerVersion(player.getUniqueId()), text, textProvider));
+                    player, text, textProvider));
         }
 
         if (previousScore != score) {
@@ -90,18 +100,18 @@ public class SidebarLine<R> {
         }
     }
 
-    public void removeTeam(@NonNull Player player, @NonNull String objective) {
+    void removeTeam(@NonNull Player player, @NonNull String objective) {
         sendWirePacket(player, createScorePacket(1, objective));
 
         sendWirePacket(player, ProtocolUtil.createTeamPacket(ProtocolUtil.TEAM_REMOVED, index, teamName,
-                VersionUtil.getPlayerVersion(player.getUniqueId()), null, textProvider));
+                player, null, textProvider));
     }
 
-    public void createTeam(@NonNull Player player, @NonNull String objective) throws Throwable {
+    void createTeam(@NonNull Player player, @NonNull String objective) throws Throwable {
         R text = updater.apply(player);
 
         sendWirePacket(player, ProtocolUtil.createTeamPacket(ProtocolUtil.TEAM_CREATED, index, teamName,
-                VersionUtil.getPlayerVersion(player.getUniqueId()), text, textProvider));
+                player, text, textProvider));
 
         sendWirePacket(player, createScorePacket(0, objective));
     }

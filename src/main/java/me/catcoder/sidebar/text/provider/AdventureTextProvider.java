@@ -7,6 +7,7 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.serializer.ComponentSerializer;
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
+import org.bukkit.entity.Player;
 
 public class AdventureTextProvider implements TextProvider<Component> {
 
@@ -17,7 +18,7 @@ public class AdventureTextProvider implements TextProvider<Component> {
 
 
     @Override
-    public String asJsonMessage(@NonNull Component component) {
+    public String asJsonMessage(@NonNull Player player, @NonNull Component component) {
         return GSON_SERIALIZER.serialize(component);
     }
 
@@ -27,7 +28,7 @@ public class AdventureTextProvider implements TextProvider<Component> {
     }
 
     @Override
-    public String asLegacyMessage(@NonNull Component component) {
+    public String asLegacyMessage(@NonNull Player player, @NonNull Component component) {
         return LEGACY_SERIALIZER.serialize(component);
     }
 }

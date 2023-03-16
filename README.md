@@ -1,4 +1,4 @@
-# ProtocolSidebar
+# ProtocolSidebar 
 
 [![Build Status](https://github.com/CatCoderr/ProtocolSidebar/actions/workflows/maven-publish.yaml/badge.svg?branch=dev)](https://github.com/CatCoderr/ProtocolSidebar/actions/workflows/maven-publish.yaml)
 ![Sonatype Nexus (Snapshots)](https://img.shields.io/nexus/s/me.catcoder/bukkit-sidebar?server=https%3A%2F%2Foss.sonatype.org)
@@ -7,7 +7,13 @@ Unleash the power of your Minecraft server's scoreboard with ProtocolSidebar - t
 
 Requires ProtocolLib. Optionally supports ViaVersion.
 
-Supported Minecraft versions: 1.12.2 - 1.19.3
+Supported Minecraft versions: 1.12.2 - 1.19.4
+
+### Production warning ⚠️
+
+This library is still in active development, so it may contain bugs and/or breaking changes.
+Not recommended for production use. Stable version will be available on Maven Central as soon as possible.
+Contributions are welcome.
 
 * [Features](#features)
 * [Adding to your project](#adding-to-your-project)
@@ -48,7 +54,7 @@ Supported Minecraft versions: 1.12.2 - 1.19.3
 <dependency>
     <groupId>me.catcoder</groupId>
     <artifactId>bukkit-sidebar</artifactId>
-    <version>6.0.1-SNAPSHOT</version>
+    <version>6.1.2-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -61,7 +67,7 @@ repositories {
 ```
 ```groovy
 dependencies {
-    implementation 'me.catcoder:bukkit-sidebar:6.0.1-SNAPSHOT'
+    implementation 'me.catcoder:bukkit-sidebar:6.1.2-SNAPSHOT'
 }
 ```
 
@@ -74,7 +80,7 @@ repositories {
 ```
 ```kotlin
 dependencies {
-    implementation("me.catcoder:bukkit-sidebar:6.0.1-SNAPSHOT")
+    implementation("me.catcoder:bukkit-sidebar:6.1.2-SNAPSHOT")
 }
 ```
 

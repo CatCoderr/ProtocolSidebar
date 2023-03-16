@@ -18,8 +18,10 @@ public class ProtocolConstants {
     public static final int MINECRAFT_1_19_1 = 760;
     public static final int MINECRAFT_1_19_3 = 761;
 
+    public static final int MINECRAFT_1_19_4 = 762;
+
     public static final int MINIMUM_SUPPORTED_VERSION = MINECRAFT_1_12_2;
-    public static final int MAXIMUM_SUPPORTED_VERSION = MINECRAFT_1_19_3;
+    public static final int MAXIMUM_SUPPORTED_VERSION = MINECRAFT_1_19_4;
 
     @Getter
     @RequiredArgsConstructor

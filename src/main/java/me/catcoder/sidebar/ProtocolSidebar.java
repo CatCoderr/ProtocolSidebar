@@ -7,6 +7,7 @@ import me.catcoder.sidebar.text.TextProvider;
 import me.catcoder.sidebar.text.provider.AdventureTextProvider;
 import me.catcoder.sidebar.text.provider.BungeeCordChatTextProvider;
 import me.catcoder.sidebar.text.provider.MiniMessageTextProvider;
+import me.catcoder.sidebar.text.provider.MiniPlaceholdersTextProvider;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.md_5.bungee.api.chat.BaseComponent;
@@ -33,7 +34,7 @@ public class ProtocolSidebar {
      * @return new sidebar
      */
     public <R> Sidebar<R> newSidebar(
-            @NonNull String title,
+            @NonNull R title,
             @NonNull Plugin plugin,
             @NonNull TextProvider<R> textProvider
     ) {
@@ -67,6 +68,34 @@ public class ProtocolSidebar {
             @NonNull MiniMessage miniMessage
     ) {
         return newSidebar(title, plugin, new MiniMessageTextProvider(miniMessage));
+    }
+
+    /**
+     * Creates new sidebar with MiniMessage and MiniPlaceholders text provider.
+     * For more information about MiniPlaceholders, see {@see https://github.com/MiniPlaceholders/MiniPlaceholders}
+     *
+     * @param title       - sidebar title
+     * @param plugin      - plugin instance
+     * @param miniMessage - MiniMessage instance
+     * @return new sidebar
+     */
+    public Sidebar<String> newMiniplaceholdersSidebar(
+            @NonNull String title,
+            @NonNull Plugin plugin,
+            @NonNull MiniMessage miniMessage
+    ) {
+        return newSidebar(title, plugin, new MiniPlaceholdersTextProvider(miniMessage));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public Sidebar<String> newMiniplaceholdersSidebar(
+            @NonNull TextIterator title,
+            @NonNull Plugin plugin,
+            @NonNull MiniMessage miniMessage
+    ) {
+        return newSidebar(title, plugin, new MiniPlaceholdersTextProvider(miniMessage));
     }
 
     /**
@@ -109,7 +138,7 @@ public class ProtocolSidebar {
      * @return new sidebar
      */
     public Sidebar<Component> newAdventureSidebar(
-            @NonNull String title,
+            @NonNull Component title,
             @NonNull Plugin plugin
     ) {
         return newSidebar(title, plugin, new AdventureTextProvider());
@@ -134,7 +163,7 @@ public class ProtocolSidebar {
      * @return new sidebar
      */
     public Sidebar<BaseComponent[]> newBungeeChatSidebar(
-            @NonNull String title,
+            @NonNull BaseComponent[] title,
             @NonNull Plugin plugin
     ) {
         return newSidebar(title, plugin, new BungeeCordChatTextProvider());

@@ -1,15 +1,15 @@
 package me.catcoder.sidebar;
 
 import com.comphenix.protocol.injector.netty.WirePacket;
-import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import com.google.common.base.Preconditions;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import lombok.Getter;
 import lombok.NonNull;
+import me.catcoder.sidebar.protocol.PacketIds;
+import me.catcoder.sidebar.text.TextProvider;
 import me.catcoder.sidebar.util.ByteBufNetOutput;
 import me.catcoder.sidebar.util.NetOutput;
-import me.catcoder.sidebar.protocol.PacketIds;
 import me.catcoder.sidebar.util.VersionUtil;
 import org.bukkit.entity.Player;
 
@@ -23,7 +23,7 @@ import static me.catcoder.sidebar.SidebarLine.sendWirePacket;
  * documentation</a>
  */
 @Getter
-public class ScoreboardObjective {
+public class ScoreboardObjective<R> {
 
 
     public static final int DISPLAY_SIDEBAR = 1;
@@ -32,17 +32,19 @@ public class ScoreboardObjective {
     public static final int UPDATE_VALUE = 2;
 
     private final String name;
-    private String displayName;
+    private final TextProvider<R> textProvider;
+    private R displayName;
 
-    public ScoreboardObjective(@NonNull String name, @NonNull String displayName) {
+    ScoreboardObjective(@NonNull String name, @NonNull R displayName, @NonNull TextProvider<R> textProvider) {
         Preconditions.checkArgument(
                 name.length() <= 16, "Objective name exceeds 16 symbols limit");
 
         this.name = name;
+        this.textProvider = textProvider;
         this.displayName = displayName;
     }
 
-    void setDisplayName(@NonNull String displayName) {
+    void setDisplayName(@NonNull R displayName) {
         this.displayName = displayName;
     }
 
@@ -81,15 +83,16 @@ public class ScoreboardObjective {
         output.writeByte(mode);
 
         if (mode == ADD_OBJECTIVE || mode == UPDATE_VALUE) {
+            String legacyText = textProvider.asLegacyMessage(player, displayName);
             // Since 1.13 characters limit for display name was removed
-            if (version < VersionUtil.MINECRAFT_1_13 && displayName.length() > 32) {
-                displayName = displayName.substring(0, 32);
+            if (version < VersionUtil.MINECRAFT_1_13 && legacyText.length() > 32) {
+                legacyText = legacyText.substring(0, 32);
             }
 
             if (VersionUtil.SERVER_VERSION >= VersionUtil.MINECRAFT_1_13) {
-                output.writeString(WrappedChatComponent.fromText(displayName).getJson());
+                output.writeString(textProvider.asJsonMessage(player, displayName));
             } else {
-                output.writeString(displayName);
+                output.writeString(legacyText);
             }
 
             if (VersionUtil.SERVER_VERSION >= VersionUtil.MINECRAFT_1_13) {

@@ -2,7 +2,7 @@
 
 set -e 
 
-readonly RELEASES_BRANCH='master'
+readonly DEPLOY_BRANCH='master'
 
 echo 'Attempting to deploy artifacts'
 
@@ -12,6 +12,11 @@ if [[ -z ${JAVA_HOME} ]]; then # Exit if JAVA_HOME is unset
     exit 1;
 fi
 echo "JAVA_HOME = ${JAVA_HOME}"
+
+if [[ "${GITHUB_REF_NAME}" != "${DEPLOY_BRANCH}" ]]; then
+    echo "Not deploying artifacts because this is not a ${DEPLOY_BRANCH} branch"
+    exit 0
+fi
 
 echo 'Retrieving project version'
 # Get project version using special script
@@ -25,10 +30,7 @@ if [[ ${project_version} == *-SNAPSHOT ]]; then # Try to deploy snapshot if vers
 else # Try to deploy release if version doesn't end with '-SNAPSHOT'
     echo 'This is a release version'
     # Release deployment happens only for `release` branch excluding pull requests to it (but including merges)
-    if [[ "${GITHUB_REF_NAME}" = "${RELEASES_BRANCH}" ]]; then
-        echo "Deploying version ${project_version} to release repositories"
-        bash ./scripts/deploy-to-sonatype-ossrh.sh
-    else
-        echo "Not deploying release as branch is not \`${SNAPSHOTS_BRANCH}\`"
-    fi
+    echo "Deploying version ${project_version} to release repositories"
+    bash ./scripts/deploy-to-sonatype-ossrh.sh
+    
 fi

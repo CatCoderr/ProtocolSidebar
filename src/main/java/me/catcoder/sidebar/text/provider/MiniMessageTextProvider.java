@@ -4,19 +4,20 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import me.catcoder.sidebar.text.TextProvider;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.entity.Player;
 
 @RequiredArgsConstructor
 public class MiniMessageTextProvider implements TextProvider<String> {
 
-    private final MiniMessage miniMessage;
+    protected final MiniMessage miniMessage;
 
     @Override
-    public String asJsonMessage(@NonNull String message) {
+    public String asJsonMessage(@NonNull Player player, @NonNull String message) {
         return AdventureTextProvider.GSON_SERIALIZER.serialize(miniMessage.deserialize(message));
     }
 
     @Override
-    public String asLegacyMessage(@NonNull String component) {
+    public String asLegacyMessage(@NonNull Player player, @NonNull String component) {
         return AdventureTextProvider.LEGACY_SERIALIZER.serialize(miniMessage.deserialize(component));
     }
 

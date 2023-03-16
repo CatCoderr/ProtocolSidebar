@@ -13,9 +13,8 @@ import me.catcoder.sidebar.text.TextProvider;
 import me.catcoder.sidebar.util.ByteBufNetOutput;
 import me.catcoder.sidebar.util.NetOutput;
 import me.catcoder.sidebar.util.VersionUtil;
-import net.md_5.bungee.api.chat.ComponentBuilder;
-import net.md_5.bungee.chat.ComponentSerializer;
 import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
 
 import java.util.Iterator;
 
@@ -23,10 +22,6 @@ import java.util.Iterator;
 public class ProtocolUtil {
 
     private static final Splitter SPLITTER = Splitter.fixedLength(16);
-    private static final String JSON_TEAM_STUB = ComponentSerializer.toString(new ComponentBuilder("")
-            .color(net.md_5.bungee.api.ChatColor.WHITE)
-            .create());
-
     public static final ChatColor[] COLORS = ChatColor.values();
     public static final int TEAM_CREATED = 0;
     public static final int TEAM_REMOVED = 1;
@@ -34,22 +29,23 @@ public class ProtocolUtil {
 
     public <R> WirePacket createTeamPacket(int mode, int index,
                                            @NonNull String teamName,
-                                           int clientVersion,
+                                           @NonNull Player player,
                                            R text,
                                            @NonNull TextProvider<R> textProvider) {
-        return createTeamPacket(mode, index, teamName, VersionUtil.SERVER_VERSION, clientVersion, text, textProvider);
+        return createTeamPacket(mode, index, teamName, VersionUtil.SERVER_VERSION, player, text, textProvider);
     }
 
     @SneakyThrows
     public <R> WirePacket createTeamPacket(int mode, int index,
                                            @NonNull String teamName,
                                            int serverVersion,
-                                           int clientVersion,
+                                           @NonNull Player player,
                                            R text,
                                            @NonNull TextProvider<R> provider) {
         Preconditions.checkArgument(mode >= TEAM_CREATED && mode <= TEAM_UPDATED, "Invalid team mode");
 
         String teamEntry = COLORS[index].toString();
+        int clientVersion = VersionUtil.getPlayerVersion(player.getUniqueId());
 
         ByteBuf buffer = Unpooled.buffer();
 
@@ -75,10 +71,10 @@ public class ProtocolUtil {
 
             if (serverVersion >= VersionUtil.MINECRAFT_1_13) {
                 writeDefaults(serverVersion, packet);
-                packet.writeString(provider.asJsonMessage(text));
-                packet.writeString(JSON_TEAM_STUB);
+                packet.writeString(provider.asJsonMessage(player, text));
+                packet.writeString("{\"text\":\"\"}");
             } else {
-                String legacyText = provider.asLegacyMessage(text);
+                String legacyText = provider.asLegacyMessage(player, text);
 
                 packet.writeString(legacyText);
                 packet.writeString(ChatColor.WHITE.toString());
@@ -96,7 +92,7 @@ public class ProtocolUtil {
         // 1.12 and below stuff :(
         // I'll remove it in future
 
-        String legacyText = provider.asLegacyMessage(text);
+        String legacyText = provider.asLegacyMessage(player, text);
 
         Iterator<String> iterator = SPLITTER.split(legacyText).iterator();
         String prefix = iterator.next();

@@ -1,11 +1,10 @@
 package me.catcoder.sidebar.text;
 
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import me.catcoder.sidebar.text.impl.TextFadeAnimation;
 import me.catcoder.sidebar.text.impl.TextTypingAnimation;
 import org.bukkit.ChatColor;
-
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 
 
 @UtilityClass

@@ -12,11 +12,20 @@ import net.minecraft.EnumChatFormat;
 import net.minecraft.network.PacketDataSerializer;
 import net.minecraft.network.chat.ChatHexColor;
 import net.minecraft.network.protocol.game.PacketPlayOutScoreboardTeam;
+import org.bukkit.entity.Player;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
+
+import java.util.UUID;
 
 import static org.junit.Assert.*;
+import static org.powermock.api.mockito.PowerMockito.*;
 
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(VersionUtil.class)
 public class TeamPacketTest_117 {
 
     private final BungeeCordChatTextProvider textProvider = new BungeeCordChatTextProvider();
@@ -28,8 +37,14 @@ public class TeamPacketTest_117 {
 
     @Test
     public void testTeamPacketIntegrity_remove() {
+        Player player = mock(Player.class);
+
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+        mockStatic(VersionUtil.class);
+        when(VersionUtil.getPlayerVersion(player.getUniqueId())).thenReturn(VersionUtil.SERVER_VERSION);
+
         WirePacket packet = ProtocolUtil.createTeamPacket(
-                ProtocolUtil.TEAM_REMOVED, 1, "test", VersionUtil.SERVER_VERSION, null, textProvider);
+                ProtocolUtil.TEAM_REMOVED, 1, "test", player, null, textProvider);
 
         ByteBuf buffer = Unpooled.wrappedBuffer(packet.getBytes());
 
@@ -42,8 +57,14 @@ public class TeamPacketTest_117 {
 
     @Test
     public void testTeamPacketIntegrity_create() {
+        Player player = mock(Player.class);
+
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
+        mockStatic(VersionUtil.class);
+        when(VersionUtil.getPlayerVersion(player.getUniqueId())).thenReturn(VersionUtil.SERVER_VERSION);
+
         WirePacket packet = ProtocolUtil.createTeamPacket(
-                ProtocolUtil.TEAM_CREATED, 1, "test", VersionUtil.SERVER_VERSION,
+                ProtocolUtil.TEAM_CREATED, 1, "test", player,
                 TextComponent.fromLegacyText("text"), textProvider);
         ByteBuf buffer = Unpooled.wrappedBuffer(packet.getBytes());
 

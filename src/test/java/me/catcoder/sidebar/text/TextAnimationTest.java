@@ -1,12 +1,12 @@
 package me.catcoder.sidebar.text;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.List;
-
 import me.catcoder.sidebar.text.impl.TextFadeAnimation;
 import org.bukkit.ChatColor;
 import org.junit.Test;
+
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
 
 public class TextAnimationTest {
 

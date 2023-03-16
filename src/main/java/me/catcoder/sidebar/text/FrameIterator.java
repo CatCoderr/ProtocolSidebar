@@ -1,10 +1,9 @@
 package me.catcoder.sidebar.text;
 
-import java.util.Iterator;
-
 import com.google.common.collect.Iterators;
-
 import lombok.NonNull;
+
+import java.util.Iterator;
 
 public final class FrameIterator implements Iterator<String> {
 

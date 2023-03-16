@@ -10,6 +10,7 @@ import me.catcoder.sidebar.text.TextIterator;
 import me.catcoder.sidebar.text.TextProvider;
 import me.catcoder.sidebar.util.lang.ThrowingConsumer;
 import me.catcoder.sidebar.util.lang.ThrowingFunction;
+import me.catcoder.sidebar.util.lang.ThrowingSupplier;
 import org.apache.commons.lang.RandomStringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -17,7 +18,6 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.*;
-import java.util.function.Supplier;
 
 /**
  * Represents a sidebar.
@@ -33,7 +33,7 @@ public class Sidebar<R> {
 
     private final Set<UUID> viewers = Collections.synchronizedSet(new HashSet<>());
     private final List<SidebarLine<R>> lines = new ArrayList<>();
-    private final ScoreboardObjective objective;
+    private final ScoreboardObjective<R> objective;
 
     private TextIterator titleText;
     private BukkitTask titleUpdater;
@@ -50,10 +50,10 @@ public class Sidebar<R> {
      * @param title  a title of sidebar
      * @param plugin plugin instance
      */
-    Sidebar(@NonNull String title, @NonNull Plugin plugin, @NonNull TextProvider<R> textProvider) {
+    Sidebar(@NonNull R title, @NonNull Plugin plugin, @NonNull TextProvider<R> textProvider) {
         this.plugin = plugin;
         this.textProvider = textProvider;
-        this.objective = new ScoreboardObjective(OBJECTIVE_PREFIX + RandomStringUtils.randomAlphabetic(3), title);
+        this.objective = new ScoreboardObjective<>(OBJECTIVE_PREFIX + RandomStringUtils.randomAlphabetic(3), title, textProvider);
     }
 
     /**
@@ -66,7 +66,10 @@ public class Sidebar<R> {
         this.plugin = plugin;
         this.textProvider = textProvider;
 
-        this.objective = new ScoreboardObjective(OBJECTIVE_PREFIX + RandomStringUtils.randomAlphabetic(3), titleIterator.next());
+        this.objective = new ScoreboardObjective<>(
+                OBJECTIVE_PREFIX + RandomStringUtils.randomAlphabetic(3),
+                textProvider.fromLegacyMessage(titleIterator.next()),
+                textProvider);
 
         setTitleIter(titleIterator);
     }
@@ -86,7 +89,7 @@ public class Sidebar<R> {
      *
      * @param title title to be updated
      */
-    public void setTitle(@NonNull String title) {
+    public void setTitle(@NonNull R title) {
         cancelTitleUpdater();
 
         objective.setDisplayName(title);
@@ -118,10 +121,8 @@ public class Sidebar<R> {
         this.titleUpdater = plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, () -> {
             String next = titleText.next();
 
-            if (!next.equals(objective.getDisplayName())) {
-                objective.setDisplayName(next);
-                broadcast(objective::updateValue);
-            }
+            objective.setDisplayName(textProvider.fromLegacyMessage(next));
+            broadcast(objective::updateValue);
         }, 0, 1);
     }
 
@@ -205,7 +206,7 @@ public class Sidebar<R> {
      * @param updater - the function that updates the text
      * @return SidebarLine instance
      */
-    public SidebarLine<R> addUpdatableLine(Supplier<R> updater) {
+    public SidebarLine<R> addUpdatableLine(ThrowingSupplier<R, Throwable> updater) {
         return addUpdatableLine(player -> updater.get());
     }
 
@@ -412,15 +413,6 @@ public class Sidebar<R> {
         synchronized (lines) {
             return Collections.unmodifiableList(lines);
         }
-    }
-
-    /**
-     * Returns the scoreboard objective used by this sidebar.
-     *
-     * @return the scoreboard objective
-     */
-    public ScoreboardObjective getObjective() {
-        return objective;
     }
 
     private void broadcast(@NonNull ThrowingConsumer<Player, Throwable> consumer) {

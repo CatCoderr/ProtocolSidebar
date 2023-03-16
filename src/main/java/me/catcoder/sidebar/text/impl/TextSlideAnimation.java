@@ -1,12 +1,12 @@
 package me.catcoder.sidebar.text.impl;
 
-import java.util.List;
-
 import lombok.NonNull;
 import lombok.experimental.Delegate;
 import me.catcoder.sidebar.text.FrameIterator;
 import me.catcoder.sidebar.text.TextFrame;
 import me.catcoder.sidebar.text.TextIterator;
+
+import java.util.List;
 
 /**
  * Text sliding animation. WIP
