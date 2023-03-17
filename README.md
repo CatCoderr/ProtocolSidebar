@@ -2,13 +2,11 @@
 
 [![Build Status](https://github.com/CatCoderr/ProtocolSidebar/actions/workflows/maven-publish.yaml/badge.svg?branch=dev)](https://github.com/CatCoderr/ProtocolSidebar/actions/workflows/maven-publish.yaml)
 ![Sonatype Nexus (Snapshots)](https://img.shields.io/nexus/s/me.catcoder/bukkit-sidebar?server=https%3A%2F%2Foss.sonatype.org)
+![Build Status](https://img.shields.io/badge/Minecraft%20Versions-1.12.2--1.19.3-blue?style=flat)
 
 Unleash the power of your Minecraft server's scoreboard with ProtocolSidebar - the ultimate non-flickering, feature-packed sidebar library.
 
 Requires ProtocolLib. Optionally supports ViaVersion.
-
-Supported Minecraft versions: 1.12.2 - 1.19.4
-
 ### Production warning ⚠️
 
 This library is still in active development, so it may contain bugs and/or breaking changes.
