@@ -14,12 +14,12 @@ public class MiniPlaceholdersTextProvider extends MiniMessageTextProvider {
     @Override
     public String asJsonMessage(@NonNull Player player, @NonNull String message) {
         return AdventureTextProvider.GSON_SERIALIZER.serialize(
-                miniMessage.deserialize(message, MiniPlaceholders.getAudiencePlaceholders(player)));
+                miniMessage.deserialize(message, MiniPlaceholders.getAudienceGlobalPlaceholders(player)));
     }
 
     @Override
     public String asLegacyMessage(@NonNull Player player, @NonNull String component) {
         return AdventureTextProvider.LEGACY_SERIALIZER.serialize(
-                miniMessage.deserialize(component, MiniPlaceholders.getAudiencePlaceholders(player)));
+                miniMessage.deserialize(component, MiniPlaceholders.getAudienceGlobalPlaceholders(player)));
     }
 }
