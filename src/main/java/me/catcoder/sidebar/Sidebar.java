@@ -8,10 +8,10 @@ import lombok.SneakyThrows;
 import lombok.experimental.FieldDefaults;
 import me.catcoder.sidebar.text.TextIterator;
 import me.catcoder.sidebar.text.TextProvider;
+import me.catcoder.sidebar.util.RandomString;
 import me.catcoder.sidebar.util.lang.ThrowingConsumer;
 import me.catcoder.sidebar.util.lang.ThrowingFunction;
 import me.catcoder.sidebar.util.lang.ThrowingSupplier;
-import org.apache.commons.lang.RandomStringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -53,7 +53,7 @@ public class Sidebar<R> {
     Sidebar(@NonNull R title, @NonNull Plugin plugin, @NonNull TextProvider<R> textProvider) {
         this.plugin = plugin;
         this.textProvider = textProvider;
-        this.objective = new ScoreboardObjective<>(OBJECTIVE_PREFIX + RandomStringUtils.randomAlphabetic(3), title, textProvider);
+        this.objective = new ScoreboardObjective<>(OBJECTIVE_PREFIX + RandomString.generate(3), title, textProvider);
     }
 
     /**
@@ -67,7 +67,7 @@ public class Sidebar<R> {
         this.textProvider = textProvider;
 
         this.objective = new ScoreboardObjective<>(
-                OBJECTIVE_PREFIX + RandomStringUtils.randomAlphabetic(3),
+                OBJECTIVE_PREFIX + RandomString.generate(3),
                 textProvider.fromLegacyMessage(titleIterator.next()),
                 textProvider);
 

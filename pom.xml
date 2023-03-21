@@ -5,7 +5,7 @@
 
     <groupId>me.catcoder</groupId>
     <artifactId>bukkit-sidebar</artifactId>
-    <version>6.1.2-SNAPSHOT</version>
+    <version>6.1.3-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Sidebar</name>
@@ -18,7 +18,6 @@
         <maven.compiler.target>16</maven.compiler.target>
         <!-- Testing -->
         <powermock.version>2.0.7</powermock.version>
-        <spigot.version>1.17.1-R0.1-SNAPSHOT</spigot.version>
         <paper.version>1.19.4-R0.1-SNAPSHOT</paper.version>
         <adventure.version>4.13.0</adventure.version>
     </properties>
@@ -160,12 +159,6 @@
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
             <version>${paper.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot</artifactId>
-            <version>${spigot.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

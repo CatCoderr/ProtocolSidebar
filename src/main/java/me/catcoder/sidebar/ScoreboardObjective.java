@@ -7,6 +7,7 @@ import io.netty.buffer.Unpooled;
 import lombok.Getter;
 import lombok.NonNull;
 import me.catcoder.sidebar.protocol.PacketIds;
+import me.catcoder.sidebar.protocol.ProtocolUtil;
 import me.catcoder.sidebar.text.TextProvider;
 import me.catcoder.sidebar.util.ByteBufNetOutput;
 import me.catcoder.sidebar.util.NetOutput;
@@ -24,7 +25,6 @@ import static me.catcoder.sidebar.SidebarLine.sendWirePacket;
  */
 @Getter
 public class ScoreboardObjective<R> {
-
 
     public static final int DISPLAY_SIDEBAR = 1;
     public static final int ADD_OBJECTIVE = 0;
@@ -64,7 +64,9 @@ public class ScoreboardObjective<R> {
     }
 
     void display(@NonNull Player player) {
-        ByteBuf buf = Unpooled.buffer();
+        ByteBuf buf = ProtocolUtil.BUFFER.get();
+        buf.clear(); // clear buffer
+
         NetOutput output = new ByteBufNetOutput(buf);
 
         output.writeByte(DISPLAY_SIDEBAR);
@@ -76,7 +78,9 @@ public class ScoreboardObjective<R> {
     private WirePacket getPacket(@NonNull Player player, int mode) {
         int version = VersionUtil.getPlayerVersion(player.getUniqueId());
 
-        ByteBuf buf = Unpooled.buffer();
+        ByteBuf buf = ProtocolUtil.BUFFER.get();
+        buf.clear(); // clear buffer
+
         NetOutput output = new ByteBufNetOutput(buf);
 
         output.writeString(name);

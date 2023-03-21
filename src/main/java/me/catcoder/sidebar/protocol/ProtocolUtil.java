@@ -6,6 +6,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.util.concurrent.FastThreadLocal;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
@@ -21,11 +22,13 @@ import java.util.Iterator;
 @UtilityClass
 public class ProtocolUtil {
 
-    private static final Splitter SPLITTER = Splitter.fixedLength(16);
-    public static final ChatColor[] COLORS = ChatColor.values();
-    public static final int TEAM_CREATED = 0;
-    public static final int TEAM_REMOVED = 1;
-    public static final int TEAM_UPDATED = 2;
+    private final Splitter SPLITTER = Splitter.fixedLength(16);
+    // use thread local buffer to avoid unnecessary allocations
+    public final ThreadLocal<ByteBuf> BUFFER = ThreadLocal.withInitial(Unpooled::buffer);
+    public final ChatColor[] COLORS = ChatColor.values();
+    public final int TEAM_CREATED = 0;
+    public final int TEAM_REMOVED = 1;
+    public final int TEAM_UPDATED = 2;
 
     public <R> WirePacket createTeamPacket(int mode, int index,
                                            @NonNull String teamName,
@@ -33,6 +36,30 @@ public class ProtocolUtil {
                                            R text,
                                            @NonNull TextProvider<R> textProvider) {
         return createTeamPacket(mode, index, teamName, VersionUtil.SERVER_VERSION, player, text, textProvider);
+    }
+
+    public WirePacket createScorePacket(int action, String objectiveName, int score, int index) {
+        ByteBuf buf = BUFFER.get();
+
+        buf.clear(); // clear buffer
+
+        NetOutput output = new ByteBufNetOutput(buf);
+
+        output.writeString(ProtocolUtil.COLORS[index].toString());
+
+        if (VersionUtil.SERVER_VERSION >= VersionUtil.MINECRAFT_1_13) {
+            output.writeVarInt(action);
+        } else {
+            output.writeByte(action);
+        }
+
+        output.writeString(objectiveName);
+
+        if (action != 1) {
+            output.writeVarInt(score);
+        }
+
+        return new WirePacket(PacketIds.UPDATE_SCORE.getPacketId(VersionUtil.SERVER_VERSION), output.toByteArray());
     }
 
     @SneakyThrows
@@ -47,9 +74,11 @@ public class ProtocolUtil {
         String teamEntry = COLORS[index].toString();
         int clientVersion = VersionUtil.getPlayerVersion(player.getUniqueId());
 
-        ByteBuf buffer = Unpooled.buffer();
+        ByteBuf buf = BUFFER.get();
 
-        NetOutput packet = new ByteBufNetOutput(buffer);
+        buf.clear(); // clear buffer
+
+        NetOutput packet = new ByteBufNetOutput(buf);
 
         // construct the packet on lowest level for future compatibility
 

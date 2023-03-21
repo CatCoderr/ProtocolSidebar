@@ -52,7 +52,7 @@ Contributions are welcome.
 <dependency>
     <groupId>me.catcoder</groupId>
     <artifactId>bukkit-sidebar</artifactId>
-    <version>6.1.2-SNAPSHOT</version>
+    <version>6.1.3-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -65,7 +65,7 @@ repositories {
 ```
 ```groovy
 dependencies {
-    implementation 'me.catcoder:bukkit-sidebar:6.1.2-SNAPSHOT'
+    implementation 'me.catcoder:bukkit-sidebar:6.1.3-SNAPSHOT'
 }
 ```
 
@@ -78,7 +78,7 @@ repositories {
 ```
 ```kotlin
 dependencies {
-    implementation("me.catcoder:bukkit-sidebar:6.1.2-SNAPSHOT")
+    implementation("me.catcoder:bukkit-sidebar:6.1.3-SNAPSHOT")
 }
 ```
 

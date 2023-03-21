@@ -4,18 +4,12 @@ import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.injector.netty.WirePacket;
 import com.google.common.base.Preconditions;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.ToString;
-import me.catcoder.sidebar.protocol.PacketIds;
 import me.catcoder.sidebar.protocol.ProtocolUtil;
 import me.catcoder.sidebar.text.TextProvider;
-import me.catcoder.sidebar.util.ByteBufNetOutput;
-import me.catcoder.sidebar.util.NetOutput;
-import me.catcoder.sidebar.util.VersionUtil;
 import me.catcoder.sidebar.util.lang.ThrowingFunction;
 import me.catcoder.sidebar.util.lang.ThrowingSupplier;
 import org.bukkit.Bukkit;
@@ -96,12 +90,12 @@ public class SidebarLine<R> {
         }
 
         if (previousScore != score) {
-            sendWirePacket(player, createScorePacket(0, objective));
+            sendWirePacket(player, ProtocolUtil.createScorePacket(0, objective, score, index));
         }
     }
 
     void removeTeam(@NonNull Player player, @NonNull String objective) {
-        sendWirePacket(player, createScorePacket(1, objective));
+        sendWirePacket(player, ProtocolUtil.createScorePacket(1, objective, score, index));
 
         sendWirePacket(player, ProtocolUtil.createTeamPacket(ProtocolUtil.TEAM_REMOVED, index, teamName,
                 player, null, textProvider));
@@ -113,32 +107,11 @@ public class SidebarLine<R> {
         sendWirePacket(player, ProtocolUtil.createTeamPacket(ProtocolUtil.TEAM_CREATED, index, teamName,
                 player, text, textProvider));
 
-        sendWirePacket(player, createScorePacket(0, objective));
+        sendWirePacket(player, ProtocolUtil.createScorePacket(0, objective, score, index));
     }
 
     public void setScore(int score) {
         this.score = score;
-    }
-
-    private WirePacket createScorePacket(int action, String objectiveName) {
-        ByteBuf buf = Unpooled.buffer();
-        NetOutput output = new ByteBufNetOutput(buf);
-
-        output.writeString(ProtocolUtil.COLORS[index].toString());
-
-        if (VersionUtil.SERVER_VERSION >= VersionUtil.MINECRAFT_1_13) {
-            output.writeVarInt(action);
-        } else {
-            output.writeByte(action);
-        }
-
-        output.writeString(objectiveName);
-
-        if (action != 1) {
-            output.writeVarInt(score);
-        }
-
-        return new WirePacket(PacketIds.UPDATE_SCORE.getPacketId(VersionUtil.SERVER_VERSION), output.toByteArray());
     }
 
     private static ProtocolManager getProtocolManager() {
