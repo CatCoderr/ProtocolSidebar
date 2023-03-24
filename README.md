@@ -1,6 +1,6 @@
 # ProtocolSidebar 
 
-[![Build Status](https://github.com/CatCoderr/ProtocolSidebar/actions/workflows/maven-publish.yaml/badge.svg?branch=dev)](https://github.com/CatCoderr/ProtocolSidebar/actions/workflows/maven-publish.yaml)
+[![Build](https://github.com/CatCoderr/ProtocolSidebar/actions/workflows/build.yaml/badge.svg)](https://github.com/CatCoderr/ProtocolSidebar/actions/workflows/build.yaml)
 ![Sonatype Nexus (Snapshots)](https://img.shields.io/nexus/s/me.catcoder/bukkit-sidebar?server=https%3A%2F%2Foss.sonatype.org)
 ![Build Status](https://img.shields.io/badge/Minecraft%20Versions-1.12.2--1.19.4-blue?style=flat)
 
