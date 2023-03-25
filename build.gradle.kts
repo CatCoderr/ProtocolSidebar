@@ -28,7 +28,7 @@ val protocolLibVersion = "4.7.0"
 val viaVersionVersion = "4.0.1-SNAPSHOT"
 val miniPlaceholdersVersion = "2.0.0"
 val nettyVersion = "4.1.67.Final"
-val lombokVersion = "1.18.20"
+val lombokVersion = "1.18.26"
 
 dependencies {
     testImplementation("junit:junit:4.13.1")
