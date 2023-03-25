@@ -33,7 +33,7 @@ val lombokVersion = "1.18.20"
 dependencies {
     testImplementation("junit:junit:4.13.1")
     testImplementation("org.mockito:mockito-core:5.2.0")
-    testImplementation("org.powermock:powermock-module-junit4:2.0.7")
+    testImplementation("org.powermock:powermock-module-junit4:2.0.9")
     testImplementation("org.powermock:powermock-api-mockito2:2.0.9")
 
     compileOnly("io.papermc.paper:paper-api:${paperVersion}")
