@@ -31,7 +31,7 @@ val nettyVersion = "4.1.67.Final"
 val lombokVersion = "1.18.26"
 
 dependencies {
-    testImplementation("junit:junit:4.13.1")
+    testImplementation("junit:junit:4.13.2")
     testImplementation("org.mockito:mockito-core:5.2.0")
     testImplementation("org.powermock:powermock-module-junit4:2.0.7")
     testImplementation("org.powermock:powermock-api-mockito2:2.0.9")
