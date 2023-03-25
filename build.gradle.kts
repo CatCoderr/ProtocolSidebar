@@ -34,7 +34,7 @@ dependencies {
     testImplementation("junit:junit:4.13.1")
     testImplementation("org.mockito:mockito-core:3.5.10")
     testImplementation("org.powermock:powermock-module-junit4:2.0.7")
-    testImplementation("org.powermock:powermock-api-mockito2:2.0.7")
+    testImplementation("org.powermock:powermock-api-mockito2:2.0.9")
 
     compileOnly("io.papermc.paper:paper-api:${paperVersion}")
     testCompileOnly("io.papermc.paper:paper-api:${paperVersion}")
