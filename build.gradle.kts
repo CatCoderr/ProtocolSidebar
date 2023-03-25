@@ -45,7 +45,7 @@ dependencies {
     compileOnly("com.viaversion:viaversion-bukkit:${viaVersionVersion}")
     compileOnly("com.comphenix.protocol:ProtocolLib:${protocolLibVersion}")
 
-    compileOnly("io.netty:netty-buffer:4.1.67.Final")
+    compileOnly("io.netty:netty-buffer:4.1.90.Final")
 
     compileOnly("io.github.miniplaceholders:miniplaceholders-api:${miniPlaceholdersVersion}")
 
