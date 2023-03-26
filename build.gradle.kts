@@ -16,7 +16,7 @@ repositories {
 }
 
 group = "me.catcoder"
-version = "6.1.3-SNAPSHOT"
+version = "6.1.4-SNAPSHOT"
 description = "Powerful feature-packed Minecraft scoreboard library"
 
 extra["sonatypeUsername"] = System.getenv("SONATYPE_USERNAME")

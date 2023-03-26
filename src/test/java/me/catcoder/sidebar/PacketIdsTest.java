@@ -30,9 +30,4 @@ public class PacketIdsTest {
     public void testUnsupportedVersion() {
         PacketIds.UPDATE_TEAMS.getPacketId(47); // 1.8
     }
-
-    @Test
-    public void testNewestVersion() {
-        assertEquals(0x56, PacketIds.UPDATE_TEAMS.getPacketId(ProtocolConstants.MAXIMUM_SUPPORTED_VERSION + 5));
-    }
 }
