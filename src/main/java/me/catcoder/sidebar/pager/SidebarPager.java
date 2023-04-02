@@ -23,7 +23,7 @@ public class SidebarPager<R> {
      * Creates a new sidebar pager.
      *
      * @param sidebars         - list of sidebars to use
-     * @param switchDelayTicks - delay between page switches in ticks
+     * @param switchDelayTicks - delay between page switches in ticks (if value is 0, pages will not be switched automatically)
      * @param plugin           - plugin instance
      */
     public SidebarPager(@NonNull List<Sidebar<R>> sidebars, long switchDelayTicks, @NonNull Plugin plugin) {
@@ -31,7 +31,12 @@ public class SidebarPager<R> {
         this.viewers = new HashSet<>();
         this.pageIterator = Iterators.cycle(sidebars);
         this.currentPage = pageIterator.next();
-        this.switchTask = plugin.getServer().getScheduler().runTaskTimer(plugin, this::switchPage, switchDelayTicks, switchDelayTicks);
+
+        if (switchDelayTicks > 0) {
+            this.switchTask = plugin.getServer().getScheduler().runTaskTimer(plugin, this::switchPage, switchDelayTicks, switchDelayTicks);
+        } else {
+            this.switchTask = null;
+        }
     }
 
     public void applyToAll(Consumer<Sidebar<R>> consumer) {
@@ -53,6 +58,10 @@ public class SidebarPager<R> {
                 currentPage.addViewer(player);
             }
         }
+    }
+
+    public Sidebar<R> getCurrentPage() {
+        return currentPage;
     }
 
     public Set<UUID> getViewers() {
@@ -81,7 +90,9 @@ public class SidebarPager<R> {
      * Note: pager object will be unusable after this method call.
      */
     public void destroy() {
-        switchTask.cancel();
+        if (switchTask != null) {
+            switchTask.cancel();
+        }
         for (Sidebar<R> sidebar : sidebars) {
             sidebar.destroy();
         }
