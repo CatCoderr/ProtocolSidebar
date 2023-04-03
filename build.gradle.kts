@@ -42,8 +42,8 @@ dependencies {
 
     compileOnly("com.viaversion:viaversion-bukkit:${viaVersionVersion}")
 
-    compileOnly("io.netty:netty-buffer:4.1.90.Final")
-    compileOnly("io.netty:netty-handler:4.1.90.Final")
+    compileOnly("io.netty:netty-buffer:4.1.91.Final")
+    compileOnly("io.netty:netty-handler:4.1.91.Final")
 
     compileOnly("io.github.miniplaceholders:miniplaceholders-api:${miniPlaceholdersVersion}")
 
