@@ -1,14 +1,13 @@
 package me.catcoder.sidebar;
 
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.ProtocolManager;
-import com.comphenix.protocol.injector.netty.WirePacket;
 import com.google.common.base.Preconditions;
+import io.netty.buffer.ByteBuf;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.ToString;
-import me.catcoder.sidebar.protocol.ProtocolUtil;
+import me.catcoder.sidebar.protocol.ChannelInjector;
+import me.catcoder.sidebar.protocol.ScoreboardPackets;
 import me.catcoder.sidebar.text.TextProvider;
 import me.catcoder.sidebar.util.lang.ThrowingFunction;
 import me.catcoder.sidebar.util.lang.ThrowingSupplier;
@@ -85,43 +84,37 @@ public class SidebarLine<R> {
     void updateTeam(@NonNull Player player, int previousScore, @NonNull String objective) throws Throwable {
         if (!isStaticText()) {
             R text = updater.apply(player);
-            sendWirePacket(player, ProtocolUtil.createTeamPacket(ProtocolUtil.TEAM_UPDATED, index, teamName,
+            sendPacket(player, ScoreboardPackets.createTeamPacket(ScoreboardPackets.TEAM_UPDATED, index, teamName,
                     player, text, textProvider));
         }
 
         if (previousScore != score) {
-            sendWirePacket(player, ProtocolUtil.createScorePacket(0, objective, score, index));
+            sendPacket(player, ScoreboardPackets.createScorePacket(player, 0, objective, score, index));
         }
     }
 
     void removeTeam(@NonNull Player player, @NonNull String objective) {
-        sendWirePacket(player, ProtocolUtil.createScorePacket(1, objective, score, index));
+        sendPacket(player, ScoreboardPackets.createScorePacket(player, 1, objective, score, index));
 
-        sendWirePacket(player, ProtocolUtil.createTeamPacket(ProtocolUtil.TEAM_REMOVED, index, teamName,
+        sendPacket(player, ScoreboardPackets.createTeamPacket(ScoreboardPackets.TEAM_REMOVED, index, teamName,
                 player, null, textProvider));
     }
 
     void createTeam(@NonNull Player player, @NonNull String objective) throws Throwable {
         R text = updater.apply(player);
 
-        sendWirePacket(player, ProtocolUtil.createTeamPacket(ProtocolUtil.TEAM_CREATED, index, teamName,
+        sendPacket(player, ScoreboardPackets.createTeamPacket(ScoreboardPackets.TEAM_CREATED, index, teamName,
                 player, text, textProvider));
 
-        sendWirePacket(player, ProtocolUtil.createScorePacket(0, objective, score, index));
+        sendPacket(player, ScoreboardPackets.createScorePacket(player, 0, objective, score, index));
     }
 
     public void setScore(int score) {
         this.score = score;
     }
 
-    private static ProtocolManager getProtocolManager() {
-        return ProtocolLibrary.getProtocolManager();
-    }
-
     @SneakyThrows
-    static void sendWirePacket(@NonNull Player player, @NonNull WirePacket packet) {
-        if (player.isOnline()) {
-            getProtocolManager().sendWirePacket(player, packet);
-        }
+    static void sendPacket(@NonNull Player player, @NonNull ByteBuf packet) {
+        ChannelInjector.IMP.sendPacket(player, packet);
     }
 }

@@ -6,7 +6,6 @@
 
 Unleash the power of your Minecraft server's scoreboard with ProtocolSidebar - the ultimate non-flickering, feature-packed sidebar library.
 
-Requires ProtocolLib. Optionally supports ViaVersion.
 ### Production warning ⚠️
 
 This library is still in active development, so it may contain bugs and/or breaking changes.
@@ -37,6 +36,7 @@ Contributions are welcome.
 * Supports up to 30 characters per line on 1.12.2 and below
 * No character limit on 1.13 and higher
 * Supports hex colors on 1.16 and higher
+* Does not require any additional plugins on the server
 
 ## Adding to your project
 
@@ -132,8 +132,6 @@ sidebar.addViewer(player);
 // ...hide from the player
 sidebar.removeViewer(player);
 ```
-
-More examples available [here.](https://github.com/CatCoderr/ProtocolSidebar/tree/master/test-plugin/src/main/java/me/catcoder/sidebar)
 
 ![Example](https://github.com/CatCoderr/ProtocolSidebar/raw/master/assets/nice_example.gif)
 

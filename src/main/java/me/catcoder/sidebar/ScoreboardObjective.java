@@ -1,20 +1,19 @@
 package me.catcoder.sidebar;
 
-import com.comphenix.protocol.injector.netty.WirePacket;
 import com.google.common.base.Preconditions;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import lombok.Getter;
 import lombok.NonNull;
+import me.catcoder.sidebar.protocol.ChannelInjector;
 import me.catcoder.sidebar.protocol.PacketIds;
-import me.catcoder.sidebar.protocol.ProtocolUtil;
+import me.catcoder.sidebar.protocol.ProtocolConstants;
 import me.catcoder.sidebar.text.TextProvider;
-import me.catcoder.sidebar.util.ByteBufNetOutput;
-import me.catcoder.sidebar.util.NetOutput;
-import me.catcoder.sidebar.util.VersionUtil;
+import me.catcoder.sidebar.util.buffer.ByteBufNetOutput;
+import me.catcoder.sidebar.util.buffer.NetOutput;
+import me.catcoder.sidebar.util.version.VersionUtil;
 import org.bukkit.entity.Player;
 
-import static me.catcoder.sidebar.SidebarLine.sendWirePacket;
+import static me.catcoder.sidebar.SidebarLine.sendPacket;
 
 /**
  * Encapsulates scoreboard objective
@@ -49,39 +48,41 @@ public class ScoreboardObjective<R> {
     }
 
     void updateValue(@NonNull Player player) {
-        WirePacket packet = getPacket(player, UPDATE_VALUE);
-        sendWirePacket(player, packet);
+        ByteBuf packet = getPacket(player, UPDATE_VALUE);
+        sendPacket(player, packet);
     }
 
     void create(@NonNull Player player) {
-        WirePacket packet = getPacket(player, ADD_OBJECTIVE);
-        sendWirePacket(player, packet);
+        ByteBuf packet = getPacket(player, ADD_OBJECTIVE);
+        sendPacket(player, packet);
     }
 
     void remove(@NonNull Player player) {
-        WirePacket packet = getPacket(player, REMOVE_OBJECTIVE);
-        sendWirePacket(player, packet);
+        ByteBuf packet = getPacket(player, REMOVE_OBJECTIVE);
+        sendPacket(player, packet);
     }
 
     void display(@NonNull Player player) {
-        ByteBuf buf = ProtocolUtil.BUFFER.get();
-        buf.clear(); // clear buffer
+        ByteBuf buf = ChannelInjector.IMP.getChannel(player).alloc().buffer();
 
         NetOutput output = new ByteBufNetOutput(buf);
+
+        output.writeVarInt(PacketIds.OBJECTIVE_DISPLAY.getPacketId(VersionUtil.SERVER_VERSION));
 
         output.writeByte(DISPLAY_SIDEBAR);
         output.writeString(name);
 
-        sendWirePacket(player, new WirePacket(PacketIds.OBJECTIVE_DISPLAY.getPacketId(VersionUtil.SERVER_VERSION), output.toByteArray()));
+        sendPacket(player, buf);
     }
 
-    private WirePacket getPacket(@NonNull Player player, int mode) {
+    private ByteBuf getPacket(@NonNull Player player, int mode) {
         int version = VersionUtil.getPlayerVersion(player.getUniqueId());
 
-        ByteBuf buf = ProtocolUtil.BUFFER.get();
-        buf.clear(); // clear buffer
+        ByteBuf buf = ChannelInjector.IMP.getChannel(player).alloc().buffer();
 
         NetOutput output = new ByteBufNetOutput(buf);
+
+        output.writeVarInt(PacketIds.OBJECTIVE.getPacketId(VersionUtil.SERVER_VERSION));
 
         output.writeString(name);
         output.writeByte(mode);
@@ -89,17 +90,17 @@ public class ScoreboardObjective<R> {
         if (mode == ADD_OBJECTIVE || mode == UPDATE_VALUE) {
             String legacyText = textProvider.asLegacyMessage(player, displayName);
             // Since 1.13 characters limit for display name was removed
-            if (version < VersionUtil.MINECRAFT_1_13 && legacyText.length() > 32) {
+            if (version < ProtocolConstants.MINECRAFT_1_13 && legacyText.length() > 32) {
                 legacyText = legacyText.substring(0, 32);
             }
 
-            if (VersionUtil.SERVER_VERSION >= VersionUtil.MINECRAFT_1_13) {
+            if (VersionUtil.SERVER_VERSION >= ProtocolConstants.MINECRAFT_1_13) {
                 output.writeString(textProvider.asJsonMessage(player, displayName));
             } else {
                 output.writeString(legacyText);
             }
 
-            if (VersionUtil.SERVER_VERSION >= VersionUtil.MINECRAFT_1_13) {
+            if (VersionUtil.SERVER_VERSION >= ProtocolConstants.MINECRAFT_1_13) {
                 output.writeVarInt(0); // Health display
             } else {
                 output.writeString("integer"); // Health display
@@ -107,6 +108,6 @@ public class ScoreboardObjective<R> {
         }
 
 
-        return new WirePacket(PacketIds.OBJECTIVE.getPacketId(VersionUtil.SERVER_VERSION), output.toByteArray());
+        return buf;
     }
 }

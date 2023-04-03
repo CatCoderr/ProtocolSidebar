@@ -1,6 +1,6 @@
 name: Build
 
-on: [ push, pull_request ]
+on: [ push ]
 
 env:
   GPG_KEY_NAME: ${{ secrets.GPG_KEY_NAME }}
@@ -27,7 +27,7 @@ jobs:
         run: ./gradlew test build --no-daemon
 
       - name: Publish to Sonatype
-        if: github.event_name == 'push'
+        if: github.ref == 'refs/heads/master'
         env:
           GPG_PASSPHRASE: ${{ secrets.GPG_KEY_PASSPHRASE }}
           GPG_SECRET_KEY: ${{ secrets.GPG_SECRET_KEY }}

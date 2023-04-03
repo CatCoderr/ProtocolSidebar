@@ -1,4 +1,4 @@
-package me.catcoder.sidebar.util;
+package me.catcoder.sidebar.util.buffer;
 
 import io.netty.buffer.ByteBuf;
 

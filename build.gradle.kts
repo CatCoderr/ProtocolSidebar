@@ -16,7 +16,7 @@ repositories {
 }
 
 group = "me.catcoder"
-version = "6.1.4-SNAPSHOT"
+version = "6.1.5-SNAPSHOT"
 description = "Powerful feature-packed Minecraft scoreboard library"
 
 extra["sonatypeUsername"] = System.getenv("SONATYPE_USERNAME")
@@ -24,10 +24,8 @@ extra["sonatypePassword"] = System.getenv("SONATYPE_PASSWORD")
 
 val adventureVersion = "4.13.0"
 val paperVersion = "1.19.4-R0.1-SNAPSHOT"
-val protocolLibVersion = "4.8.0"
 val viaVersionVersion = "4.6.2"
 val miniPlaceholdersVersion = "2.0.0"
-val nettyVersion = "4.1.67.Final"
 val lombokVersion = "1.18.26"
 
 dependencies {
@@ -43,9 +41,9 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:${lombokVersion}")
 
     compileOnly("com.viaversion:viaversion-bukkit:${viaVersionVersion}")
-    compileOnly("com.comphenix.protocol:ProtocolLib:${protocolLibVersion}")
 
     compileOnly("io.netty:netty-buffer:4.1.90.Final")
+    compileOnly("io.netty:netty-handler:4.1.90.Final")
 
     compileOnly("io.github.miniplaceholders:miniplaceholders-api:${miniPlaceholdersVersion}")
 

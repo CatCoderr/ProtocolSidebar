@@ -14,8 +14,28 @@ public class ProtocolConstants {
     public static final int MINECRAFT_1_14_3 = 490;
     public static final int MINECRAFT_1_14_4 = 498;
     public static final int MINECRAFT_1_15 = 573;
+    public static final int MINECRAFT_1_15_1 = 575;
+    public static final int MINECRAFT_1_15_2 = 578;
+
+    public static final int MINECRAFT_1_16 = 735;
+    public static final int MINECRAFT_1_16_1 = 736;
+    public static final int MINECRAFT_1_16_2 = 751;
+    public static final int MINECRAFT_1_16_3 = 753;
+    public static final int MINECRAFT_1_16_4 = 754;
+    public static final int MINECRAFT_1_16_5 = 754;
+
     public static final int MINECRAFT_1_17 = 755;
+    public static final int MINECRAFT_1_17_1 = 756;
+
+    public static final int MINECRAFT_1_18 = 757;
+    public static final int MINECRAFT_1_18_1 = 757;
+    public static final int MINECRAFT_1_18_2 = 758;
+
+    public static final int MINECRAFT_1_19 = 759;
+
     public static final int MINECRAFT_1_19_1 = 760;
+    public static final int MINECRAFT_1_19_2 = 760;
+
     public static final int MINECRAFT_1_19_3 = 761;
 
     public static final int MINECRAFT_1_19_4 = 762;
@@ -29,6 +49,7 @@ public class ProtocolConstants {
         public final int protocol;
         public final int packetId;
     }
+
 
     public static ProtocolMapping map(int protocol, int packetId) {
         return new ProtocolMapping(protocol, packetId);

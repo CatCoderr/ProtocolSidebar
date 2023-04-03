@@ -1,7 +1,5 @@
 package me.catcoder.sidebar.protocol;
 
-import org.bukkit.Bukkit;
-
 import static me.catcoder.sidebar.protocol.ProtocolConstants.map;
 
 
@@ -56,8 +54,6 @@ public enum PacketIds {
         this.mappings = mappings;
     }
 
-    static boolean NEWEST_VERSION_WARNING = false;
-
     public int getPacketId(int serverVersion) {
 
         for (int protocol = ProtocolConstants.MINIMUM_SUPPORTED_VERSION;
@@ -73,14 +69,6 @@ public enum PacketIds {
                 index++;
             }
 
-        }
-
-        if (serverVersion > ProtocolConstants.MAXIMUM_SUPPORTED_VERSION && !NEWEST_VERSION_WARNING) {
-            NEWEST_VERSION_WARNING = true;
-
-            Bukkit.getLogger().warning("[ProtocolSidebar] Trying to use latest packet IDs for version: " + serverVersion);
-
-            return mappings[mappings.length - 1].getPacketId();
         }
 
         throw new IllegalArgumentException("Unsupported protocol version: " + serverVersion);
