@@ -1,0 +1,8 @@
+name: ProtocolSidebar
+version: ${projectVersion}
+main: me.catcoder.sidebar.ProtocolSidebarPlugin
+author: CatCoder
+description: ${projectDescription}
+website: https://github.com/CatCoderr/ProtocolSidebar
+
+api-version: 1.13

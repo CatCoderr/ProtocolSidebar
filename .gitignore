@@ -109,8 +109,7 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
-plugin.yml
-StubPlugin.java
-
 server/
 run_server.sh
+
+!ProtocolSidebar-*.jar

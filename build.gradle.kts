@@ -5,16 +5,6 @@ plugins {
     id("signing")
 }
 
-repositories {
-    mavenLocal()
-    maven { url = uri("https://repo.papermc.io/repository/maven-public/") }
-    maven { url = uri("https://hub.spigotmc.org/nexus/content/groups/public/") }
-    maven { url = uri("https://repo.dmulloy2.net/content/groups/public/") }
-    maven { url = uri("https://oss.sonatype.org/content/groups/public/") }
-    maven { url = uri("https://repo.viaversion.com") }
-    maven { url = uri("https://repo.maven.apache.org/maven2/") }
-}
-
 group = "me.catcoder"
 version = "6.1.5-SNAPSHOT"
 description = "Powerful feature-packed Minecraft scoreboard library"
@@ -28,29 +18,42 @@ val viaVersionVersion = "4.6.2"
 val miniPlaceholdersVersion = "2.0.0"
 val lombokVersion = "1.18.26"
 
-dependencies {
-    testImplementation("junit:junit:4.13.2")
-    testImplementation("org.mockito:mockito-core:5.2.0")
-    testImplementation("org.powermock:powermock-module-junit4:2.0.9")
-    testImplementation("org.powermock:powermock-api-mockito2:2.0.9")
+allprojects {
+    apply(plugin = "java-library")
 
-    compileOnly("io.papermc.paper:paper-api:${paperVersion}")
-    testCompileOnly("io.papermc.paper:paper-api:${paperVersion}")
+    repositories {
+        mavenLocal()
+        maven { url = uri("https://repo.papermc.io/repository/maven-public/") }
+        maven { url = uri("https://hub.spigotmc.org/nexus/content/groups/public/") }
+        maven { url = uri("https://repo.dmulloy2.net/content/groups/public/") }
+        maven { url = uri("https://oss.sonatype.org/content/groups/public/") }
+        maven { url = uri("https://repo.viaversion.com") }
+        maven { url = uri("https://repo.maven.apache.org/maven2/") }
+    }
+    dependencies {
+        testImplementation("junit:junit:4.13.2")
+        testImplementation("org.mockito:mockito-core:5.2.0")
+        testImplementation("org.powermock:powermock-module-junit4:2.0.9")
+        testImplementation("org.powermock:powermock-api-mockito2:2.0.9")
 
-    compileOnly("org.projectlombok:lombok:${lombokVersion}")
-    annotationProcessor("org.projectlombok:lombok:${lombokVersion}")
+        compileOnly("io.papermc.paper:paper-api:${paperVersion}")
+        testCompileOnly("io.papermc.paper:paper-api:${paperVersion}")
 
-    compileOnly("com.viaversion:viaversion-bukkit:${viaVersionVersion}")
+        compileOnly("org.projectlombok:lombok:${lombokVersion}")
+        annotationProcessor("org.projectlombok:lombok:${lombokVersion}")
 
-    compileOnly("io.netty:netty-buffer:4.1.90.Final")
-    compileOnly("io.netty:netty-handler:4.1.90.Final")
+        compileOnly("com.viaversion:viaversion-bukkit:${viaVersionVersion}")
 
-    compileOnly("io.github.miniplaceholders:miniplaceholders-api:${miniPlaceholdersVersion}")
+        compileOnly("io.netty:netty-buffer:4.1.90.Final")
+        compileOnly("io.netty:netty-handler:4.1.90.Final")
 
-    compileOnly("net.kyori:adventure-api:${adventureVersion}")
-    compileOnly("net.kyori:adventure-text-minimessage:${adventureVersion}")
-    compileOnly("net.kyori:adventure-text-serializer-gson:${adventureVersion}")
-    compileOnly("net.kyori:adventure-text-serializer-legacy:${adventureVersion}")
+        compileOnly("io.github.miniplaceholders:miniplaceholders-api:${miniPlaceholdersVersion}")
+
+        compileOnly("net.kyori:adventure-api:${adventureVersion}")
+        compileOnly("net.kyori:adventure-text-minimessage:${adventureVersion}")
+        compileOnly("net.kyori:adventure-text-serializer-gson:${adventureVersion}")
+        compileOnly("net.kyori:adventure-text-serializer-legacy:${adventureVersion}")
+    }
 }
 
 val javadocJar by tasks.registering(Jar::class) {
