@@ -42,6 +42,8 @@ Contributions are welcome.
 
 Instead of manually bundling the library into your JAR file, you can use [the standalone plugin](https://github.com/CatCoderr/ProtocolSidebar/tree/master/bin). Simply move this JAR into your plugins folder.
 
+In other cases, you must use [shadow](https://imperceptiblethoughts.com/shadow/) (for Gradle) or [maven-shade-plugin](https://maven.apache.org/plugins/maven-shade-plugin/) (for Maven).
+
 ### Maven
 
 ```xml
