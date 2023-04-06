@@ -1,22 +1,21 @@
-# ProtocolSidebar 
+<h1 align="center">
+  ProtocolSidebar
+</h1>
+  <p align="center">Powerful feature-packed Minecraft scoreboard library</p>
+    <p align="center">
 
-[![Build](https://github.com/CatCoderr/ProtocolSidebar/actions/workflows/build.yaml/badge.svg)](https://github.com/CatCoderr/ProtocolSidebar/actions/workflows/build.yaml)
-![Sonatype Nexus (Snapshots)](https://img.shields.io/nexus/s/me.catcoder/bukkit-sidebar?server=https%3A%2F%2Foss.sonatype.org)
-![Build Status](https://img.shields.io/badge/Minecraft%20Versions-1.12.2--1.19.4-blue?style=flat)
-
-Unleash the power of your Minecraft server's scoreboard with ProtocolSidebar - the ultimate non-flickering, feature-packed sidebar library.
-
-### Production warning ⚠️
-
-This library is still in active development, so it may contain bugs and/or breaking changes.
-Not recommended for production use. Stable version will be available on Maven Central as soon as possible.
-Contributions are welcome.
+<p align="center">
+<a target="_blank"><img src="https://github.com/CatCoderr/ProtocolSidebar/actions/workflows/build.yaml/badge.svg" alt="Build" /></a>
+<a target="_blank"><img src="https://img.shields.io/github/license/CatCoderr/ProtocolSidebar" alt="License" /></a>
+<a target="_blank"><img src="https://img.shields.io/nexus/s/me.catcoder/bukkit-sidebar?server=https%3A%2F%2Foss.sonatype.org" alt="Nexus" /></a>
+<a target="_blank"><img src="https://img.shields.io/badge/Minecraft%20Versions-1.12.2--1.19.4-blue?style=flat" alt="Minecraft Versions" /></a>
+</p>
 
 * [Features](#features)
 * [Adding to your project](#adding-to-your-project)
-  * [Maven](#maven)
-  * [Gradle](#gradle)
-  * [Gradle (Kotlin DSL)](#gradle-kotlin-dsl)
+    * [Maven](#maven)
+    * [Gradle](#gradle)
+    * [Gradle (Kotlin DSL)](#gradle-kotlin-dsl)
 * [Basic usage](#basic-usage)
 * [Sidebar title animations](#sidebar-title-animations)
 * [Sidebar Pager](#sidebar-pager)
@@ -26,6 +25,7 @@ Contributions are welcome.
 ## Features
 
 * No flickering (without using a buffer)
+* Does not require any additional libraries/plugins on the server
 * Easy to use
 * Optionally supports [Adventure API](https://docs.advntr.dev/text.html), [MiniMessage](https://docs.advntr.dev/minimessage/index.html), [MiniPlaceholders](https://github.com/MiniPlaceholders/MiniPlaceholders)
 * Extremely fast, can be used asynchronously
@@ -36,15 +36,16 @@ Contributions are welcome.
 * Supports up to 30 characters per line on 1.12.2 and below
 * No character limit on 1.13 and higher
 * Supports hex colors on 1.16 and higher
-* Does not require any additional plugins on the server
-
+* Minimized NMS interaction, means that packets are constructed at the byte buffer level and then sent directly to the player's channel.
 ## Adding to your project
 
-Instead of manually bundling the library into your JAR file, you can use [the standalone plugin](https://github.com/CatCoderr/ProtocolSidebar/tree/master/standalone-plugin).
+Instead of manually bundling the library into your JAR file, you can
+use [the standalone plugin](https://github.com/CatCoderr/ProtocolSidebar/tree/master/standalone-plugin).
 
 Simply run `./gradlew clean shadowJar` and put the resulting JAR file located in `bin` folder into your plugins folder.
 
-In other cases, you must use something like [shadow](https://imperceptiblethoughts.com/shadow/) (for Gradle) or [maven-shade-plugin](https://maven.apache.org/plugins/maven-shade-plugin/) (for Maven).
+In other cases, you must use something like [shadow](https://imperceptiblethoughts.com/shadow/) (for Gradle)
+or [maven-shade-plugin](https://maven.apache.org/plugins/maven-shade-plugin/) (for Maven).
 
 ### Maven
 
@@ -177,7 +178,7 @@ pager.addPageLine((page, maxPage, sidebar) ->
 pager.applyToAll(Sidebar::addBlankLine);
 
 // ...add some lines
-        
+
 // show to player
 pager.show(player);
 
