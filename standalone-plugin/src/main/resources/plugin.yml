@@ -4,5 +4,6 @@ main: me.catcoder.sidebar.ProtocolSidebarPlugin
 author: CatCoder
 description: ${projectDescription}
 website: https://github.com/CatCoderr/ProtocolSidebar
+softdepend: [ViaVersion]
 
 api-version: 1.13
