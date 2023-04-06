@@ -109,7 +109,7 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
-server/
-run_server.sh
+server/data
 
+!docker-compose.yaml
 !ProtocolSidebar-*.jar

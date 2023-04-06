@@ -40,9 +40,11 @@ Contributions are welcome.
 
 ## Adding to your project
 
-Instead of manually bundling the library into your JAR file, you can use [the standalone plugin](https://github.com/CatCoderr/ProtocolSidebar/tree/master/bin). Simply move this JAR into your plugins folder.
+Instead of manually bundling the library into your JAR file, you can use [the standalone plugin](https://github.com/CatCoderr/ProtocolSidebar/tree/master/standalone-plugin).
 
-In other cases, you must use [shadow](https://imperceptiblethoughts.com/shadow/) (for Gradle) or [maven-shade-plugin](https://maven.apache.org/plugins/maven-shade-plugin/) (for Maven).
+Simply run `./gradlew clean shadowJar` and put the resulting JAR file located in `bin` folder into your plugins folder.
+
+In other cases, you must use something like [shadow](https://imperceptiblethoughts.com/shadow/) (for Gradle) or [maven-shade-plugin](https://maven.apache.org/plugins/maven-shade-plugin/) (for Maven).
 
 ### Maven
 
