@@ -1,5 +1,7 @@
 package me.catcoder.sidebar.protocol;
 
+import me.catcoder.sidebar.util.version.VersionUtil;
+
 import static me.catcoder.sidebar.protocol.ProtocolConstants.map;
 
 
@@ -54,7 +56,11 @@ public enum PacketIds {
         this.mappings = mappings;
     }
 
-    public int getPacketId(int serverVersion) {
+    public int getServerPacketId() {
+        return getPacketId(VersionUtil.SERVER_VERSION);
+    }
+
+    public int getPacketId(int protocolVersion) {
 
         for (int protocol = ProtocolConstants.MINIMUM_SUPPORTED_VERSION;
              protocol <= ProtocolConstants.MAXIMUM_SUPPORTED_VERSION; protocol++) {
@@ -62,8 +68,8 @@ public enum PacketIds {
 
             for (ProtocolConstants.ProtocolMapping mapping : mappings) {
                 if (mapping.getProtocol() == protocol
-                        && mapping.getProtocol() <= serverVersion
-                        && (index == mappings.length - 1 || mappings[index + 1].getProtocol() > serverVersion))
+                        && mapping.getProtocol() <= protocolVersion
+                        && (index == mappings.length - 1 || mappings[index + 1].getProtocol() > protocolVersion))
                     return mapping.getPacketId();
 
                 index++;
@@ -71,6 +77,6 @@ public enum PacketIds {
 
         }
 
-        throw new IllegalArgumentException("Unsupported protocol version: " + serverVersion);
+        throw new IllegalArgumentException("Unsupported protocol version: " + protocolVersion);
     }
 }

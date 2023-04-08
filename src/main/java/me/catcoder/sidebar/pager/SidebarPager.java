@@ -101,7 +101,7 @@ public class SidebarPager<R> {
     }
 
     /**
-     * Start showing all sidebars in pager to player.
+     * Start showing all sidebars in pager to the player.
      *
      * @param player - player to show sidebars to
      */
@@ -111,7 +111,7 @@ public class SidebarPager<R> {
     }
 
     /**
-     * Stop showing all sidebars in pager to player.
+     * Stop showing all sidebars in pager to the player.
      *
      * @param player - player to stop showing sidebars to
      */

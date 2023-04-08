@@ -39,7 +39,7 @@ public class ScoreboardPackets {
 
         NetOutput output = new ByteBufNetOutput(buf);
 
-        output.writeVarInt(PacketIds.UPDATE_SCORE.getPacketId(VersionUtil.SERVER_VERSION));
+        output.writeVarInt(PacketIds.UPDATE_SCORE.getServerPacketId());
 
         output.writeString(ScoreboardPackets.COLORS[index].toString());
 
@@ -76,7 +76,7 @@ public class ScoreboardPackets {
 
         // construct the packet on lowest level for future compatibility
 
-        packet.writeVarInt(PacketIds.UPDATE_TEAMS.getPacketId(VersionUtil.SERVER_VERSION));
+        packet.writeVarInt(PacketIds.UPDATE_TEAMS.getServerPacketId());
 
         packet.writeString(teamName);
         packet.writeByte(mode);

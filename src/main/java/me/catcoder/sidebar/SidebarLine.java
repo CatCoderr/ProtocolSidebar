@@ -2,10 +2,7 @@ package me.catcoder.sidebar;
 
 import com.google.common.base.Preconditions;
 import io.netty.buffer.ByteBuf;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.SneakyThrows;
-import lombok.ToString;
+import lombok.*;
 import me.catcoder.sidebar.protocol.ChannelInjector;
 import me.catcoder.sidebar.protocol.ScoreboardPackets;
 import me.catcoder.sidebar.text.TextProvider;
@@ -20,6 +17,8 @@ import org.bukkit.scheduler.BukkitTask;
 public class SidebarLine<R> {
 
     private final String teamName;
+
+    @Setter(AccessLevel.PACKAGE)
     private int score = -1;
 
     private final int index;
@@ -107,10 +106,6 @@ public class SidebarLine<R> {
                 player, text, textProvider));
 
         sendPacket(player, ScoreboardPackets.createScorePacket(player, 0, objective, score, index));
-    }
-
-    public void setScore(int score) {
-        this.score = score;
     }
 
     @SneakyThrows

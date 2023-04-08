@@ -67,7 +67,7 @@ public class ScoreboardObjective<R> {
 
         NetOutput output = new ByteBufNetOutput(buf);
 
-        output.writeVarInt(PacketIds.OBJECTIVE_DISPLAY.getPacketId(VersionUtil.SERVER_VERSION));
+        output.writeVarInt(PacketIds.OBJECTIVE_DISPLAY.getServerPacketId());
 
         output.writeByte(DISPLAY_SIDEBAR);
         output.writeString(name);
@@ -82,7 +82,7 @@ public class ScoreboardObjective<R> {
 
         NetOutput output = new ByteBufNetOutput(buf);
 
-        output.writeVarInt(PacketIds.OBJECTIVE.getPacketId(VersionUtil.SERVER_VERSION));
+        output.writeVarInt(PacketIds.OBJECTIVE.getServerPacketId());
 
         output.writeString(name);
         output.writeByte(mode);
