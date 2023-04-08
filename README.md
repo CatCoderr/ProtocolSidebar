@@ -100,36 +100,29 @@ Sidebar<Component> sidebar = ProtocolSidebar.newAdventureSidebar(
 
 // let's add some lines
 sidebar.addLine(
-    Component
-        .text("Just a static line")
-        .color(NamedTextColor.GREEN));
+    Component.text("Just a static line").color(NamedTextColor.GREEN));
 // add an empty line
 sidebar.addBlankLine();
 // also you can add updatable lines which applies to all players
 sidebar.addUpdatableLine(
-    player -> Component
-        .text("Your Hunger: ")
-        .append(Component.text(
-                player.getFoodLevel())
+    player -> Component.text("Your Hunger: ")
+        .append(Component.text(player.getFoodLevel())
         .color(NamedTextColor.GREEN))
     );
 
 sidebar.addBlankLine();
 sidebar.addUpdatableLine(
-    player -> Component
-        .text("Your Health: ")
-        .append(Component.text(
-                player.getHealth())
+    player -> Component.text("Your Health: ")
+        .append(Component.text(player.getHealth())
         .color(NamedTextColor.GREEN))
 );
 sidebar.addBlankLine();
 sidebar.addLine(
-    Component
-        .text("https://github.com/CatCoderr/ProtocolSidebar")
+    Component.text("https://github.com/CatCoderr/ProtocolSidebar")
         .color(NamedTextColor.YELLOW
 ));
 
-// update all lines every 10 ticks
+// update all lines except static ones every 10 ticks
 sidebar.updateLinesPeriodically(0, 10);
 
 // ...
@@ -171,8 +164,7 @@ SidebarPager<Component> pager = new SidebarPager<>(
 
 // add page status line to all sidebars in pager
 pager.addPageLine((page, maxPage, sidebar) ->
-        sidebar.addLine(Component
-            .text("Page " + page + "/" + maxPage)
+        sidebar.addLine(Component.text("Page " + page + "/" + maxPage)
             .color(NamedTextColor.GREEN)));
 
 pager.applyToAll(Sidebar::addBlankLine);
