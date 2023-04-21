@@ -11,6 +11,7 @@ import me.catcoder.sidebar.text.TextProvider;
 import me.catcoder.sidebar.util.RandomString;
 import me.catcoder.sidebar.util.lang.ThrowingConsumer;
 import me.catcoder.sidebar.util.lang.ThrowingFunction;
+import me.catcoder.sidebar.util.lang.ThrowingPredicate;
 import me.catcoder.sidebar.util.lang.ThrowingSupplier;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -181,6 +182,20 @@ public class Sidebar<R> {
     }
 
     /**
+     * Add a line with specific display condition.
+     * If the condition is false, the line will be hidden for player.
+     * <p>
+     *
+     * @param updater - the function that updates the text
+     * @param condition - the condition
+     * @return SidebarLine instance
+     */
+    public SidebarLine<R> addConditionalLine(@NonNull ThrowingFunction<Player, R, Throwable> updater,
+                                             @NonNull ThrowingPredicate<Player, Throwable> condition) {
+        return addLine(updater, false, condition);
+    }
+
+    /**
      * Add a line with static text.
      *
      * @param text - the text
@@ -197,7 +212,7 @@ public class Sidebar<R> {
      * @return SidebarLine instance
      */
     public SidebarLine<R> addUpdatableLine(@NonNull ThrowingFunction<Player, R, Throwable> updater) {
-        return addLine(updater, false);
+        return addLine(updater, false, x -> true);
     }
 
     /**
@@ -217,7 +232,7 @@ public class Sidebar<R> {
      * @return SidebarLine instance
      */
     public SidebarLine<R> addLine(@NonNull R text) {
-        return addLine(x -> text, true);
+        return addLine(x -> text, true, x -> true);
     }
 
     /**
@@ -229,11 +244,16 @@ public class Sidebar<R> {
         return addTextLine("");
     }
 
-    private SidebarLine<R> addLine(@NonNull ThrowingFunction<Player, R, Throwable> updater, boolean staticText) {
+    private SidebarLine<R> addLine(@NonNull ThrowingFunction<Player, R, Throwable> updater, boolean staticText,
+                                   @NonNull ThrowingPredicate<Player, Throwable> predicate) {
         synchronized (lines) {
-            Preconditions.checkArgument(lines.size() < 15, "Cannot add more than 15 lines to a sidebar");
+            Preconditions.checkArgument(
+                    lines.size() < 15, "Cannot add more than 15 lines to a sidebar");
 
-            SidebarLine<R> line = new SidebarLine<>(updater, objective.getName() + lines.size(), staticText, lines.size(), textProvider);
+            SidebarLine<R> line = new SidebarLine<>(
+                    updater, objective.getName() + lines.size(),
+                    staticText, lines.size(), textProvider, predicate);
+
             lines.add(line);
             return line;
         }
@@ -288,7 +308,7 @@ public class Sidebar<R> {
         synchronized (lines) {
             Preconditions.checkArgument(lines.contains(line), "Line %s is not a part of this sidebar", line);
 
-            broadcast(p -> line.updateTeam(p, line.getScore(), objective.getName()));
+            broadcast(p -> line.updateTeam(p, objective.getName()));
         }
     }
 
@@ -313,10 +333,9 @@ public class Sidebar<R> {
                     continue;
                 }
 
-                int prevIndex = line.getScore();
                 line.setScore(index--);
 
-                broadcast(p -> line.updateTeam(p, prevIndex, objective.getName()));
+                broadcast(p -> line.updateTeam(p, objective.getName()));
             }
         }
     }

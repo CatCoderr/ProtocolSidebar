@@ -7,6 +7,7 @@ import me.catcoder.sidebar.protocol.ChannelInjector;
 import me.catcoder.sidebar.protocol.ScoreboardPackets;
 import me.catcoder.sidebar.text.TextProvider;
 import me.catcoder.sidebar.util.lang.ThrowingFunction;
+import me.catcoder.sidebar.util.lang.ThrowingPredicate;
 import me.catcoder.sidebar.util.lang.ThrowingSupplier;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -28,14 +29,20 @@ public class SidebarLine<R> {
     BukkitTask updateTask;
 
     private ThrowingFunction<Player, R, Throwable> updater;
+    private ThrowingPredicate<Player, Throwable> displayCondition;
     private final TextProvider<R> textProvider;
 
-    SidebarLine(@NonNull ThrowingFunction<Player, R, Throwable> updater, @NonNull String teamName,
-                boolean staticText, int index, @NonNull TextProvider<R> textProvider) {
+    SidebarLine(@NonNull ThrowingFunction<Player, R, Throwable> updater,
+                @NonNull String teamName,
+                boolean staticText,
+                int index,
+                @NonNull TextProvider<R> textProvider,
+                @NonNull ThrowingPredicate<Player, Throwable> displayCondition) {
         this.updater = updater;
         this.teamName = teamName;
         this.staticText = staticText;
         this.index = index;
+        this.displayCondition = displayCondition;
         this.textProvider = textProvider;
     }
 
@@ -60,6 +67,17 @@ public class SidebarLine<R> {
     }
 
     /**
+     * Sets visibility predicate for this line. Visibility predicate is a function that takes player
+     * as an argument and returns boolean value. If predicate returns true, line will be visible for
+     * this player, otherwise - invisible.
+     *
+     * @param displayCondition - visibility predicate
+     */
+    public void setDisplayCondition(@NonNull ThrowingPredicate<Player, Throwable> displayCondition) {
+        this.displayCondition = displayCondition;
+    }
+
+    /**
      * Sets updater for this line. Updater is a function that takes player as an argument and returns
      * text that will be displayed for this player.
      *
@@ -80,16 +98,21 @@ public class SidebarLine<R> {
         this.updater = player -> updater.get();
     }
 
-    void updateTeam(@NonNull Player player, int previousScore, @NonNull String objective) throws Throwable {
-        if (!isStaticText()) {
+    void updateTeam(@NonNull Player player, @NonNull String objective) throws Throwable {
+        boolean visible = displayCondition.test(player);
+        if (!isStaticText() && visible) {
             R text = updater.apply(player);
             sendPacket(player, ScoreboardPackets.createTeamPacket(ScoreboardPackets.TEAM_UPDATED, index, teamName,
                     player, text, textProvider));
         }
 
-        if (previousScore != score) {
-            sendPacket(player, ScoreboardPackets.createScorePacket(player, 0, objective, score, index));
+        if (!visible) {
+            // if player doesn't meet display condition, remove score
+            sendPacket(player, ScoreboardPackets.createScorePacket(player, 1, objective, score, index));
+            return;
         }
+
+        sendPacket(player, ScoreboardPackets.createScorePacket(player, 0, objective, score, index));
     }
 
     void removeTeam(@NonNull Player player, @NonNull String objective) {
@@ -105,7 +128,9 @@ public class SidebarLine<R> {
         sendPacket(player, ScoreboardPackets.createTeamPacket(ScoreboardPackets.TEAM_CREATED, index, teamName,
                 player, text, textProvider));
 
-        sendPacket(player, ScoreboardPackets.createScorePacket(player, 0, objective, score, index));
+        if (displayCondition.test(player)) {
+            sendPacket(player, ScoreboardPackets.createScorePacket(player, 0, objective, score, index));
+        }
     }
 
     @SneakyThrows

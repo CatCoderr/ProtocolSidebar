@@ -17,6 +17,7 @@
     * [Gradle](#gradle)
     * [Gradle (Kotlin DSL)](#gradle-kotlin-dsl)
 * [Basic usage](#basic-usage)
+* [Conditional lines](#conditional-lines)
 * [Sidebar title animations](#sidebar-title-animations)
 * [Sidebar Pager](#sidebar-pager)
 
@@ -37,7 +38,8 @@
 * No character limit on 1.13 and higher
 * Supports hex colors on 1.16 and higher
 * Minimized NMS interaction, means that packets are constructed at the byte buffer level and then sent directly to the player's channel.
-## Adding to your project
+
+## Adding To Your Project
 
 Instead of manually bundling the library into your JAR file, you can
 use [the standalone plugin](https://github.com/CatCoderr/ProtocolSidebar/tree/master/standalone-plugin).
@@ -59,7 +61,7 @@ or [maven-shade-plugin](https://maven.apache.org/plugins/maven-shade-plugin/) (f
 <dependency>
     <groupId>me.catcoder</groupId>
     <artifactId>bukkit-sidebar</artifactId>
-    <version>6.1.5-SNAPSHOT</version>
+    <version>6.2.0-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -72,7 +74,7 @@ repositories {
 ```
 ```groovy
 dependencies {
-    implementation 'me.catcoder:bukkit-sidebar:6.1.5-SNAPSHOT'
+    implementation 'me.catcoder:bukkit-sidebar:6.2.0-SNAPSHOT'
 }
 ```
 
@@ -85,11 +87,11 @@ repositories {
 ```
 ```kotlin
 dependencies {
-    implementation("me.catcoder:bukkit-sidebar:6.1.5-SNAPSHOT")
+    implementation("me.catcoder:bukkit-sidebar:6.2.0-SNAPSHOT")
 }
 ```
 
-## Basic usage
+## Basic Usage
 
 ```java
 // create sidebar which uses Adventure API
@@ -132,10 +134,21 @@ sidebar.addViewer(player);
 // ...hide from the player
 sidebar.removeViewer(player);
 ```
-
 ![Example](https://github.com/CatCoderr/ProtocolSidebar/raw/master/assets/nice_example.gif)
 
-## Sidebar title animations
+## Conditional Lines
+The visibility of these lines depends on the condition you set.
+If the condition is true, the line will be shown, otherwise it will be hidden.
+It's updatable line, so it will update along with other updatable lines.
+
+```java
+sidebar.addConditionalLine(
+    player -> Component.text("This line will be shown only for players with health less than 10"),
+    player -> player.getHealth() <= 10
+);
+```
+
+## Sidebar Title Animations
 
 Library has built-in title animations, but you can also create your [own](https://github.com/CatCoderr/ProtocolSidebar/blob/master/src/main/java/me/catcoder/sidebar/text/TextIterator.java).
 ![Hypixel-like animation](https://github.com/CatCoderr/ProtocolSidebar/raw/master/assets/animation_example.gif)
