@@ -50,9 +50,8 @@ public class SidebarLine<R> {
         Preconditions.checkState(!isStaticText(), "Cannot set updater for static text line");
 
         if (updateTask != null) {
-            if (!updateTask.isCancelled()) {
-                throw new IllegalStateException("Update task for line " + this + " is already running. Cancel it first.");
-            }
+            Preconditions.checkState(updateTask.isCancelled(),
+                    "Update task for line %s is already running. Cancel it first.", this);
             sidebar.taskIds.remove(updateTask.getTaskId());
         }
 
@@ -93,7 +92,7 @@ public class SidebarLine<R> {
      *
      * @param updater - updater function
      */
-    public void setUpdater(ThrowingSupplier<R, Throwable> updater) {
+    public void setUpdater(@NonNull ThrowingSupplier<R, Throwable> updater) {
         Preconditions.checkState(!isStaticText(), "Cannot set updater for static text line");
         this.updater = player -> updater.get();
     }

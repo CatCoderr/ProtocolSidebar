@@ -31,6 +31,7 @@ import java.util.*;
 public class Sidebar<R> {
 
     private static final String OBJECTIVE_PREFIX = "PS-";
+    private static final int MAX_LINES_COUNT = 15;
 
     private final Set<UUID> viewers = Collections.synchronizedSet(new HashSet<>());
     private final List<SidebarLine<R>> lines = new ArrayList<>();
@@ -248,7 +249,7 @@ public class Sidebar<R> {
                                    @NonNull ThrowingPredicate<Player, Throwable> predicate) {
         synchronized (lines) {
             Preconditions.checkArgument(
-                    lines.size() < 15, "Cannot add more than 15 lines to a sidebar");
+                    lines.size() <= MAX_LINES_COUNT, "Cannot add more than %s lines to a sidebar", MAX_LINES_COUNT);
 
             SidebarLine<R> line = new SidebarLine<>(
                     updater, objective.getName() + lines.size(),
