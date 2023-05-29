@@ -106,7 +106,9 @@ public class SidebarPager<R> {
      * @param player - player to show sidebars to
      */
     public void show(@NonNull Player player) {
-        viewers.add(player.getUniqueId());
+        synchronized (viewers) {
+            viewers.add(player.getUniqueId());
+        }
         currentPage.addViewer(player);
     }
 
@@ -116,7 +118,9 @@ public class SidebarPager<R> {
      * @param player - player to stop showing sidebars to
      */
     public void hide(@NonNull Player player) {
-        viewers.remove(player.getUniqueId());
+        synchronized (viewers) {
+            viewers.remove(player.getUniqueId());
+        }
         currentPage.removeViewer(player);
     }
 }

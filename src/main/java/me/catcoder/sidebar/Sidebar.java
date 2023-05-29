@@ -186,7 +186,7 @@ public class Sidebar<R> {
      * If the condition is false, the line will be hidden for player.
      * <p>
      *
-     * @param updater - the function that updates the text
+     * @param updater   - the function that updates the text
      * @param condition - the condition
      * @return SidebarLine instance
      */
@@ -344,10 +344,16 @@ public class Sidebar<R> {
      * Remove all viewers currently receiving this sidebar.
      */
     public void removeViewers() {
-        for (UUID id : viewers) {
-            Player player = Bukkit.getPlayer(id);
-            if (player != null) {
-                removeViewer(player);
+        synchronized (viewers) {
+            for (Iterator<UUID> iterator = viewers.iterator(); iterator.hasNext(); ) {
+                UUID uuid = iterator.next();
+                Player player = Bukkit.getPlayer(uuid);
+
+                if (player != null) {
+                    removeViewer0(player);
+                }
+
+                iterator.remove();
             }
         }
     }
@@ -406,12 +412,18 @@ public class Sidebar<R> {
      * @param player target player
      */
     public void removeViewer(@NonNull Player player) {
-        if (viewers.remove(player.getUniqueId())) {
-            updateAllLines();
-
-            lines.forEach(line -> line.removeTeam(player, objective.getName()));
-            objective.remove(player);
+        synchronized (viewers) {
+            if (viewers.remove(player.getUniqueId())) {
+                removeViewer0(player);
+            }
         }
+    }
+
+    private void removeViewer0(@NonNull Player player) {
+        updateAllLines();
+
+        lines.forEach(line -> line.removeTeam(player, objective.getName()));
+        objective.remove(player);
     }
 
     /**
@@ -435,7 +447,9 @@ public class Sidebar<R> {
     }
 
     private void broadcast(@NonNull ThrowingConsumer<Player, Throwable> consumer) {
-        viewers.removeIf(uuid -> Bukkit.getPlayer(uuid) == null);
+        synchronized (viewers) {
+            viewers.removeIf(uuid -> Bukkit.getPlayer(uuid) == null);
+        }
 
         for (UUID id : viewers) {
             // double check
