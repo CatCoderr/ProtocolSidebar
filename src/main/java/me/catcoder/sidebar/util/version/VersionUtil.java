@@ -12,7 +12,8 @@ public final class VersionUtil {
     public static final int SERVER_VERSION = MinecraftProtocolVersion.getCurrentVersion();
 
     static {
-        Bukkit.getLogger().info("[ProtocolSidebar] Server version: " + MinecraftVersion.getCurrentVersion());
+        Bukkit.getLogger().info("[ProtocolSidebar] Server version: "
+                + MinecraftVersion.getCurrentVersion() + " (protocol " + SERVER_VERSION + ")");
         Bukkit.getLogger().info("[ProtocolSidebar] Please report any bugs to the developer: https://github.com/CatCoderr/ProtocolSidebar/issues");
     }
 

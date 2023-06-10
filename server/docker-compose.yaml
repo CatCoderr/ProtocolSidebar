@@ -2,14 +2,14 @@ version: "3"
 
 services:
   mc:
-    image: itzg/minecraft-server:java16
+    image: itzg/minecraft-server
     ports:
       - 25565:25565
       - 5005:5005
     environment:
       EULA: "TRUE"
       TYPE: "PAPER"
-      VERSION: "1.16.5"
+      VERSION: "1.20"
       JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
     tty: true
     stdin_open: true

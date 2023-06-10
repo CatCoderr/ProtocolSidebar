@@ -1,10 +1,4 @@
-echo "Compiling latest ProtocolSidebar version..."
-./gradlew clean shadowJar
-
-VIA_VERSION=4.5.1
-
-mkdir -p server/data/plugins
-
+VIA_VERSION=4.7.0
 echo "Copying ProtocolSidebar..."
 cp bin/ProtocolSidebar-*.jar server/data/plugins/ProtocolSidebar.jar
 
