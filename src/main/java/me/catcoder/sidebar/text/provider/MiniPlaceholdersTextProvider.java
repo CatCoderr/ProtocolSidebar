@@ -17,6 +17,7 @@ public class MiniPlaceholdersTextProvider extends MiniMessageTextProvider {
                 miniMessage.deserialize(message, MiniPlaceholders.getAudienceGlobalPlaceholders(player)));
     }
 
+
     @Override
     public String asLegacyMessage(@NonNull Player player, @NonNull String component) {
         return AdventureTextProvider.LEGACY_SERIALIZER.serialize(

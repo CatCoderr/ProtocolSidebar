@@ -23,6 +23,11 @@ public class AdventureTextProvider implements TextProvider<Component> {
     }
 
     @Override
+    public Component emptyMessage() {
+        return Component.empty();
+    }
+
+    @Override
     public Component fromLegacyMessage(@NonNull String message) {
         return LEGACY_SERIALIZER.deserialize(message);
     }

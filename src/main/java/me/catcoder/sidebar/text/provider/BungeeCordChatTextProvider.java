@@ -9,12 +9,19 @@ import org.bukkit.entity.Player;
 
 public class BungeeCordChatTextProvider implements TextProvider<BaseComponent[]> {
 
+    private static final BaseComponent[] EMPTY = TextComponent.fromLegacyText("");
+
     @Override
     public String asJsonMessage(@NonNull Player player, BaseComponent @NonNull [] components) {
         if (components.length > 0 && components[0] instanceof TextComponent textComponent) {
             textComponent.setColor(textComponent.getColor());
         }
         return ComponentSerializer.toString(components);
+    }
+
+    @Override
+    public BaseComponent[] emptyMessage() {
+        return EMPTY;
     }
 
     @Override

@@ -17,6 +17,11 @@ public class MiniMessageTextProvider implements TextProvider<String> {
     }
 
     @Override
+    public String emptyMessage() {
+        return "";
+    }
+
+    @Override
     public String asLegacyMessage(@NonNull Player player, @NonNull String component) {
         return AdventureTextProvider.LEGACY_SERIALIZER.serialize(miniMessage.deserialize(component));
     }

@@ -99,6 +99,7 @@ public class SidebarLine<R> {
 
     void updateTeam(@NonNull Player player, @NonNull String objective) throws Throwable {
         boolean visible = displayCondition.test(player);
+
         if (!isStaticText() && visible) {
             R text = updater.apply(player);
             sendPacket(player, ScoreboardPackets.createTeamPacket(ScoreboardPackets.TEAM_UPDATED, index, teamName,
@@ -122,12 +123,14 @@ public class SidebarLine<R> {
     }
 
     void createTeam(@NonNull Player player, @NonNull String objective) throws Throwable {
-        R text = updater.apply(player);
+        boolean visible = displayCondition.test(player);
+
+        R text = visible ? updater.apply(player) : textProvider.emptyMessage();
 
         sendPacket(player, ScoreboardPackets.createTeamPacket(ScoreboardPackets.TEAM_CREATED, index, teamName,
                 player, text, textProvider));
 
-        if (displayCondition.test(player)) {
+        if (visible) {
             sendPacket(player, ScoreboardPackets.createScorePacket(player, 0, objective, score, index));
         }
     }

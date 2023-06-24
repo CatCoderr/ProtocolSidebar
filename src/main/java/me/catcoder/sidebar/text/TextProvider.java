@@ -9,5 +9,7 @@ public interface TextProvider<T> {
 
     String asLegacyMessage(@NonNull Player player, @NonNull T component);
 
+    T emptyMessage();
+
     T fromLegacyMessage(@NonNull String message);
 }
