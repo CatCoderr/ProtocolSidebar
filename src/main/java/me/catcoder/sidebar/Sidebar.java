@@ -392,8 +392,6 @@ public class Sidebar<R> {
     @SneakyThrows
     public void addViewer(@NonNull Player player) {
         if (!viewers.contains(player.getUniqueId())) {
-            updateAllLines();
-
             objective.create(player);
 
             for (SidebarLine<R> line : lines) {
@@ -421,8 +419,6 @@ public class Sidebar<R> {
     }
 
     private void removeViewer0(@NonNull Player player) {
-        updateAllLines();
-
         lines.forEach(line -> line.removeTeam(player, objective.getName()));
         objective.remove(player);
     }

@@ -105,7 +105,7 @@ sidebar.addLine(
     Component.text("Just a static line").color(NamedTextColor.GREEN));
 // add an empty line
 sidebar.addBlankLine();
-// also you can add updatable lines which applies to all players
+// also you can add updatable lines which applies to all players receiving this sidebar
 sidebar.addUpdatableLine(
     player -> Component.text("Your Hunger: ")
         .append(Component.text(player.getFoodLevel())
