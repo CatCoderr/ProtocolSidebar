@@ -446,20 +446,20 @@ public class Sidebar<R> {
     private void broadcast(@NonNull ThrowingConsumer<Player, Throwable> consumer) {
         synchronized (viewers) {
             viewers.removeIf(uuid -> Bukkit.getPlayer(uuid) == null);
-        }
 
-        for (UUID id : viewers) {
-            // double check
-            Player player = Bukkit.getPlayer(id);
-            if (player == null) {
-                continue;
-            }
+            for (UUID id : viewers) {
+                // double check
+                Player player = Bukkit.getPlayer(id);
+                if (player == null) {
+                    continue;
+                }
 
-            try {
-                consumer.accept(player);
-            } catch (Throwable e) {
-                throw new RuntimeException("An error occurred while updating sidebar for player: " + player.getName(),
-                        e);
+                try {
+                    consumer.accept(player);
+                } catch (Throwable e) {
+                    throw new RuntimeException("An error occurred while updating sidebar for player: " + player.getName(),
+                            e);
+                }
             }
         }
     }
