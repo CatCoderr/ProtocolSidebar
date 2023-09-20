@@ -16,7 +16,7 @@ val adventureVersion = "4.14.0"
 val paperVersion = "1.19.4-R0.1-SNAPSHOT"
 val viaVersionVersion = "4.7.0"
 val miniPlaceholdersVersion = "2.2.0"
-val lombokVersion = "1.18.28"
+val lombokVersion = "1.18.30"
 
 allprojects {
     apply(plugin = "java-library")
