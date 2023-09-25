@@ -8,7 +8,7 @@
 <a target="_blank"><img src="https://github.com/CatCoderr/ProtocolSidebar/actions/workflows/build.yaml/badge.svg" alt="Build" /></a>
 <a target="_blank"><img src="https://img.shields.io/github/license/CatCoderr/ProtocolSidebar" alt="License" /></a>
 <a target="_blank"><img src="https://img.shields.io/nexus/s/me.catcoder/bukkit-sidebar?server=https%3A%2F%2Foss.sonatype.org" alt="Nexus" /></a>
-<a target="_blank"><img src="https://img.shields.io/badge/Minecraft%20Versions-1.12.2--1.20-blue?style=flat" alt="Minecraft Versions" /></a>
+<a target="_blank"><img src="https://img.shields.io/badge/Minecraft%20Versions-1.12.2--1.20.2-blue?style=flat" alt="Minecraft Versions" /></a>
 </p>
 
 * [Features](#features)
@@ -61,7 +61,7 @@ or [maven-shade-plugin](https://maven.apache.org/plugins/maven-shade-plugin/) (f
 <dependency>
     <groupId>me.catcoder</groupId>
     <artifactId>bukkit-sidebar</artifactId>
-    <version>6.2.3-SNAPSHOT</version>
+    <version>6.2.4-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -74,7 +74,7 @@ repositories {
 ```
 ```groovy
 dependencies {
-    implementation 'me.catcoder:bukkit-sidebar:6.2.3-SNAPSHOT'
+    implementation 'me.catcoder:bukkit-sidebar:6.2.4-SNAPSHOT'
 }
 ```
 
@@ -87,7 +87,7 @@ repositories {
 ```
 ```kotlin
 dependencies {
-    implementation("me.catcoder:bukkit-sidebar:6.2.3-SNAPSHOT")
+    implementation("me.catcoder:bukkit-sidebar:6.2.4-SNAPSHOT")
 }
 ```
 

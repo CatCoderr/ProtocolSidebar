@@ -9,7 +9,7 @@ services:
     environment:
       EULA: "TRUE"
       TYPE: "PAPER"
-      VERSION: "1.20"
+      VERSION: "1.20.2"
       JAVA_TOOL_OPTIONS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
     tty: true
     stdin_open: true
