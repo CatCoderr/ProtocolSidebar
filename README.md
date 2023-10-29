@@ -61,7 +61,7 @@ or [maven-shade-plugin](https://maven.apache.org/plugins/maven-shade-plugin/) (f
 <dependency>
     <groupId>me.catcoder</groupId>
     <artifactId>bukkit-sidebar</artifactId>
-    <version>6.2.4-SNAPSHOT</version>
+    <version>6.2.5-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -74,7 +74,7 @@ repositories {
 ```
 ```groovy
 dependencies {
-    implementation 'me.catcoder:bukkit-sidebar:6.2.4-SNAPSHOT'
+    implementation 'me.catcoder:bukkit-sidebar:6.2.5-SNAPSHOT'
 }
 ```
 
@@ -87,7 +87,7 @@ repositories {
 ```
 ```kotlin
 dependencies {
-    implementation("me.catcoder:bukkit-sidebar:6.2.4-SNAPSHOT")
+    implementation("me.catcoder:bukkit-sidebar:6.2.5-SNAPSHOT")
 }
 ```
 

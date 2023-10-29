@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "me.catcoder"
-version = "6.2.4-SNAPSHOT"
+version = "6.2.5-SNAPSHOT"
 description = "Powerful feature-packed Minecraft scoreboard library"
 
 extra["sonatypeUsername"] = System.getenv("SONATYPE_USERNAME")
