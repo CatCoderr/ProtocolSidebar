@@ -15,7 +15,7 @@ extra["sonatypePassword"] = System.getenv("SONATYPE_PASSWORD")
 val adventureVersion = "4.14.0"
 val paperVersion = "1.20.1-R0.1-SNAPSHOT"
 val viaVersionVersion = "4.8.0"
-val miniPlaceholdersVersion = "2.2.1"
+val miniPlaceholdersVersion = "2.2.2"
 val lombokVersion = "1.18.30"
 
 allprojects {
