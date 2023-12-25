@@ -394,14 +394,15 @@ public class Sidebar<R> {
         if (!viewers.contains(player.getUniqueId())) {
             objective.create(player);
 
-            for (SidebarLine<R> line : lines) {
-                line.createTeam(player, objective.getName());
+            synchronized (lines) {
+                for (SidebarLine<R> line : lines) {
+                    line.createTeam(player, objective.getName());
+                }
             }
 
             objective.display(player);
 
             viewers.add(player.getUniqueId());
-
         }
     }
 
