@@ -12,7 +12,7 @@ description = "Powerful feature-packed Minecraft scoreboard library"
 extra["sonatypeUsername"] = System.getenv("SONATYPE_USERNAME")
 extra["sonatypePassword"] = System.getenv("SONATYPE_PASSWORD")
 
-val adventureVersion = "4.14.0"
+val adventureVersion = "4.16.0"
 val paperVersion = "1.20.1-R0.1-SNAPSHOT"
 val viaVersionVersion = "4.8.1"
 val miniPlaceholdersVersion = "2.2.2"
