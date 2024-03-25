@@ -35,6 +35,7 @@ public class Sidebar<R> {
 
     private final Set<UUID> viewers = Collections.synchronizedSet(new HashSet<>());
     private final List<SidebarLine<R>> lines = new ArrayList<>();
+    @Getter
     private final ScoreboardObjective<R> objective;
 
     private TextIterator titleText;

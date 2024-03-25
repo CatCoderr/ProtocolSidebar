@@ -1,9 +1,11 @@
 package me.catcoder.sidebar;
 
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import io.netty.buffer.ByteBuf;
 import lombok.*;
 import me.catcoder.sidebar.protocol.ChannelInjector;
+import me.catcoder.sidebar.protocol.ScoreNumberFormat;
 import me.catcoder.sidebar.protocol.ScoreboardPackets;
 import me.catcoder.sidebar.text.TextProvider;
 import me.catcoder.sidebar.util.lang.ThrowingFunction;
@@ -31,6 +33,8 @@ public class SidebarLine<R> {
     private ThrowingFunction<Player, R, Throwable> updater;
     private ThrowingPredicate<Player, Throwable> displayCondition;
     private final TextProvider<R> textProvider;
+    private ScoreNumberFormat scoreNumberFormat;
+    private Function<Player, R> scoreNumberFormatter;
 
     SidebarLine(@NonNull ThrowingFunction<Player, R, Throwable> updater,
                 @NonNull String teamName,
@@ -44,6 +48,24 @@ public class SidebarLine<R> {
         this.index = index;
         this.displayCondition = displayCondition;
         this.textProvider = textProvider;
+    }
+
+    public SidebarLine<R> scoreNumberFormatBlank() {
+        this.scoreNumberFormat = null;
+        this.scoreNumberFormatter = null;
+        return this;
+    }
+
+    public SidebarLine<R> scoreNumberFormatFixed(@NonNull Function<Player, R> scoreNumberFormatter) {
+        this.scoreNumberFormat = ScoreNumberFormat.FIXED;
+        this.scoreNumberFormatter = scoreNumberFormatter;
+        return this;
+    }
+
+    public SidebarLine<R> scoreNumberFormatStyled(@NonNull Function<Player, R> scoreNumberFormatter) {
+        this.scoreNumberFormat = ScoreNumberFormat.STYLED;
+        this.scoreNumberFormatter = scoreNumberFormatter;
+        return this;
     }
 
     public BukkitTask updatePeriodically(long delay, long period, @NonNull Sidebar<R> sidebar) {
@@ -102,21 +124,25 @@ public class SidebarLine<R> {
 
         if (!isStaticText() && visible) {
             R text = updater.apply(player);
-            sendPacket(player, ScoreboardPackets.createTeamPacket(ScoreboardPackets.TEAM_UPDATED, index, teamName,
+            sendPacket(player, ScoreboardPackets.createTeamPacket(
+                    ScoreboardPackets.TEAM_UPDATED, index, teamName,
                     player, text, textProvider));
         }
 
         if (!visible) {
             // if player doesn't meet display condition, remove score
-            sendPacket(player, ScoreboardPackets.createScorePacket(player, 1, objective, score, index));
+            sendPacket(player, ScoreboardPackets.createScorePacket(
+                    player, 1, objective, score, index, textProvider, scoreNumberFormat, null));
             return;
         }
 
-        sendPacket(player, ScoreboardPackets.createScorePacket(player, 0, objective, score, index));
+        sendPacket(player, ScoreboardPackets.createScorePacket(
+                player, 0, objective, score, index, textProvider, scoreNumberFormat, scoreNumberFormatter));
     }
 
     void removeTeam(@NonNull Player player, @NonNull String objective) {
-        sendPacket(player, ScoreboardPackets.createScorePacket(player, 1, objective, score, index));
+        sendPacket(player, ScoreboardPackets.createScorePacket(
+                player, 1, objective, score, index, textProvider, null, null));
 
         sendPacket(player, ScoreboardPackets.createTeamPacket(ScoreboardPackets.TEAM_REMOVED, index, teamName,
                 player, null, textProvider));
@@ -131,7 +157,8 @@ public class SidebarLine<R> {
                 player, text, textProvider));
 
         if (visible) {
-            sendPacket(player, ScoreboardPackets.createScorePacket(player, 0, objective, score, index));
+            sendPacket(player, ScoreboardPackets.createScorePacket(
+                    player, 0, objective, score, index, textProvider, scoreNumberFormat, scoreNumberFormatter));
         }
     }
 

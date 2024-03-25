@@ -8,7 +8,7 @@
 <a target="_blank"><img src="https://github.com/CatCoderr/ProtocolSidebar/actions/workflows/build.yaml/badge.svg" alt="Build" /></a>
 <a target="_blank"><img src="https://img.shields.io/github/license/CatCoderr/ProtocolSidebar" alt="License" /></a>
 <a target="_blank"><img src="https://img.shields.io/nexus/s/me.catcoder/bukkit-sidebar?server=https%3A%2F%2Foss.sonatype.org" alt="Nexus" /></a>
-<a target="_blank"><img src="https://img.shields.io/badge/Minecraft%20Versions-1.12.2--1.20.2-blue?style=flat" alt="Minecraft Versions" /></a>
+<a target="_blank"><img src="https://img.shields.io/badge/Minecraft%20Versions-1.12.2--1.20.4-blue?style=flat" alt="Minecraft Versions" /></a>
 </p>
 
 * [Features](#features)
@@ -18,6 +18,7 @@
     * [Gradle (Kotlin DSL)](#gradle-kotlin-dsl)
 * [Basic usage](#basic-usage)
 * [Conditional lines](#conditional-lines)
+* [Score number formatting](#score-number-formatting)
 * [Sidebar title animations](#sidebar-title-animations)
 * [Sidebar Pager](#sidebar-pager)
 
@@ -65,7 +66,7 @@ or [maven-shade-plugin](https://maven.apache.org/plugins/maven-shade-plugin/) (f
 <dependency>
     <groupId>me.catcoder</groupId>
     <artifactId>bukkit-sidebar</artifactId>
-    <version>6.2.5-SNAPSHOT</version>
+    <version>6.2.6-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -78,7 +79,7 @@ repositories {
 ```
 ```groovy
 dependencies {
-    implementation 'me.catcoder:bukkit-sidebar:6.2.5-SNAPSHOT'
+    implementation 'me.catcoder:bukkit-sidebar:6.2.6-SNAPSHOT'
 }
 ```
 
@@ -91,7 +92,7 @@ repositories {
 ```
 ```kotlin
 dependencies {
-    implementation("me.catcoder:bukkit-sidebar:6.2.5-SNAPSHOT")
+    implementation("me.catcoder:bukkit-sidebar:6.2.6-SNAPSHOT")
 }
 ```
 
@@ -145,11 +146,19 @@ The visibility of these lines depends on the condition you set.
 If the condition is true, the line will be shown, otherwise it will be hidden.
 It's an updatable line, so it will update along with other updatable lines.
 
+## Score number formatting
+You can use `scoreNumberFormat` method in both `ScoreboardObjective` and `SidebarLine` classes to format score numbers.
+
+This feature is available starting from 1.20.4 version.
 ```java
-sidebar.addConditionalLine(
-    player -> Component.text("This line will be shown only for players with health less than 10"),
-    player -> player.getHealth() <= 10
-);
+// removes scores completely for all lines
+sidebar.getObjective().scoreNumberFormatBlank();
+// set's custom fixed text for all lines
+sidebar.getObjective().scoreNumberFormatFixed(player -> Component.text("Test").color(NamedTextColor.BLUE));
+
+// set's score number format for specific line (overrides objective's format)
+var line = sidebar.addLine(Component.text("Some line").color(NamedTextColor.YELLOW));
+line.scoreNumberFormatFixed(player -> Component.text("Test").color(NamedTextColor.BLUE));
 ```
 
 ## Sidebar Title Animations

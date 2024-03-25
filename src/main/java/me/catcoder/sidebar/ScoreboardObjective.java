@@ -1,5 +1,6 @@
 package me.catcoder.sidebar;
 
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import io.netty.buffer.ByteBuf;
 import lombok.Getter;
@@ -7,6 +8,7 @@ import lombok.NonNull;
 import me.catcoder.sidebar.protocol.ChannelInjector;
 import me.catcoder.sidebar.protocol.PacketIds;
 import me.catcoder.sidebar.protocol.ProtocolConstants;
+import me.catcoder.sidebar.protocol.ScoreNumberFormat;
 import me.catcoder.sidebar.text.TextProvider;
 import me.catcoder.sidebar.util.buffer.ByteBufNetOutput;
 import me.catcoder.sidebar.util.buffer.NetOutput;
@@ -32,9 +34,15 @@ public class ScoreboardObjective<R> {
 
     private final String name;
     private final TextProvider<R> textProvider;
+
+    private ScoreNumberFormat numberFormat;
+    private Function<Player, R> numberFormatter;
+
     private R displayName;
 
-    ScoreboardObjective(@NonNull String name, @NonNull R displayName, @NonNull TextProvider<R> textProvider) {
+    ScoreboardObjective(@NonNull String name,
+                        @NonNull R displayName,
+                        @NonNull TextProvider<R> textProvider) {
         Preconditions.checkArgument(
                 name.length() <= 16, "Objective name exceeds 16 symbols limit");
 
@@ -50,6 +58,21 @@ public class ScoreboardObjective<R> {
     void updateValue(@NonNull Player player) {
         ByteBuf packet = getPacket(player, UPDATE_VALUE);
         sendPacket(player, packet);
+    }
+
+    public void scoreNumberFormatFixed(@NonNull Function<Player, R> numberFormatter) {
+        this.numberFormat = ScoreNumberFormat.FIXED;
+        this.numberFormatter = numberFormatter;
+    }
+
+    public void scoreNumberFormatStyled(@NonNull Function<Player, R> numberFormatter) {
+        this.numberFormat = ScoreNumberFormat.STYLED;
+        this.numberFormatter = numberFormatter;
+    }
+
+    public void scoreNumberFormatBlank() {
+        this.numberFormat = ScoreNumberFormat.BLANK;
+        this.numberFormatter = null;
     }
 
     void create(@NonNull Player player) {
@@ -94,10 +117,26 @@ public class ScoreboardObjective<R> {
                 legacyText = legacyText.substring(0, 32);
             }
 
-            if (VersionUtil.SERVER_VERSION >= ProtocolConstants.MINECRAFT_1_13) {
+            if (VersionUtil.SERVER_VERSION >= ProtocolConstants.MINECRAFT_1_20_3) {
+                // what the heck 1.20.3?
+                output.writeComponent(textProvider.asJsonMessage(player, displayName));
+            } else if (VersionUtil.SERVER_VERSION >= ProtocolConstants.MINECRAFT_1_13) {
                 output.writeString(textProvider.asJsonMessage(player, displayName));
             } else {
                 output.writeString(legacyText);
+            }
+
+            if (VersionUtil.SERVER_VERSION >= ProtocolConstants.MINECRAFT_1_20_3) {
+                output.writeVarInt(0);
+                output.writeBoolean(numberFormat != null); // has number format
+
+                if (numberFormat != null) {
+                    numberFormat.accept(output, numberFormatter == null ?
+                            null : textProvider.asJsonMessage(player, numberFormatter.apply(player))
+                    );
+                }
+
+                return buf;
             }
 
             if (VersionUtil.SERVER_VERSION >= ProtocolConstants.MINECRAFT_1_13) {

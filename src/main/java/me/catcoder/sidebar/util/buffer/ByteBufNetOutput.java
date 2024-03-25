@@ -1,7 +1,15 @@
 package me.catcoder.sidebar.util.buffer;
 
+import com.github.steveice10.opennbt.NBTIO;
+import com.github.steveice10.opennbt.tag.builtin.Tag;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import io.netty.buffer.ByteBuf;
+import lombok.SneakyThrows;
+import me.catcoder.sidebar.util.NbtComponentSerializer;
+import org.jetbrains.annotations.Nullable;
 
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
@@ -18,6 +26,25 @@ public class ByteBufNetOutput implements NetOutput {
     @Override
     public void writeBoolean(boolean b) {
         this.buf.writeBoolean(b);
+    }
+
+    @Override
+    public void writeComponent(String json) {
+        JsonElement jsonElement = JsonParser.parseString(json);
+        Tag tag = NbtComponentSerializer.jsonComponentToTag(jsonElement);
+
+        writeAnyTag(tag);
+    }
+
+    @SneakyThrows
+    @Override
+    public <T extends Tag> void writeAnyTag(@Nullable T tag) {
+        NBTIO.writeAnyTag(new OutputStream() {
+            @Override
+            public void write(int b) {
+                buf.writeByte(b);
+            }
+        }, tag);
     }
 
     @Override

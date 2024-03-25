@@ -1,5 +1,6 @@
 package me.catcoder.sidebar.protocol;
 
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import io.netty.buffer.ByteBuf;
@@ -13,6 +14,7 @@ import me.catcoder.sidebar.util.version.VersionUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
+import javax.annotation.Nullable;
 import java.util.Iterator;
 
 @UtilityClass
@@ -34,10 +36,43 @@ public class ScoreboardPackets {
         return createTeamPacket(mode, index, teamName, VersionUtil.SERVER_VERSION, player, text, textProvider);
     }
 
-    public ByteBuf createScorePacket(@NonNull Player player, int action, String objectiveName, int score, int index) {
+    public <R> ByteBuf createScorePacket(@NonNull Player player,
+                                         int action,
+                                         String objectiveName,
+                                         int score,
+                                         int index,
+                                         TextProvider<R> textProvider,
+                                         @Nullable ScoreNumberFormat numberFormat,
+                                         @Nullable Function<Player, R> scoreNumberFormatter) {
         ByteBuf buf = ChannelInjector.IMP.getChannel(player).alloc().buffer();
 
         NetOutput output = new ByteBufNetOutput(buf);
+
+        if (VersionUtil.SERVER_VERSION >= ProtocolConstants.MINECRAFT_1_20_3) {
+            if (action == 1) {
+                output.writeVarInt(PacketIds.RESET_SCORE.getServerPacketId());
+                output.writeString(ScoreboardPackets.COLORS[index].toString());
+                output.writeBoolean(true); // has objective name
+                output.writeString(objectiveName);
+                return buf;
+            }
+
+            output.writeVarInt(PacketIds.UPDATE_SCORE.getServerPacketId());
+            output.writeString(ScoreboardPackets.COLORS[index].toString());
+            output.writeString(objectiveName);
+            output.writeVarInt(score);
+
+            output.writeBoolean(false); // has display name
+            output.writeBoolean(numberFormat != null);
+
+            if (numberFormat != null) {
+                numberFormat.accept(output, scoreNumberFormatter == null ?
+                        null :
+                        textProvider.asJsonMessage(player, scoreNumberFormatter.apply(player)));
+            }
+
+            return buf;
+        }
 
         output.writeVarInt(PacketIds.UPDATE_SCORE.getServerPacketId());
 
@@ -60,11 +95,11 @@ public class ScoreboardPackets {
 
     @SneakyThrows
     public <R> ByteBuf createTeamPacket(int mode, int index,
-                                           @NonNull String teamName,
-                                           int serverVersion,
-                                           @NonNull Player player,
-                                           R text,
-                                           @NonNull TextProvider<R> provider) {
+                                        @NonNull String teamName,
+                                        int serverVersion,
+                                        @NonNull Player player,
+                                        R text,
+                                        @NonNull TextProvider<R> provider) {
         Preconditions.checkArgument(mode >= TEAM_CREATED && mode <= TEAM_UPDATED, "Invalid team mode");
 
         String teamEntry = COLORS[index].toString();
@@ -86,7 +121,11 @@ public class ScoreboardPackets {
         }
 
         if (clientVersion >= ProtocolConstants.MINECRAFT_1_13) {
-            packet.writeString("{\"text\":\"\"}"); // team display name
+            if (serverVersion >= ProtocolConstants.MINECRAFT_1_20_3) {
+                packet.writeComponent("{\"text\":\"\"}");
+            } else {
+                packet.writeString("{\"text\":\"\"}"); // team display name
+            }
         } else {
             packet.writeString("");
         }
@@ -94,7 +133,12 @@ public class ScoreboardPackets {
         // Since 1.13 character limit for prefix/suffix was removed
         if (clientVersion >= ProtocolConstants.MINECRAFT_1_13) {
 
-            if (serverVersion >= ProtocolConstants.MINECRAFT_1_13) {
+            if (serverVersion >= ProtocolConstants.MINECRAFT_1_20_3) {
+                writeDefaults(serverVersion, packet);
+                packet.writeComponent(provider.asJsonMessage(player, text));
+                packet.writeComponent("{\"text\":\"\"}");
+
+            } else if (serverVersion >= ProtocolConstants.MINECRAFT_1_13) {
                 writeDefaults(serverVersion, packet);
                 packet.writeString(provider.asJsonMessage(player, text));
                 packet.writeString("{\"text\":\"\"}");

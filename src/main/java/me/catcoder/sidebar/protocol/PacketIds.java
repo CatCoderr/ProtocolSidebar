@@ -16,7 +16,8 @@ public enum PacketIds {
             map(ProtocolConstants.MINECRAFT_1_19_1, 0x58),
             map(ProtocolConstants.MINECRAFT_1_19_3, 0x56),
             map(ProtocolConstants.MINECRAFT_1_19_4, 0x5A),
-            map(ProtocolConstants.MINECRAFT_1_20_2, 0x5C)
+            map(ProtocolConstants.MINECRAFT_1_20_2, 0x5C),
+            map(ProtocolConstants.MINECRAFT_1_20_4, 0x5E)
     ),
     UPDATE_SCORE(
             map(ProtocolConstants.MINECRAFT_1_12_2, 0x45),
@@ -27,8 +28,13 @@ public enum PacketIds {
             map(ProtocolConstants.MINECRAFT_1_19_1, 0x59),
             map(ProtocolConstants.MINECRAFT_1_19_3, 0x57),
             map(ProtocolConstants.MINECRAFT_1_19_4, 0x5B),
-            map(ProtocolConstants.MINECRAFT_1_20_2, 0x5D)
+            map(ProtocolConstants.MINECRAFT_1_20_2, 0x5D),
+            map(ProtocolConstants.MINECRAFT_1_20_4, 0x5F)
 
+
+    ),
+    RESET_SCORE(
+           map(ProtocolConstants.MINECRAFT_1_20_3, 0x42)
     ),
     OBJECTIVE_DISPLAY(
             map(ProtocolConstants.MINECRAFT_1_12_2, 0x3B),
@@ -39,7 +45,8 @@ public enum PacketIds {
             map(ProtocolConstants.MINECRAFT_1_19_1, 0x4F),
             map(ProtocolConstants.MINECRAFT_1_19_3, 0x4D),
             map(ProtocolConstants.MINECRAFT_1_19_4, 0x51),
-            map(ProtocolConstants.MINECRAFT_1_20_2, 0x53)
+            map(ProtocolConstants.MINECRAFT_1_20_2, 0x53),
+            map(ProtocolConstants.MINECRAFT_1_20_4, 0x55)
 
     ),
     OBJECTIVE(
@@ -51,7 +58,8 @@ public enum PacketIds {
             map(ProtocolConstants.MINECRAFT_1_19_1, 0x56),
             map(ProtocolConstants.MINECRAFT_1_19_3, 0x54),
             map(ProtocolConstants.MINECRAFT_1_19_4, 0x58),
-            map(ProtocolConstants.MINECRAFT_1_20_2, 0x5A)
+            map(ProtocolConstants.MINECRAFT_1_20_2, 0x5A),
+            map(ProtocolConstants.MINECRAFT_1_20_4, 0x5C)
     );
 
     private final ProtocolConstants.ProtocolMapping[] mappings;

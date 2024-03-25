@@ -1,4 +1,7 @@
-VIA_VERSION=4.7.0
+VIA_VERSION=4.9.3
+
+./gradlew clean shadowJar
+
 echo "Copying ProtocolSidebar..."
 cp bin/ProtocolSidebar-*.jar server/data/plugins/ProtocolSidebar.jar
 

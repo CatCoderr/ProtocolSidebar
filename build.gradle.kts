@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "me.catcoder"
-version = "6.2.5-SNAPSHOT"
+version = "6.2.6-SNAPSHOT"
 description = "Powerful feature-packed Minecraft scoreboard library"
 
 extra["sonatypeUsername"] = System.getenv("SONATYPE_USERNAME")
@@ -29,6 +29,7 @@ allprojects {
         maven { url = uri("https://oss.sonatype.org/content/groups/public/") }
         maven { url = uri("https://repo.viaversion.com") }
         maven { url = uri("https://repo.maven.apache.org/maven2/") }
+        maven { url = uri("https://repo.opencollab.dev/maven-releases/") }
     }
     dependencies {
         testImplementation("junit:junit:4.13.2")
@@ -38,6 +39,8 @@ allprojects {
 
         compileOnly("io.papermc.paper:paper-api:${paperVersion}")
         testCompileOnly("io.papermc.paper:paper-api:${paperVersion}")
+
+        implementation("com.github.steveice10:opennbt:1.6")
 
         compileOnly("org.projectlombok:lombok:${lombokVersion}")
         annotationProcessor("org.projectlombok:lombok:${lombokVersion}")
