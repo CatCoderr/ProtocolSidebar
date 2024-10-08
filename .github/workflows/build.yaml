@@ -2,13 +2,6 @@ name: Build
 
 on: [ push ]
 
-env:
-  GPG_KEY_NAME: ${{ secrets.GPG_KEY_NAME }}
-  GPG_SECRET_KEY: ${{ secrets.GPG_SECRET_KEY }}
-  GPG_PASSPHRASE: ${{ secrets.GPG_KEY_PASSPHRASE }}
-  SONATYPE_USERNAME: ${{ secrets.SONATYPE_OSSRH_DEPLOYER }}
-  SONATYPE_TOKEN: ${{ secrets.SONATYPE_OSSRH_TOKEN }}
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -26,11 +19,12 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew test build --no-daemon
 
-      - name: Publish to Sonatype
+      - name: Publish with Gradle
         if: github.ref == 'refs/heads/master'
         env:
           GPG_PASSPHRASE: ${{ secrets.GPG_KEY_PASSPHRASE }}
           GPG_SECRET_KEY: ${{ secrets.GPG_SECRET_KEY }}
-          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
-          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          USERNAME: ${{ secrets.REPO_USER }}
+          TOKEN: ${{ secrets.REPO_TOKEN }}
+
         run: ./gradlew publish --no-daemon

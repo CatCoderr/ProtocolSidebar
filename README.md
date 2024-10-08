@@ -7,7 +7,6 @@
 <p align="center">
 <a target="_blank"><img src="https://github.com/CatCoderr/ProtocolSidebar/actions/workflows/build.yaml/badge.svg" alt="Build" /></a>
 <a target="_blank"><img src="https://img.shields.io/github/license/CatCoderr/ProtocolSidebar" alt="License" /></a>
-<a target="_blank"><img src="https://img.shields.io/nexus/s/me.catcoder/bukkit-sidebar?server=https%3A%2F%2Foss.sonatype.org" alt="Nexus" /></a>
 <a target="_blank"><img src="https://img.shields.io/badge/Minecraft%20Versions-1.12.2--1.21-blue?style=flat" alt="Minecraft Versions" /></a>
 </p>
 
@@ -23,6 +22,10 @@
 * [Sidebar Pager](#sidebar-pager)
 
 ![Sidebar](https://github.com/CatCoderr/ProtocolSidebar/raw/master/assets/sidebar.gif)
+
+⚠️ **Note**: starting from **6.2.7-SNAPSHOT** version, the repository has been moved to https://catcoder.pl.ua/snapshots. 
+You can find URL for Maven and Gradle in the [Adding to your project](#adding-to-your-project) section.
+
 
 ## Donations
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Donate%20Now-yellow?style=for-the-badge&logo=buy-me-a-coffee)](https://www.buymeacoffee.com/catcoderr)
@@ -58,8 +61,8 @@ or [maven-shade-plugin](https://maven.apache.org/plugins/maven-shade-plugin/) (f
 
 ```xml
 <repository>
-    <id>sonatype-snapshots</id>
-    <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+    <id>catcoder-snapshots</id>
+    <url>https://catcoder.pl.ua/snapshots</url>
 </repository>
 ```
 ```xml
@@ -74,7 +77,7 @@ or [maven-shade-plugin](https://maven.apache.org/plugins/maven-shade-plugin/) (f
 
 ```groovy
 repositories {
-    maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
+    maven { url 'https://catcoder.pl.ua/snapshots' }
 }
 ```
 ```groovy
@@ -87,7 +90,7 @@ dependencies {
 
 ```kotlin
 repositories {
-    maven("https://oss.sonatype.org/content/repositories/snapshots/")
+    maven("https://catcoder.pl.ua/snapshots")
 }
 ```
 ```kotlin

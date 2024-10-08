@@ -1,16 +1,12 @@
 plugins {
     id("java-library")
     id("maven-publish")
-    id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
     id("signing")
 }
 
 group = "me.catcoder"
 version = "6.2.7-SNAPSHOT"
 description = "Powerful feature-packed Minecraft scoreboard library"
-
-extra["sonatypeUsername"] = System.getenv("SONATYPE_USERNAME")
-extra["sonatypePassword"] = System.getenv("SONATYPE_PASSWORD")
 
 val adventureVersion = "4.16.0"
 val paperVersion = "1.20.1-R0.1-SNAPSHOT"
@@ -105,11 +101,16 @@ publishing {
             }
         }
     }
-}
 
-nexusPublishing {
     repositories {
-        sonatype()
+        maven {
+            name = "Snapshots"
+            url = uri("https://catcoder.pl.ua/snapshots")
+            credentials {
+                username = System.getenv("USERNAME")
+                password = System.getenv("TOKEN")
+            }
+        }
     }
 }
 
