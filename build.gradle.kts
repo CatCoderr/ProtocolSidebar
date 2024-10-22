@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "me.catcoder"
-version = "6.2.7-SNAPSHOT"
+version = "6.2.8-SNAPSHOT"
 description = "Powerful feature-packed Minecraft scoreboard library"
 
 val adventureVersion = "4.16.0"
