@@ -23,7 +23,7 @@
 
 ![Sidebar](https://github.com/CatCoderr/ProtocolSidebar/raw/master/assets/sidebar.gif)
 
-⚠️ **Note**: starting from **6.2.7-SNAPSHOT** version, the repository has been moved to https://catcoder.pl.ua/snapshots. 
+⚠️ **Note**: starting from **6.2.8-SNAPSHOT** version, the repository has been moved to https://catcoder.pl.ua/snapshots. 
 You can find URL for Maven and Gradle in the [Adding to your project](#adding-to-your-project) section.
 
 
@@ -69,7 +69,7 @@ or [maven-shade-plugin](https://maven.apache.org/plugins/maven-shade-plugin/) (f
 <dependency>
     <groupId>me.catcoder</groupId>
     <artifactId>bukkit-sidebar</artifactId>
-    <version>6.2.7-SNAPSHOT</version>
+    <version>6.2.8-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -82,7 +82,7 @@ repositories {
 ```
 ```groovy
 dependencies {
-    implementation 'me.catcoder:bukkit-sidebar:6.2.7-SNAPSHOT'
+    implementation 'me.catcoder:bukkit-sidebar:6.2.8-SNAPSHOT'
 }
 ```
 
@@ -95,7 +95,7 @@ repositories {
 ```
 ```kotlin
 dependencies {
-    implementation("me.catcoder:bukkit-sidebar:6.2.7-SNAPSHOT")
+    implementation("me.catcoder:bukkit-sidebar:6.2.8-SNAPSHOT")
 }
 ```
 
