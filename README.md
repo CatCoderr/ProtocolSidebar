@@ -7,7 +7,7 @@
 <p align="center">
 <a target="_blank"><img src="https://github.com/CatCoderr/ProtocolSidebar/actions/workflows/build.yaml/badge.svg" alt="Build" /></a>
 <a target="_blank"><img src="https://img.shields.io/github/license/CatCoderr/ProtocolSidebar" alt="License" /></a>
-<a target="_blank"><img src="https://img.shields.io/badge/Minecraft%20Versions-1.12.2--1.21-blue?style=flat" alt="Minecraft Versions" /></a>
+<a target="_blank"><img src="https://img.shields.io/badge/Minecraft%20Versions-1.12.2--1.21.2-blue?style=flat" alt="Minecraft Versions" /></a>
 </p>
 
 * [Features](#features)
