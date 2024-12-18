@@ -55,7 +55,7 @@ allprojects {
         compileOnly("net.kyori:adventure-text-serializer-gson:${adventureVersion}")
         compileOnly("net.kyori:adventure-text-serializer-legacy:${adventureVersion}")
 
-        compileOnly("com.github.technicallycoded:FoliaLib:${foliaLibVersion}")
+        implementation("com.github.technicallycoded:FoliaLib:${foliaLibVersion}")
     }
 }
 
