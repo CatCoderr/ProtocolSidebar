@@ -13,12 +13,14 @@ val paperVersion = "1.20.1-R0.1-SNAPSHOT"
 val viaVersionVersion = "4.8.1"
 val miniPlaceholdersVersion = "2.2.3"
 val lombokVersion = "1.18.30"
+val foliaLibVersion = "main-SNAPSHOT"
 
 allprojects {
     apply(plugin = "java-library")
 
     repositories {
         mavenLocal()
+        maven { url = uri("https://jitpack.io") }
         maven { url = uri("https://repo.papermc.io/repository/maven-public/") }
         maven { url = uri("https://hub.spigotmc.org/nexus/content/groups/public/") }
         maven { url = uri("https://repo.dmulloy2.net/content/groups/public/") }
@@ -52,6 +54,8 @@ allprojects {
         compileOnly("net.kyori:adventure-text-minimessage:${adventureVersion}")
         compileOnly("net.kyori:adventure-text-serializer-gson:${adventureVersion}")
         compileOnly("net.kyori:adventure-text-serializer-legacy:${adventureVersion}")
+
+        compileOnly("com.github.technicallycoded:FoliaLib:${foliaLibVersion}")
     }
 }
 

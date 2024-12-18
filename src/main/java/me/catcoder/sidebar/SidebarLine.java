@@ -2,6 +2,7 @@ package me.catcoder.sidebar;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.tcoded.folialib.wrapper.task.WrappedTask;
 import io.netty.buffer.ByteBuf;
 import lombok.*;
 import me.catcoder.sidebar.protocol.ChannelInjector;
@@ -11,9 +12,7 @@ import me.catcoder.sidebar.text.TextProvider;
 import me.catcoder.sidebar.util.lang.ThrowingFunction;
 import me.catcoder.sidebar.util.lang.ThrowingPredicate;
 import me.catcoder.sidebar.util.lang.ThrowingSupplier;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitTask;
 
 @Getter
 @ToString
@@ -28,7 +27,7 @@ public class SidebarLine<R> {
     private final boolean staticText;
 
     // for internal use
-    BukkitTask updateTask;
+    WrappedTask updateTask;
 
     private ThrowingFunction<Player, R, Throwable> updater;
     private ThrowingPredicate<Player, Throwable> displayCondition;
@@ -68,21 +67,21 @@ public class SidebarLine<R> {
         return this;
     }
 
-    public BukkitTask updatePeriodically(long delay, long period, @NonNull Sidebar<R> sidebar) {
+    public WrappedTask updatePeriodically(long delay, long period, @NonNull Sidebar<R> sidebar) {
         Preconditions.checkState(!isStaticText(), "Cannot set updater for static text line");
 
         if (updateTask != null) {
             Preconditions.checkState(updateTask.isCancelled(),
                     "Update task for line %s is already running. Cancel it first.", this);
-            sidebar.taskIds.remove(updateTask.getTaskId());
+            sidebar.getFoliaLib().getScheduler().cancelTask(updateTask);
+            sidebar.tasks.remove(updateTask);
         }
 
-        BukkitTask task = Bukkit.getScheduler().runTaskTimerAsynchronously(sidebar.getPlugin(),
-                () -> sidebar.updateLine(this), delay, period);
+        WrappedTask task = sidebar.getFoliaLib().getScheduler().runTimerAsync(() -> sidebar.updateLine(this), delay, period);
 
         this.updateTask = task;
 
-        sidebar.bindBukkitTask(task);
+        sidebar.bindWrappedTask(task);
 
         return task;
     }

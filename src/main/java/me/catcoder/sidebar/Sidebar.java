@@ -1,6 +1,9 @@
 package me.catcoder.sidebar;
 
 import com.google.common.base.Preconditions;
+import com.tcoded.folialib.FoliaLib;
+import com.tcoded.folialib.wrapper.task.WrappedBukkitTask;
+import com.tcoded.folialib.wrapper.task.WrappedTask;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -39,13 +42,16 @@ public class Sidebar<R> {
     private final ScoreboardObjective<R> objective;
 
     private TextIterator titleText;
-    private BukkitTask titleUpdater;
+    private WrappedTask titleUpdater;
 
-    final Set<Integer> taskIds = new HashSet<>();
+    final Set<WrappedTask> tasks = new HashSet<>();
     final TextProvider<R> textProvider;
 
     @Getter
     private final Plugin plugin;
+
+    @Getter
+    private final FoliaLib foliaLib;
 
     /**
      * Construct a new sidebar instance.
@@ -55,6 +61,7 @@ public class Sidebar<R> {
      */
     Sidebar(@NonNull R title, @NonNull Plugin plugin, @NonNull TextProvider<R> textProvider) {
         this.plugin = plugin;
+        this.foliaLib = new FoliaLib(plugin);
         this.textProvider = textProvider;
         this.objective = new ScoreboardObjective<>(OBJECTIVE_PREFIX + RandomString.generate(3), title, textProvider);
     }
@@ -67,6 +74,7 @@ public class Sidebar<R> {
      */
     Sidebar(@NonNull TextIterator titleIterator, @NonNull Plugin plugin, @NonNull TextProvider<R> textProvider) {
         this.plugin = plugin;
+        this.foliaLib = new FoliaLib(plugin);
         this.textProvider = textProvider;
 
         this.objective = new ScoreboardObjective<>(
@@ -121,7 +129,7 @@ public class Sidebar<R> {
         cancelTitleUpdater();
 
         this.titleText = iterator;
-        this.titleUpdater = plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, () -> {
+        this.titleUpdater = foliaLib.getScheduler().runTimerAsync(() -> {
             String next = titleText.next();
 
             objective.setDisplayName(textProvider.fromLegacyMessage(next));
@@ -151,8 +159,14 @@ public class Sidebar<R> {
      * @param task - task to bind
      * @return the task
      */
+    @Deprecated(since = "6.2.9")
     public BukkitTask bindBukkitTask(@NonNull BukkitTask task) {
-        this.taskIds.add(task.getTaskId());
+        this.tasks.add(new WrappedBukkitTask(task));
+        return task;
+    }
+
+    public WrappedTask bindWrappedTask(@NonNull WrappedTask task) {
+        this.tasks.add(task);
         return task;
     }
 
@@ -163,7 +177,7 @@ public class Sidebar<R> {
      * @param period period in ticks
      * @return the scheduled task
      */
-    public BukkitTask updateLinesPeriodically(long delay, long period) {
+    public WrappedTask updateLinesPeriodically(long delay, long period) {
         return updateLinesPeriodically(delay, period, true);
     }
 
@@ -175,12 +189,12 @@ public class Sidebar<R> {
      * @param async  whether the task should be executed asynchronously
      * @return the scheduled task
      */
-    public BukkitTask updateLinesPeriodically(long delay, long period, boolean async) {
+    public WrappedTask updateLinesPeriodically(long delay, long period, boolean async) {
         return async ?
-                bindBukkitTask(Bukkit.getScheduler()
-                        .runTaskTimerAsynchronously(plugin, this::updateAllLines, delay, period)) :
-                bindBukkitTask(Bukkit.getScheduler()
-                        .runTaskTimer(plugin, this::updateAllLines, delay, period));
+                bindWrappedTask(foliaLib.getScheduler()
+                        .runTimerAsync(this::updateAllLines, delay, period)) :
+                bindWrappedTask(foliaLib.getScheduler()
+                        .runTimer(this::updateAllLines, delay, period));
     }
 
     /**
@@ -371,8 +385,8 @@ public class Sidebar<R> {
     public void destroy() {
         cancelTitleUpdater();
 
-        for (int taskId : taskIds) {
-            Bukkit.getScheduler().cancelTask(taskId);
+        for (WrappedTask task : tasks) {
+            foliaLib.getScheduler().cancelTask(task);
         }
 
         removeViewers();
@@ -381,7 +395,7 @@ public class Sidebar<R> {
             lines.clear();
         }
 
-        taskIds.clear();
+        tasks.clear();
     }
 
     /**
