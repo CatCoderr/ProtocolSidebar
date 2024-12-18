@@ -158,6 +158,8 @@ public class Sidebar<R> {
      *
      * @param task - task to bind
      * @return the task
+     *
+     * @deprecated Use {@link #bindWrappedTask(WrappedTask)} instead.
      */
     @Deprecated(since = "6.2.9")
     public BukkitTask bindBukkitTask(@NonNull BukkitTask task) {
@@ -165,6 +167,13 @@ public class Sidebar<R> {
         return task;
     }
 
+    /**
+     * Binds a {@link WrappedTask} to this sidebar.
+     * When the sidebar is destroyed, the task will be cancelled.
+     *
+     * @param task - task to bind
+     * @return the task
+     */
     public WrappedTask bindWrappedTask(@NonNull WrappedTask task) {
         this.tasks.add(task);
         return task;
