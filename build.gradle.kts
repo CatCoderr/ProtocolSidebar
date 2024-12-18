@@ -118,15 +118,16 @@ publishing {
     }
 }
 
-// Find a way to make this conditional, so it doesn't run on Jitpack.
-/*signing {
-    val signingKey = System.getenv("GPG_SECRET_KEY")
-    val signingPassword = System.getenv("GPG_PASSPHRASE")
+if (System.getenv("JITPACK") == null || !System.getenv("JITPACK").toBoolean()) {
+    signing {
+        val signingKey = System.getenv("GPG_SECRET_KEY")
+        val signingPassword = System.getenv("GPG_PASSPHRASE")
 
-    useInMemoryPgpKeys(signingKey, signingPassword)
+        useInMemoryPgpKeys(signingKey, signingPassword)
 
-    sign(publishing.publications["mavenJava"])
-}*/
+        sign(publishing.publications["mavenJava"])
+    }
+}
 
 tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
