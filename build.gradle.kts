@@ -8,7 +8,7 @@ group = "me.catcoder"
 version = "6.2.8-SNAPSHOT"
 description = "Powerful feature-packed Minecraft scoreboard library"
 
-val adventureVersion = "4.16.0"
+val adventureVersion = "4.18.0"
 val paperVersion = "1.20.1-R0.1-SNAPSHOT"
 val viaVersionVersion = "4.8.1"
 val miniPlaceholdersVersion = "2.2.3"
