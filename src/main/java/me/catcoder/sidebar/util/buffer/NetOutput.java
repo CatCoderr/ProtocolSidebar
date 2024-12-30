@@ -1,6 +1,6 @@
 package me.catcoder.sidebar.util.buffer;
 
-import com.github.steveice10.opennbt.tag.builtin.Tag;
+import com.viaversion.nbt.tag.Tag;
 
 import javax.annotation.Nullable;
 import java.util.UUID;
@@ -16,7 +16,7 @@ public interface NetOutput {
      */
     public void writeBoolean(boolean b);
 
-    public <T extends Tag> void writeAnyTag(@Nullable T tag);
+    public <T extends Tag> void writeAnyTag(@Nullable T tag, boolean named);
 
     public void writeComponent(String json);
 

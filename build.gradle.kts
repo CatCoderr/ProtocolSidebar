@@ -10,7 +10,8 @@ description = "Powerful feature-packed Minecraft scoreboard library"
 
 val adventureVersion = "4.16.0"
 val paperVersion = "1.20.1-R0.1-SNAPSHOT"
-val viaVersionVersion = "4.8.1"
+val viaVersionVersion = "5.0.0"
+val viaNBTVersion = "5.0.2"
 val miniPlaceholdersVersion = "2.2.3"
 val lombokVersion = "1.18.30"
 val foliaLibVersion = "main-SNAPSHOT"
@@ -38,11 +39,13 @@ allprojects {
         compileOnly("io.papermc.paper:paper-api:${paperVersion}")
         testCompileOnly("io.papermc.paper:paper-api:${paperVersion}")
 
-        implementation("com.github.steveice10:opennbt:1.6")
+        implementation("com.viaversion:nbt:${viaNBTVersion}")
+        implementation("com.github.technicallycoded:FoliaLib:${foliaLibVersion}")
 
         compileOnly("org.projectlombok:lombok:${lombokVersion}")
         annotationProcessor("org.projectlombok:lombok:${lombokVersion}")
 
+        compileOnly("com.viaversion:viaversion-common:${viaVersionVersion}")
         compileOnly("com.viaversion:viaversion-bukkit:${viaVersionVersion}")
 
         compileOnly("io.netty:netty-buffer:4.1.101.Final")
@@ -54,8 +57,6 @@ allprojects {
         compileOnly("net.kyori:adventure-text-minimessage:${adventureVersion}")
         compileOnly("net.kyori:adventure-text-serializer-gson:${adventureVersion}")
         compileOnly("net.kyori:adventure-text-serializer-legacy:${adventureVersion}")
-
-        implementation("com.github.technicallycoded:FoliaLib:${foliaLibVersion}")
     }
 }
 

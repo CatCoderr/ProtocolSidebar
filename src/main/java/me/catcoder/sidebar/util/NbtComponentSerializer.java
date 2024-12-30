@@ -1,18 +1,6 @@
 package me.catcoder.sidebar.util;
 
-import com.github.steveice10.opennbt.tag.builtin.ByteArrayTag;
-import com.github.steveice10.opennbt.tag.builtin.ByteTag;
-import com.github.steveice10.opennbt.tag.builtin.CompoundTag;
-import com.github.steveice10.opennbt.tag.builtin.DoubleTag;
-import com.github.steveice10.opennbt.tag.builtin.FloatTag;
-import com.github.steveice10.opennbt.tag.builtin.IntArrayTag;
-import com.github.steveice10.opennbt.tag.builtin.IntTag;
-import com.github.steveice10.opennbt.tag.builtin.ListTag;
-import com.github.steveice10.opennbt.tag.builtin.LongArrayTag;
-import com.github.steveice10.opennbt.tag.builtin.LongTag;
-import com.github.steveice10.opennbt.tag.builtin.ShortTag;
-import com.github.steveice10.opennbt.tag.builtin.StringTag;
-import com.github.steveice10.opennbt.tag.builtin.Tag;
+import com.viaversion.nbt.tag.*;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -63,15 +51,15 @@ public class NbtComponentSerializer {
 
 
     public static @Nullable Tag jsonComponentToTag(@Nullable final JsonElement component) {
-        return convertToTag("", component);
+        return convertToTag(component);
     }
 
     @Contract("_, null -> null")
-    private static Tag convertToTag(String name, final @Nullable JsonElement element) {
+    private static Tag convertToTag(final @Nullable JsonElement element) {
         if (element == null || element.isJsonNull()) {
             return null;
         } else if (element.isJsonObject()) {
-            final CompoundTag tag = new CompoundTag(name);
+            final CompoundTag tag = new CompoundTag();
             final JsonObject jsonObject = element.getAsJsonObject();
             for (final Map.Entry<String, JsonElement> entry : jsonObject.entrySet()) {
                 convertObjectEntry(entry.getKey(), entry.getValue(), tag);
@@ -80,43 +68,43 @@ public class NbtComponentSerializer {
             addComponentType(jsonObject, tag);
             return tag;
         } else if (element.isJsonArray()) {
-            return convertJsonArray(name, element.getAsJsonArray());
+            return convertJsonArray(element.getAsJsonArray());
         } else if (element.isJsonPrimitive()) {
             final JsonPrimitive primitive = element.getAsJsonPrimitive();
             if (primitive.isString()) {
-                return new StringTag(name, primitive.getAsString());
+                return new StringTag(primitive.getAsString());
             } else if (primitive.isBoolean()) {
-                return new ByteTag(name, (byte) (primitive.getAsBoolean() ? 1 : 0));
+                return new ByteTag((byte) (primitive.getAsBoolean() ? 1 : 0));
             }
 
             final Number number = primitive.getAsNumber();
             if (number instanceof Integer) {
-                return new IntTag(name, number.intValue());
+                return new IntTag(number.intValue());
             } else if (number instanceof Byte) {
-                return new ByteTag(name, number.byteValue());
+                return new ByteTag(number.byteValue());
             } else if (number instanceof Short) {
-                return new ShortTag(name, number.shortValue());
+                return new ShortTag(number.shortValue());
             } else if (number instanceof Long) {
-                return new LongTag(name, number.longValue());
+                return new LongTag(number.longValue());
             } else if (number instanceof Double) {
-                return new DoubleTag(name, number.doubleValue());
+                return new DoubleTag(number.doubleValue());
             } else if (number instanceof Float) {
-                return new FloatTag(name, number.floatValue());
+                return new FloatTag(number.floatValue());
             } else if (number instanceof LazilyParsedNumber) {
                 // TODO: This might need better handling
-                return new IntTag(name, number.intValue());
+                return new IntTag(number.intValue());
             }
-            return new IntTag(name, number.intValue()); // ???
+            return new IntTag(number.intValue()); // ???
         }
         throw new IllegalArgumentException("Unhandled json type " + element.getClass().getSimpleName() + " with value " + element.getAsString());
     }
 
-    private static ListTag convertJsonArray(String name, final JsonArray array) {
+    private static ListTag convertJsonArray(final JsonArray array) {
         // TODO Number arrays?
-        final ListTag listTag = new ListTag(name);
+        final ListTag listTag = new ListTag();
         boolean singleType = true;
         for (final JsonElement entry : array) {
-            final Tag convertedEntryTag = convertToTag("", entry);
+            final Tag convertedEntryTag = convertToTag(entry);
             if (listTag.getElementType() != null && listTag.getElementType() != convertedEntryTag.getClass()) {
                 singleType = false;
                 break;
@@ -131,22 +119,22 @@ public class NbtComponentSerializer {
 
         // Generally, vanilla-esque serializers should not produce this format, so it should be rare
         // Lists are only used for lists of components ("extra" and "with")
-        final ListTag processedListTag = new ListTag(name);
+        final ListTag processedListTag = new ListTag();
         for (final JsonElement entry : array) {
-            final Tag convertedTag = convertToTag("", entry);
+            final Tag convertedTag = convertToTag(entry);
             if (convertedTag instanceof CompoundTag) {
                 processedListTag.add(convertedTag);
                 continue;
             }
 
             // Wrap all entries in compound tags, as lists can only consist of one type of tag
-            final CompoundTag compoundTag = new CompoundTag("");
-            compoundTag.put(new StringTag("type", "text"));
+            final CompoundTag compoundTag = new CompoundTag();
+            compoundTag.put("type", new StringTag("text"));
             if (convertedTag instanceof ListTag) {
-                compoundTag.put(new StringTag("text"));
-                compoundTag.put(new ListTag("extra", ((ListTag) convertedTag).getValue()));
+                compoundTag.put("text", new StringTag(""));
+                compoundTag.put("extra", new ListTag(((ListTag) convertedTag).getValue()));
             } else {
-                compoundTag.put(new StringTag("text", stringValue(convertedTag)));
+                compoundTag.put("text", new StringTag(stringValue(convertedTag)));
             }
             processedListTag.add(compoundTag);
         }
@@ -168,16 +156,15 @@ public class NbtComponentSerializer {
             final JsonElement id = hoverEvent.get("id");
             final UUID uuid;
             if (id != null && id.isJsonPrimitive() && (uuid = parseUUID(id.getAsString())) != null) {
-                hoverEvent.remove("id");
-
-                final CompoundTag convertedTag = (CompoundTag) convertToTag(key, value);
-                convertedTag.put(new IntArrayTag("id", toIntArray(uuid)));
-                tag.put(convertedTag);
+                final CompoundTag convertedTag = (CompoundTag) convertToTag(value);
+                convertedTag.remove("id");
+                convertedTag.put("id", new IntArrayTag(toIntArray(uuid)));
+                tag.put(key, convertedTag);
                 return;
             }
         }
 
-        tag.put(convertToTag(key, value));
+        tag.put(key, convertToTag(value));
     }
 
     private static void addComponentType(final JsonObject object, final CompoundTag tag) {
@@ -188,7 +175,7 @@ public class NbtComponentSerializer {
         // Add the type to speed up deserialization and make DFU errors slightly more useful
         for (final Pair<String, String> pair : COMPONENT_TYPES) {
             if (object.has(pair.value)) {
-                tag.put(new StringTag("type", pair.key));
+                tag.put("type", new StringTag(pair.key));
                 return;
             }
         }
@@ -203,12 +190,12 @@ public class NbtComponentSerializer {
                 removeComponentType(object);
             }
 
-            for (final Tag entry : ((CompoundTag) tag)) {
-                convertCompoundTagEntry(entry.getName(), entry, object);
+            for (final Map.Entry<String, Tag> entry : ((CompoundTag) tag)) {
+                convertCompoundTagEntry(entry.getKey(), entry.getValue(), object);
             }
             return object;
         } else if (tag instanceof ListTag) {
-            final ListTag list = (ListTag) tag;
+            final ListTag<Tag> list = (ListTag<Tag>) tag;
             final JsonArray array = new JsonArray();
             for (final Tag listEntry : list) {
                 array.add(convertToJson(null, listEntry));

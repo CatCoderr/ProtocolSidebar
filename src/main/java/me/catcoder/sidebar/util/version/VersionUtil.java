@@ -19,6 +19,6 @@ public final class VersionUtil {
 
     public static int getPlayerVersion(@NonNull UUID id) {
         boolean isVia = Bukkit.getPluginManager().isPluginEnabled("ViaVersion");
-        return isVia ? JavaPlugin.getPlugin(ViaVersionPlugin.class).getApi().getPlayerVersion(id) : SERVER_VERSION;
+        return isVia ? JavaPlugin.getPlugin(ViaVersionPlugin.class).getApi().getPlayerProtocolVersion(id).getVersion() : SERVER_VERSION;
     }
 }
