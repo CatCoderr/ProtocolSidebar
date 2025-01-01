@@ -7,3 +7,4 @@ website: https://github.com/CatCoderr/ProtocolSidebar
 softdepend: [ViaVersion]
 
 api-version: 1.13
+folia-supported: true

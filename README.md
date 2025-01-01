@@ -33,6 +33,7 @@
 * No flickering (without using a buffer)
 * Does not require any additional libraries/plugins on the server
 * Easy to use
+* Folia support
 * Optionally supports [Adventure API](https://docs.advntr.dev/text.html), [MiniMessage](https://docs.advntr.dev/minimessage/index.html), [MiniPlaceholders](https://github.com/MiniPlaceholders/MiniPlaceholders)
 * Extremely fast, can be used asynchronously
 * Cool inbuilt animations
