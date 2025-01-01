@@ -34,7 +34,7 @@ public class ByteBufNetOutput implements NetOutput {
         JsonElement jsonElement = JsonParser.parseString(json);
         Tag tag = NbtComponentSerializer.jsonComponentToTag(jsonElement);
 
-        writeAnyTag(tag, true);
+        writeAnyTag(tag, false);
     }
 
     @SneakyThrows
