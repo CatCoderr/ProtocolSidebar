@@ -299,21 +299,21 @@ public class NbtComponentSerializer {
         if (tag instanceof ByteArrayTag) {
             return Arrays.toString(((ByteArrayTag) tag).getValue());
         } else if (tag instanceof ByteTag) {
-            return Byte.toString(((ByteTag) tag).getValue());
+            return Byte.toString(((ByteTag) tag).asByte());
         } else if (tag instanceof DoubleTag) {
-            return Double.toString(((DoubleTag) tag).getValue());
+            return Double.toString(((DoubleTag) tag).asDouble());
         } else if (tag instanceof FloatTag) {
-            return Float.toString(((FloatTag) tag).getValue());
+            return Float.toString(((FloatTag) tag).asFloat());
         } else if (tag instanceof IntArrayTag) {
             return Arrays.toString(((IntArrayTag) tag).getValue());
         } else if (tag instanceof IntTag) {
-            return Integer.toString(((IntTag) tag).getValue());
+            return Integer.toString(((IntTag) tag).asInt());
         } else if (tag instanceof LongArrayTag) {
             return Arrays.toString(((LongArrayTag) tag).getValue());
         } else if (tag instanceof LongTag) {
-            return Long.toString(((LongTag) tag).getValue());
+            return Long.toString(((LongTag) tag).asLong());
         } else if (tag instanceof ShortTag) {
-            return Short.toString(((ShortTag) tag).getValue());
+            return Short.toString(((ShortTag) tag).asShort());
         } else if (tag instanceof StringTag) {
             return ((StringTag) tag).getValue();
         } else {
