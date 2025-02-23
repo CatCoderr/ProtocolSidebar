@@ -12,7 +12,7 @@ val adventureVersion = "4.16.0"
 val paperVersion = "1.20.1-R0.1-SNAPSHOT"
 val viaVersionVersion = "5.0.0"
 val viaNBTVersion = "5.0.2"
-val miniPlaceholdersVersion = "2.2.3"
+val miniPlaceholdersVersion = "2.3.0"
 val lombokVersion = "1.18.30"
 val foliaLibVersion = "main-SNAPSHOT"
 
