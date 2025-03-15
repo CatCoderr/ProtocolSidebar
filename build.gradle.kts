@@ -32,7 +32,7 @@ allprojects {
     }
     dependencies {
         testImplementation("junit:junit:4.13.2")
-        testImplementation("org.mockito:mockito-core:5.7.0")
+        testImplementation("org.mockito:mockito-core:5.16.1")
         testImplementation("org.powermock:powermock-module-junit4:2.0.9")
         testImplementation("org.powermock:powermock-api-mockito2:2.0.9")
 
