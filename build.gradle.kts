@@ -79,7 +79,7 @@ publishing {
             pom {
                 name.set("ProtocolSidebar")
                 description.set(project.description)
-                url.set("https://github.com/CatCoderr/ProtocolSidebar")
+                url.set("https://github.com/BadGames-de/ProtocolSidebar")
 
                 licenses {
                     license {
@@ -93,15 +93,20 @@ publishing {
                         name.set("Ruslan Onischenko")
                         email.set("catcoderr@gmail.com")
                     }
+                    developer {
+                        id.set("Presti")
+                        name.set("Presti")
+                        email.set("protocolsidebar@presti.me")
+                    }
                 }
                 scm {
-                    url.set("https://github.com/CatCoderr/ProtocolSidebar")
-                    connection.set("scm:git:git://github.com:CatCoderr/ProtocolSidebar.git")
-                    developerConnection.set("scm:git:ssh://github.com:CatCoderr/ProtocolSidebar.git")
+                    url.set("https://github.com/BadGames-de/ProtocolSidebar")
+                    connection.set("scm:git:git://github.com:BadGames-de/ProtocolSidebar.git")
+                    developerConnection.set("scm:git:ssh://github.com:BadGames-de/ProtocolSidebar.git")
                 }
 
                 issueManagement {
-                    url.set("https://github.com/CatCoderr/ProtocolSidebar/issues")
+                    url.set("https://github.com/BadGames-de/ProtocolSidebar/issues")
                 }
 
             }
@@ -110,23 +115,14 @@ publishing {
 
     repositories {
         maven {
-            name = "Snapshots"
-            url = uri("https://catcoder.pl.ua/snapshots")
+            name = "badgames-snapshots"
+            url = uri("https://repo.badgames.de/snapshots")
             credentials {
                 username = System.getenv("USERNAME")
                 password = System.getenv("TOKEN")
             }
         }
     }
-}
-
-signing {
-    val signingKey = System.getenv("GPG_SECRET_KEY")
-    val signingPassword = System.getenv("GPG_PASSPHRASE")
-
-    useInMemoryPgpKeys(signingKey, signingPassword)
-
-    sign(publishing.publications["mavenJava"])
 }
 
 tasks.withType<JavaCompile> {
