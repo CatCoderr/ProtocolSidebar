@@ -14,7 +14,7 @@ val viaVersionVersion = "5.0.0"
 val viaNBTVersion = "5.0.2"
 val miniPlaceholdersVersion = "2.2.3"
 val lombokVersion = "1.18.30"
-val foliaLibVersion = "main-SNAPSHOT"
+val foliaLibVersion = "0.5.1"
 
 allprojects {
     apply(plugin = "java-library")
@@ -29,6 +29,7 @@ allprojects {
         maven { url = uri("https://repo.viaversion.com") }
         maven { url = uri("https://repo.maven.apache.org/maven2/") }
         maven { url = uri("https://repo.opencollab.dev/maven-releases/") }
+        maven { url =  uri("https://repo.tcoded.com/releases") }
     }
     dependencies {
         testImplementation("junit:junit:4.13.2")
@@ -40,7 +41,7 @@ allprojects {
         testCompileOnly("io.papermc.paper:paper-api:${paperVersion}")
 
         implementation("com.viaversion:nbt:${viaNBTVersion}")
-        implementation("com.github.technicallycoded:FoliaLib:${foliaLibVersion}")
+        implementation("com.tcoded:FoliaLib:${foliaLibVersion}")
 
         compileOnly("org.projectlombok:lombok:${lombokVersion}")
         annotationProcessor("org.projectlombok:lombok:${lombokVersion}")
