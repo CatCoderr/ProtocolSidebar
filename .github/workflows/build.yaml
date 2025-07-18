@@ -20,11 +20,9 @@ jobs:
         run: ./gradlew test build --no-daemon
 
       - name: Publish with Gradle
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/custom/useBadGamesRepo'
         env:
-          GPG_PASSPHRASE: ${{ secrets.GPG_KEY_PASSPHRASE }}
-          GPG_SECRET_KEY: ${{ secrets.GPG_SECRET_KEY }}
           USERNAME: ${{ secrets.REPO_USER }}
-          TOKEN: ${{ secrets.REPO_TOKEN }}
+          TOKEN: ${{ secrets.REPO_PASSWORD }}
 
         run: ./gradlew publish --no-daemon
