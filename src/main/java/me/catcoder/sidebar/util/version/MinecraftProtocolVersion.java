@@ -21,6 +21,10 @@ public final class MinecraftProtocolVersion {
         // Source: http://wiki.vg/Protocol_version_numbers
         // Doesn't include pre-releases
 
+        map.put(new MinecraftVersion(1, 8, 0), ProtocolConstants.MINECRAFT_1_8);
+
+        map.put(new MinecraftVersion(1,9,0), ProtocolConstants.MINECRAFT_1_9);
+
         map.put(new MinecraftVersion(1, 12, 2), ProtocolConstants.MINECRAFT_1_12_2);
 
         map.put(new MinecraftVersion(1, 13, 0), ProtocolConstants.MINECRAFT_1_13);

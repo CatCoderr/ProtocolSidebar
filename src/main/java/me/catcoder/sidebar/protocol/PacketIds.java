@@ -8,7 +8,7 @@ import static me.catcoder.sidebar.protocol.ProtocolConstants.map;
 public enum PacketIds {
 
     UPDATE_TEAMS(
-            map(ProtocolConstants.MINECRAFT_1_8, 0x42),
+            map(ProtocolConstants.MINECRAFT_1_8, 0x3E),
             map(ProtocolConstants.MINECRAFT_1_9, 0x41),
             map(ProtocolConstants.MINECRAFT_1_12_2, 0x44),
             map(ProtocolConstants.MINECRAFT_1_13, 0x47),
@@ -25,7 +25,7 @@ public enum PacketIds {
             map(ProtocolConstants.MINECRAFT_1_21_2, 0x67)
     ),
     UPDATE_SCORE(
-            map(ProtocolConstants.MINECRAFT_1_8, 0x43),
+            map(ProtocolConstants.MINECRAFT_1_8, 0x3C),
             map(ProtocolConstants.MINECRAFT_1_9, 0x42),
             map(ProtocolConstants.MINECRAFT_1_12_2, 0x45),
             map(ProtocolConstants.MINECRAFT_1_13, 0x48),
@@ -47,8 +47,9 @@ public enum PacketIds {
             map(ProtocolConstants.MINECRAFT_1_20_4, 0x44),
             map(ProtocolConstants.MINECRAFT_1_21_2, 0x49)
     ),
+    // Display Scoreboard
     OBJECTIVE_DISPLAY(
-            map(ProtocolConstants.MINECRAFT_1_8, 0x39),
+            map(ProtocolConstants.MINECRAFT_1_8, 0x3D),
             map(ProtocolConstants.MINECRAFT_1_9, 0x38),
             map(ProtocolConstants.MINECRAFT_1_12_2, 0x3B),
             map(ProtocolConstants.MINECRAFT_1_13, 0x3E),
@@ -64,8 +65,9 @@ public enum PacketIds {
             map(ProtocolConstants.MINECRAFT_1_21_2, 0x5C)
 
     ),
+    // Scoreboard Objective
     OBJECTIVE(
-            map(ProtocolConstants.MINECRAFT_1_8, 0x40),
+            map(ProtocolConstants.MINECRAFT_1_8, 0x3B),
             map(ProtocolConstants.MINECRAFT_1_9, 0x3F),
             map(ProtocolConstants.MINECRAFT_1_12_2, 0x42),
             map(ProtocolConstants.MINECRAFT_1_13, 0x45),

@@ -189,7 +189,6 @@ public class ScoreboardPackets {
             packet.writeString(prefix);
             packet.writeString(suffix);
             writeDefaults(serverVersion, packet);
-
         } else {
             writeDefaults(serverVersion, packet);
             packet.writeString(provider.asJsonMessage(player, provider.fromLegacyMessage(prefix))); // prefix
@@ -207,7 +206,9 @@ public class ScoreboardPackets {
     private static void writeDefaults(int serverVersion, @NonNull NetOutput packet) {
         packet.writeByte(10); // friendly tags
         packet.writeString("always"); // name tag visibility
-        packet.writeString("always"); // collision rule
+        if (serverVersion >= ProtocolConstants.MINECRAFT_1_9) {
+            packet.writeString("always"); // collision rule
+        }
         if (serverVersion < ProtocolConstants.MINECRAFT_1_13) {
             packet.writeByte(-1); // reset color
         } else {
