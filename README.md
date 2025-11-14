@@ -7,7 +7,7 @@
 <p align="center">
 <a target="_blank"><img src="https://github.com/CatCoderr/ProtocolSidebar/actions/workflows/build.yaml/badge.svg" alt="Build" /></a>
 <a target="_blank"><img src="https://img.shields.io/github/license/CatCoderr/ProtocolSidebar" alt="License" /></a>
-<a target="_blank"><img src="https://img.shields.io/badge/Minecraft%20Versions-1.12.2--1.21.2-blue?style=flat" alt="Minecraft Versions" /></a>
+<a target="_blank"><img src="https://img.shields.io/badge/Minecraft%20Versions-1.12.2--1.21.10-blue?style=flat" alt="Minecraft Versions" /></a>
 </p>
 
 * [Features](#features)
@@ -54,14 +54,14 @@ or [maven-shade-plugin](https://maven.apache.org/plugins/maven-shade-plugin/) (f
 
 ```xml
 <repository>
-    <id>catcoder-snapshots</id>
-    <url>https://catcoder.pl.ua/snapshots</url>
+    <id>jitpack.io</id>
+    <url>https://jitpack.io</url>
 </repository>
 ```
 ```xml
 <dependency>
-    <groupId>me.catcoder</groupId>
-    <artifactId>bukkit-sidebar</artifactId>
+    <groupId>com.github.CatCoderr</groupId>
+    <artifactId>ProtocolSidebar</artifactId>
     <version>6.2.10-SNAPSHOT</version>
 </dependency>
 ```
@@ -70,12 +70,12 @@ or [maven-shade-plugin](https://maven.apache.org/plugins/maven-shade-plugin/) (f
 
 ```groovy
 repositories {
-    maven { url 'https://catcoder.pl.ua/snapshots' }
+    maven { url 'https://jitpack.io' }
 }
 ```
 ```groovy
 dependencies {
-    implementation 'me.catcoder:bukkit-sidebar:6.2.10-SNAPSHOT'
+    implementation 'com.github.CatCoderr:ProtocolSidebar:6.2.10-SNAPSHOT'
 }
 ```
 
@@ -83,12 +83,12 @@ dependencies {
 
 ```kotlin
 repositories {
-    maven("https://catcoder.pl.ua/snapshots")
+    maven("https://jitpack.io")
 }
 ```
 ```kotlin
 dependencies {
-    implementation("me.catcoder:bukkit-sidebar:6.2.10-SNAPSHOT")
+    implementation("com.github.CatCoderr:ProtocolSidebar:6.2.10-SNAPSHOT")
 }
 ```
 
