@@ -206,8 +206,13 @@ public class ScoreboardPackets {
 
     private static void writeDefaults(int serverVersion, @NonNull NetOutput packet) {
         packet.writeByte(10); // friendly tags
-        packet.writeString("always"); // name tag visibility
-        packet.writeString("always"); // collision rule
+        if (serverVersion <= ProtocolConstants.MINECRAFT_1_21_4) {
+            packet.writeString("always"); // name tag visibility
+            packet.writeString("always"); // collision rule
+        } else {
+            packet.writeVarInt(0); // name tag visibility
+            packet.writeVarInt(0); // collision rule
+        }
         if (serverVersion < ProtocolConstants.MINECRAFT_1_13) {
             packet.writeByte(-1); // reset color
         } else {
