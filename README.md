@@ -23,11 +23,6 @@
 
 ![Sidebar](https://github.com/CatCoderr/ProtocolSidebar/raw/master/assets/sidebar.gif)
 
-
-## Donations
-[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Donate%20Now-yellow?style=for-the-badge&logo=buy-me-a-coffee)](https://www.buymeacoffee.com/catcoderr)
-
-
 ## Features
 
 * No flickering (without using a buffer)
