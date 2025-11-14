@@ -124,9 +124,10 @@ signing {
     val signingKey = System.getenv("GPG_SECRET_KEY")
     val signingPassword = System.getenv("GPG_PASSPHRASE")
 
-    useInMemoryPgpKeys(signingKey, signingPassword)
-
-    sign(publishing.publications["mavenJava"])
+    if (signingKey != null && signingPassword != null) {
+        useInMemoryPgpKeys(signingKey, signingPassword)
+        sign(publishing.publications["mavenJava"])
+    }
 }
 
 tasks.withType<JavaCompile> {
