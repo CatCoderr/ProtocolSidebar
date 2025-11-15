@@ -8,12 +8,12 @@ group = "me.catcoder"
 version = "6.2.10-SNAPSHOT"
 description = "Powerful feature-packed Minecraft scoreboard library"
 
-val adventureVersion = "4.16.0"
-val paperVersion = "1.20.1-R0.1-SNAPSHOT"
-val viaVersionVersion = "5.0.0"
-val viaNBTVersion = "5.0.2"
+val adventureVersion = "4.25.0"
+val paperVersion = "1.20.4-R0.1-SNAPSHOT"
+val viaVersionVersion = "5.5.1"
+val viaNBTVersion = "5.1.2"
 val miniPlaceholdersVersion = "2.2.3"
-val lombokVersion = "1.18.30"
+val lombokVersion = "1.18.42"
 val foliaLibVersion = "0.5.1"
 
 allprojects {
@@ -33,7 +33,7 @@ allprojects {
     }
     dependencies {
         testImplementation("junit:junit:4.13.2")
-        testImplementation("org.mockito:mockito-core:5.7.0")
+        testImplementation("org.mockito:mockito-core:5.20.0")
         testImplementation("org.powermock:powermock-module-junit4:2.0.9")
         testImplementation("org.powermock:powermock-api-mockito2:2.0.9")
 
