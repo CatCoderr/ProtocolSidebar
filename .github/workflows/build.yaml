@@ -16,7 +16,7 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew test build --no-daemon
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: ProtocolSidebar
           path: build/libs/
