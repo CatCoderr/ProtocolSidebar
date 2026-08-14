@@ -8,12 +8,12 @@ group = "me.catcoder"
 version = "6.2.10-legacy-1.2-SNAPSHOT"
 description = "Powerful feature-packed Minecraft scoreboard library"
 
-val adventureVersion = "4.16.0"
-val paperVersion = "1.20.1-R0.1-SNAPSHOT"
-val viaVersionVersion = "5.0.0"
-val viaNBTVersion = "5.0.2"
+val adventureVersion = "4.26.1"
+val paperVersion = "1.20.4-R0.1-SNAPSHOT"
+val viaVersionVersion = "5.9.0"
+val viaNBTVersion = "5.2.0"
 val miniPlaceholdersVersion = "2.2.3"
-val lombokVersion = "1.18.30"
+val lombokVersion = "1.18.46"
 val foliaLibVersion = "0.5.1"
 
 allprojects {
@@ -33,7 +33,7 @@ allprojects {
     }
     dependencies {
         testImplementation("junit:junit:4.13.2")
-        testImplementation("org.mockito:mockito-core:5.7.0")
+        testImplementation("org.mockito:mockito-core:5.23.0")
         testImplementation("org.powermock:powermock-module-junit4:2.0.9")
         testImplementation("org.powermock:powermock-api-mockito2:2.0.9")
 
@@ -49,8 +49,8 @@ allprojects {
         compileOnly("com.viaversion:viaversion-common:${viaVersionVersion}")
         compileOnly("com.viaversion:viaversion-bukkit:${viaVersionVersion}")
 
-        compileOnly("io.netty:netty-buffer:4.1.101.Final")
-        compileOnly("io.netty:netty-handler:4.1.101.Final")
+        compileOnly("io.netty:netty-buffer:4.2.12.Final")
+        compileOnly("io.netty:netty-handler:4.2.12.Final")
 
         compileOnly("io.github.miniplaceholders:miniplaceholders-api:${miniPlaceholdersVersion}")
 
@@ -122,6 +122,16 @@ publishing {
                 password = System.getenv("TOKEN")
             }
         }
+    }
+}
+
+signing {
+    val signingKey = System.getenv("GPG_SECRET_KEY")
+    val signingPassword = System.getenv("GPG_PASSPHRASE")
+
+    if (signingKey != null && signingPassword != null) {
+        useInMemoryPgpKeys(signingKey, signingPassword)
+        sign(publishing.publications["mavenJava"])
     }
 }
 
