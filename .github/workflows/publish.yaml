@@ -21,7 +21,6 @@ jobs:
         run: ./gradlew test build --no-daemon
 
       - name: Publish with Gradle
-        if: github.ref == 'refs/heads/custom/legacy-support'
         env:
           GPG_PASSPHRASE: ${{ secrets.GPG_KEY_PASSPHRASE }}
           GPG_SECRET_KEY: ${{ secrets.GPG_SECRET_KEY }}
