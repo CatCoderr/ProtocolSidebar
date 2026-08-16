@@ -81,6 +81,9 @@ public final class MinecraftProtocolVersion {
 
         map.put(new MinecraftVersion(26, 1, 0), ProtocolConstants.MINECRAFT_26_1);
 
+
+        map.put(new MinecraftVersion(26, 3, 0), ProtocolConstants.MINECRAFT_26_3);
+
         return map;
     }
 
