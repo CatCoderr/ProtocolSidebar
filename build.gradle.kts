@@ -10,7 +10,7 @@ description = "Powerful feature-packed Minecraft scoreboard library"
 
 val adventureVersion = "5.2.0"
 val paperVersion = "1.20.4-R0.1-SNAPSHOT"
-val viaVersionVersion = "5.9.0"
+val viaVersionVersion = "5.11.0"
 val viaNBTVersion = "5.3.0"
 val miniPlaceholdersVersion = "3.2.0"
 val lombokVersion = "1.18.46"
