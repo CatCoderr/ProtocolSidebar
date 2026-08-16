@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "me.catcoder"
-version = "6.2.10-legacy-SNAPSHOT"
+version = "6.2.11-legacy-SNAPSHOT"
 description = "Powerful feature-packed Minecraft scoreboard library"
 
 val adventureVersion = "4.26.1"
@@ -15,6 +15,12 @@ val viaNBTVersion = "5.2.0"
 val miniPlaceholdersVersion = "2.2.3"
 val lombokVersion = "1.18.46"
 val foliaLibVersion = "0.5.1"
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
 
 allprojects {
     apply(plugin = "java-library")
@@ -122,16 +128,6 @@ publishing {
                 password = System.getenv("TOKEN")
             }
         }
-    }
-}
-
-signing {
-    val signingKey = System.getenv("GPG_SECRET_KEY")
-    val signingPassword = System.getenv("GPG_PASSPHRASE")
-
-    if (signingKey != null && signingPassword != null) {
-        useInMemoryPgpKeys(signingKey, signingPassword)
-        sign(publishing.publications["mavenJava"])
     }
 }
 
