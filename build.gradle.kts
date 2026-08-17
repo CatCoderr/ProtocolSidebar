@@ -8,22 +8,27 @@ group = "me.catcoder"
 version = "6.2.11-legacy-SNAPSHOT"
 description = "Powerful feature-packed Minecraft scoreboard library"
 
-val adventureVersion = "4.26.1"
+val adventureVersion = "5.2.0"
 val paperVersion = "1.20.4-R0.1-SNAPSHOT"
-val viaVersionVersion = "5.9.0"
-val viaNBTVersion = "5.2.0"
-val miniPlaceholdersVersion = "2.2.3"
+val viaVersionVersion = "5.11.0"
+val viaNBTVersion = "5.3.0"
+val miniPlaceholdersVersion = "2.3.0"
 val lombokVersion = "1.18.46"
-val foliaLibVersion = "0.5.1"
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
-}
+val foliaLibVersion = "0.5.2"
 
 allprojects {
     apply(plugin = "java-library")
+
+    configure<JavaPluginExtension> {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(25)
+        }
+    }
+
+    tasks.withType<JavaCompile> {
+        options.release = 21
+        options.encoding = "UTF-8"
+    }
 
     repositories {
         mavenLocal()
@@ -55,8 +60,8 @@ allprojects {
         compileOnly("com.viaversion:viaversion-common:${viaVersionVersion}")
         compileOnly("com.viaversion:viaversion-bukkit:${viaVersionVersion}")
 
-        compileOnly("io.netty:netty-buffer:4.2.12.Final")
-        compileOnly("io.netty:netty-handler:4.2.12.Final")
+        compileOnly("io.netty:netty-buffer:4.2.17.Final")
+        compileOnly("io.netty:netty-handler:4.2.17.Final")
 
         compileOnly("io.github.miniplaceholders:miniplaceholders-api:${miniPlaceholdersVersion}")
 
@@ -129,10 +134,6 @@ publishing {
             }
         }
     }
-}
-
-tasks.withType<JavaCompile> {
-    options.encoding = "UTF-8"
 }
 
 tasks.withType<Javadoc> {
