@@ -38,7 +38,8 @@ allprojects {
         testImplementation("org.powermock:powermock-api-mockito2:2.0.9")
 
         compileOnly("io.papermc.paper:paper-api:${paperVersion}")
-        testCompileOnly("io.papermc.paper:paper-api:${paperVersion}")
+        // on the test runtime classpath too, so tests can mock Bukkit types
+        testImplementation("io.papermc.paper:paper-api:${paperVersion}")
 
         implementation("com.viaversion:nbt:${viaNBTVersion}")
         implementation("com.tcoded:FoliaLib:${foliaLibVersion}")

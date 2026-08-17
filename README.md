@@ -17,6 +17,7 @@
     * [Gradle (Kotlin DSL)](#gradle-kotlin-dsl)
 * [Basic usage](#basic-usage)
 * [Conditional lines](#conditional-lines)
+* [Conditional titles](#conditional-titles)
 * [Score number formatting](#score-number-formatting)
 * [Sidebar title animations](#sidebar-title-animations)
 * [Sidebar Pager](#sidebar-pager)
@@ -156,6 +157,46 @@ sidebar.getObjective().scoreNumberFormatFixed(player -> Component.text("Test").c
 var line = sidebar.addLine(Component.text("Some line").color(NamedTextColor.YELLOW));
 line.scoreNumberFormatFixed(player -> Component.text("Test").color(NamedTextColor.BLUE));
 ```
+
+## Conditional Titles
+
+The title can be chosen per player, so one `Sidebar` instance can show a different title to
+each viewer. For example a shorter title for legacy clients.
+
+The simplest form is a function that receives the player:
+
+```java
+sidebar.setTitle(player -> isVip(player) ? vipTitle : normalTitle);
+```
+
+For a list of conditions, use `ConditionalTitle`. Conditions are checked in the order they
+were added and the first match wins; `otherwise` is used when nothing matches:
+
+```java
+import static me.catcoder.sidebar.util.PlayerPredicates.*;
+import static me.catcoder.sidebar.protocol.ProtocolConstants.*;
+
+sidebar.setTitle(ConditionalTitle.<Component>create()
+        .when(clientVersionAtMost(MINECRAFT_1_8), Component.text("Legacy"))
+        .when(clientVersionAtLeast(MINECRAFT_1_19), Component.text("Modern"))
+        .when(player -> player.getName().equals("playerA"), Component.text("Hello!"))
+        .otherwise(Component.text("Default")));
+```
+
+Client versions are resolved through ViaVersion. Without ViaVersion installed, every player
+reports the server version.
+
+The title is resolved when a player is added as a viewer. If your conditions depend on state
+that changes later (rank, world, game phase), call `sidebar.updateTitle()` to re-evaluate it
+for all current viewers.
+
+`PlayerPredicates` also works with [conditional lines](#conditional-lines):
+
+```java
+sidebar.addConditionalLine(player -> Component.text("1.8 only"), clientVersionAtMost(MINECRAFT_1_8));
+```
+
+Setting a plain title again with `setTitle(component)` clears the conditional title.
 
 ## Sidebar Title Animations
 
