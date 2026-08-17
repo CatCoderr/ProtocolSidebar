@@ -10,8 +10,10 @@ import me.catcoder.sidebar.protocol.PacketIds;
 import me.catcoder.sidebar.protocol.ProtocolConstants;
 import me.catcoder.sidebar.protocol.ScoreNumberFormat;
 import me.catcoder.sidebar.text.TextProvider;
+import lombok.SneakyThrows;
 import me.catcoder.sidebar.util.buffer.ByteBufNetOutput;
 import me.catcoder.sidebar.util.buffer.NetOutput;
+import me.catcoder.sidebar.util.lang.ThrowingFunction;
 import me.catcoder.sidebar.util.version.VersionUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -41,6 +43,12 @@ public class ScoreboardObjective<R> {
 
     private R displayName;
 
+    /**
+     * Resolves the title per player. When {@code null}, the static {@link #displayName} is used.
+     * Volatile because it is read from the async broadcast threads.
+     */
+    private volatile ThrowingFunction<Player, R, Throwable> displayNameUpdater;
+
     ScoreboardObjective(@NonNull String name,
                         @NonNull R displayName,
                         @NonNull TextProvider<R> textProvider) {
@@ -54,6 +62,12 @@ public class ScoreboardObjective<R> {
 
     void setDisplayName(@NonNull R displayName) {
         this.displayName = displayName;
+        // a static title supersedes any per-player one
+        this.displayNameUpdater = null;
+    }
+
+    void setDisplayNameUpdater(@NonNull ThrowingFunction<Player, R, Throwable> displayNameUpdater) {
+        this.displayNameUpdater = displayNameUpdater;
     }
 
     void updateValue(@NonNull Player player) {
@@ -99,6 +113,7 @@ public class ScoreboardObjective<R> {
         sendPacket(player, buf);
     }
 
+    @SneakyThrows
     private ByteBuf getPacket(@NonNull Player player, int mode) {
         int version = VersionUtil.getPlayerVersion(player.getUniqueId());
 
@@ -112,7 +127,10 @@ public class ScoreboardObjective<R> {
         output.writeByte(mode);
 
         if (mode == ADD_OBJECTIVE || mode == UPDATE_VALUE) {
-            String legacyText = textProvider.asLegacyMessage(player, displayName);
+            // resolved per player, so conditional titles can differ between viewers
+            R title = displayNameUpdater != null ? displayNameUpdater.apply(player) : displayName;
+
+            String legacyText = textProvider.asLegacyMessage(player, title);
             // Since 1.13 characters limit for display name was removed
             boolean truncated = version < ProtocolConstants.MINECRAFT_1_13 && legacyText.length() > 32;
 
@@ -127,7 +145,7 @@ public class ScoreboardObjective<R> {
 
             String jsonText = truncated
                     ? textProvider.asJsonMessage(player, textProvider.fromLegacyMessage(legacyText))
-                    : textProvider.asJsonMessage(player, displayName);
+                    : textProvider.asJsonMessage(player, title);
 
             if (VersionUtil.SERVER_VERSION >= ProtocolConstants.MINECRAFT_1_20_3) {
                 // what the heck 1.20.3?

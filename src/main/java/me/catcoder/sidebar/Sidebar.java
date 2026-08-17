@@ -116,6 +116,44 @@ public class Sidebar<R> {
         setTitleIter(iterator);
     }
 
+    /**
+     * Update the title of the sidebar with a per-player title.
+     * The updater is invoked for each viewer separately, so the title
+     * may differ between players.
+     * <p>
+     * The title is resolved when a player is added as a viewer. Call
+     * {@link #updateTitle()} to re-evaluate it for all current viewers.
+     *
+     * @param updater - the function that produces the title for a player
+     */
+    public void setTitle(@NonNull ThrowingFunction<Player, R, Throwable> updater) {
+        // otherwise a running title animation would keep overwriting the per-player title
+        cancelTitleUpdater();
+
+        objective.setDisplayNameUpdater(updater);
+        broadcast(objective::updateValue);
+    }
+
+    /**
+     * Update the title of the sidebar with a title chosen by conditions.
+     * <p>
+     * The title is resolved when a player is added as a viewer. Call
+     * {@link #updateTitle()} to re-evaluate it for all current viewers.
+     *
+     * @param title - the conditional title
+     */
+    public void setTitle(@NonNull ConditionalTitle<R> title) {
+        setTitle(title.toUpdater());
+    }
+
+    /**
+     * Re-sends the title to all current viewers, re-evaluating any
+     * per-player or conditional title.
+     */
+    public void updateTitle() {
+        broadcast(objective::updateValue);
+    }
+
     private void cancelTitleUpdater() {
         if (titleUpdater != null) {
             titleUpdater.cancel();
