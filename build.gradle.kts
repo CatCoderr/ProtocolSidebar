@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "me.catcoder"
-version = "6.2.11-legacy-SNAPSHOT"
+version = "6.2.11-SNAPSHOT"
 description = "Powerful feature-packed Minecraft scoreboard library"
 
 val adventureVersion = "5.2.0"
@@ -111,13 +111,13 @@ publishing {
                     }
                 }
                 scm {
-                    url.set("https://github.com/BadGames-de/ProtocolSidebar")
-                    connection.set("scm:git:git://github.com:BadGames-de/ProtocolSidebar.git")
-                    developerConnection.set("scm:git:ssh://github.com:BadGames-de/ProtocolSidebar.git")
+                    url.set("https://github.com/CatCoderr/ProtocolSidebar")
+                    connection.set("scm:git:git://github.com:CatCoderr/ProtocolSidebar.git")
+                    developerConnection.set("scm:git:ssh://github.com:CatCoderr/ProtocolSidebar.git")
                 }
 
                 issueManagement {
-                    url.set("https://github.com/BadGames-de/ProtocolSidebar/issues")
+                    url.set("https://github.com/CatCoderr/ProtocolSidebar/issues")
                 }
 
             }
@@ -133,6 +133,16 @@ publishing {
                 password = System.getenv("TOKEN")
             }
         }
+    }
+}
+
+signing {
+    val signingKey = System.getenv("GPG_SECRET_KEY")
+    val signingPassword = System.getenv("GPG_PASSPHRASE")
+
+    if (signingKey != null && signingPassword != null) {
+        useInMemoryPgpKeys(signingKey, signingPassword)
+        sign(publishing.publications["mavenJava"])
     }
 }
 
