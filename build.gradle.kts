@@ -5,19 +5,30 @@ plugins {
 }
 
 group = "me.catcoder"
-version = "6.2.10-SNAPSHOT"
+version = "6.2.11-SNAPSHOT"
 description = "Powerful feature-packed Minecraft scoreboard library"
 
 val adventureVersion = "5.2.0"
 val paperVersion = "1.20.4-R0.1-SNAPSHOT"
 val viaVersionVersion = "5.11.0"
 val viaNBTVersion = "5.3.0"
-val miniPlaceholdersVersion = "3.2.0"
+val miniPlaceholdersVersion = "2.3.0"
 val lombokVersion = "1.18.46"
 val foliaLibVersion = "0.5.2"
 
 allprojects {
     apply(plugin = "java-library")
+
+    configure<JavaPluginExtension> {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(25)
+        }
+    }
+
+    tasks.withType<JavaCompile> {
+        options.release = 21
+        options.encoding = "UTF-8"
+    }
 
     repositories {
         mavenLocal()
@@ -94,6 +105,11 @@ publishing {
                         name.set("Ruslan Onischenko")
                         email.set("catcoderr@gmail.com")
                     }
+                    developer {
+                        id.set("Presti")
+                        name.set("Presti")
+                        email.set("protocolsidebar@presti.me")
+                    }
                 }
                 scm {
                     url.set("https://github.com/CatCoderr/ProtocolSidebar")
@@ -111,8 +127,8 @@ publishing {
 
     repositories {
         maven {
-            name = "Snapshots"
-            url = uri("https://catcoder.pl.ua/snapshots")
+            name = "badgames-snapshots"
+            url = uri("https://repo.badgames.de/snapshots")
             credentials {
                 username = System.getenv("USERNAME")
                 password = System.getenv("TOKEN")
@@ -129,10 +145,6 @@ signing {
         useInMemoryPgpKeys(signingKey, signingPassword)
         sign(publishing.publications["mavenJava"])
     }
-}
-
-tasks.withType<JavaCompile> {
-    options.encoding = "UTF-8"
 }
 
 tasks.withType<Javadoc> {

@@ -15,6 +15,7 @@ import me.catcoder.sidebar.util.buffer.ByteBufNetOutput;
 import me.catcoder.sidebar.util.buffer.NetOutput;
 import me.catcoder.sidebar.util.lang.ThrowingFunction;
 import me.catcoder.sidebar.util.version.VersionUtil;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import static me.catcoder.sidebar.SidebarLine.sendPacket;
@@ -131,15 +132,26 @@ public class ScoreboardObjective<R> {
 
             String legacyText = textProvider.asLegacyMessage(player, title);
             // Since 1.13 characters limit for display name was removed
-            if (version < ProtocolConstants.MINECRAFT_1_13 && legacyText.length() > 32) {
+            boolean truncated = version < ProtocolConstants.MINECRAFT_1_13 && legacyText.length() > 32;
+
+            if (truncated) {
                 legacyText = legacyText.substring(0, 32);
+
+                // don't leave a dangling colour char behind
+                if (legacyText.endsWith(String.valueOf(ChatColor.COLOR_CHAR))) {
+                    legacyText = legacyText.substring(0, legacyText.length() - 1);
+                }
             }
+
+            String jsonText = truncated
+                    ? textProvider.asJsonMessage(player, textProvider.fromLegacyMessage(legacyText))
+                    : textProvider.asJsonMessage(player, title);
 
             if (VersionUtil.SERVER_VERSION >= ProtocolConstants.MINECRAFT_1_20_3) {
                 // what the heck 1.20.3?
-                output.writeComponent(textProvider.asJsonMessage(player, title));
+                output.writeComponent(jsonText);
             } else if (VersionUtil.SERVER_VERSION >= ProtocolConstants.MINECRAFT_1_13) {
-                output.writeString(textProvider.asJsonMessage(player, title));
+                output.writeString(jsonText);
             } else {
                 output.writeString(legacyText);
             }

@@ -29,6 +29,6 @@ public class PacketIdsTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testUnsupportedVersion() {
-        PacketIds.UPDATE_TEAMS.getPacketId(47); // 1.8
+        PacketIds.UPDATE_TEAMS.getPacketId(5); // 1.7.10, below the 1.8 floor this branch supports
     }
 }

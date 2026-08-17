@@ -5,6 +5,7 @@ on:
 
 jobs:
   build:
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
 
     steps:
@@ -21,7 +22,6 @@ jobs:
         run: ./gradlew test build --no-daemon
 
       - name: Publish with Gradle
-        if: github.ref == 'refs/heads/master'
         env:
           GPG_PASSPHRASE: ${{ secrets.GPG_KEY_PASSPHRASE }}
           GPG_SECRET_KEY: ${{ secrets.GPG_SECRET_KEY }}
