@@ -90,7 +90,7 @@ publishing {
             pom {
                 name.set("ProtocolSidebar")
                 description.set(project.description)
-                url.set("https://github.com/BadGames-de/ProtocolSidebar")
+                url.set("https://github.com/CatCoderr/ProtocolSidebar")
 
                 licenses {
                     license {
