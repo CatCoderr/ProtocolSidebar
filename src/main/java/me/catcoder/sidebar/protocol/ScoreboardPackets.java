@@ -120,80 +120,72 @@ public class ScoreboardPackets {
             return buf;
         }
 
-        if (clientVersion >= ProtocolConstants.MINECRAFT_1_13) {
-            if (serverVersion >= ProtocolConstants.MINECRAFT_1_20_3) {
-                packet.writeComponent("{\"text\":\"\"}");
-            } else {
-                packet.writeString("{\"text\":\"\"}"); // team display name
-            }
+        if (serverVersion >= ProtocolConstants.MINECRAFT_1_20_3) {
+            packet.writeComponent("{\"text\":\"\"}");
+        } else if (serverVersion >= ProtocolConstants.MINECRAFT_1_13) {
+            packet.writeString("{\"text\":\"\"}"); // team display name
         } else {
             packet.writeString("");
         }
 
-        // Since 1.13 character limit for prefix/suffix was removed
-        if (clientVersion >= ProtocolConstants.MINECRAFT_1_13) {
-
-            if (serverVersion >= ProtocolConstants.MINECRAFT_1_20_3) {
-                writeDefaults(serverVersion, packet);
-                packet.writeComponent(provider.asJsonMessage(player, text));
-                packet.writeComponent("{\"text\":\"\"}");
-
-            } else if (serverVersion >= ProtocolConstants.MINECRAFT_1_13) {
-                writeDefaults(serverVersion, packet);
-                packet.writeString(provider.asJsonMessage(player, text));
-                packet.writeString("{\"text\":\"\"}");
-            } else {
-                String legacyText = provider.asLegacyMessage(player, text);
-
-                packet.writeString(legacyText);
-                packet.writeString(ChatColor.WHITE.toString());
-                writeDefaults(serverVersion, packet);
-            }
-
-            if (mode == TEAM_CREATED) {
-                packet.writeVarInt(1); // number of players
-                packet.writeString(teamEntry); // entries
-            }
-
-            return buf;
-        }
-
-        // 1.12 and below stuff :(
-        // I'll remove it in future
-
         String legacyText = provider.asLegacyMessage(player, text);
 
-        Iterator<String> iterator = SPLITTER.split(legacyText).iterator();
-        String prefix = iterator.next();
-        String suffix = "";
+        String legacyPrefix;
+        String legacySuffix;
+        String jsonPrefix;
+        String jsonSuffix;
 
-        if (legacyText.length() > 16) {
-            String prefixColor = ChatColor.getLastColors(prefix);
-            suffix = iterator.next();
+        // Since 1.13 character limit for prefix/suffix was removed
+        if (clientVersion >= ProtocolConstants.MINECRAFT_1_13) {
+            legacyPrefix = legacyText;
+            legacySuffix = ChatColor.WHITE.toString();
 
-            if (prefix.endsWith(String.valueOf(ChatColor.COLOR_CHAR))) {
-                prefix = prefix.substring(0, prefix.length() - 1);
+            jsonPrefix = provider.asJsonMessage(player, text);
+            jsonSuffix = "{\"text\":\"\"}";
+        } else {
+            // 1.12 and below cap prefix and suffix at 16 characters each,
+            // so the line has to be split across both fields
+            Iterator<String> iterator = SPLITTER.split(legacyText).iterator();
+            String prefix = iterator.next();
+            String suffix = "";
 
-                prefixColor = ChatColor.getByChar(suffix.charAt(0)).toString();
-                suffix = suffix.substring(1);
+            if (legacyText.length() > 16) {
+                String prefixColor = ChatColor.getLastColors(prefix);
+                suffix = iterator.next();
+
+                if (prefix.endsWith(String.valueOf(ChatColor.COLOR_CHAR))) {
+                    prefix = prefix.substring(0, prefix.length() - 1);
+
+                    prefixColor = ChatColor.getByChar(suffix.charAt(0)).toString();
+                    suffix = suffix.substring(1);
+                }
+
+                suffix = ((prefixColor.equals("") ? ChatColor.RESET : prefixColor) + suffix);
+
+                if (suffix.length() > 16) {
+                    suffix = suffix.substring(0, 13) + "...";
+                }
             }
 
-            suffix = ((prefixColor.equals("") ? ChatColor.RESET : prefixColor) + suffix);
+            legacyPrefix = prefix;
+            legacySuffix = suffix;
 
-            if (suffix.length() > 16) {
-                suffix = suffix.substring(0, 13) + "...";
-            }
+            jsonPrefix = provider.asJsonMessage(player, provider.fromLegacyMessage(prefix));
+            jsonSuffix = provider.asJsonMessage(player, provider.fromLegacyMessage(suffix));
         }
 
-        if (serverVersion < ProtocolConstants.MINECRAFT_1_13) {
-            packet.writeString(prefix);
-            packet.writeString(suffix);
+        if (serverVersion >= ProtocolConstants.MINECRAFT_1_20_3) {
             writeDefaults(serverVersion, packet);
-
+            packet.writeComponent(jsonPrefix);
+            packet.writeComponent(jsonSuffix);
+        } else if (serverVersion >= ProtocolConstants.MINECRAFT_1_13) {
+            writeDefaults(serverVersion, packet);
+            packet.writeString(jsonPrefix);
+            packet.writeString(jsonSuffix);
         } else {
+            packet.writeString(legacyPrefix);
+            packet.writeString(legacySuffix);
             writeDefaults(serverVersion, packet);
-            packet.writeString(provider.asJsonMessage(player, provider.fromLegacyMessage(prefix))); // prefix
-            packet.writeString(provider.asJsonMessage(player, provider.fromLegacyMessage(suffix))); // suffix
         }
 
         if (mode == TEAM_CREATED) {
@@ -208,7 +200,9 @@ public class ScoreboardPackets {
         packet.writeByte(10); // friendly tags
         if (serverVersion <= ProtocolConstants.MINECRAFT_1_21_4) {
             packet.writeString("always"); // name tag visibility
-            packet.writeString("always"); // collision rule
+            if (serverVersion >= ProtocolConstants.MINECRAFT_1_9) {
+                packet.writeString("always"); // collision rule
+            }
         } else {
             packet.writeVarInt(0); // name tag visibility
             packet.writeVarInt(0); // collision rule

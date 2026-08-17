@@ -10,7 +10,7 @@ dependencies {
 }
 
 tasks.withType<ShadowJar> {
-    archiveFileName.set("ProtocolSidebar-${rootProject.version}.jar")
+    archiveFileName.set("ProtocolSidebar-${rootProject.version}-plugin.jar")
     relocate("com.tcoded.folialib", "me.catcoder.protocolsidebar.lib.folialib")
 
     // create final jar in project root dir
