@@ -3,6 +3,7 @@ package me.catcoder.sidebar;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import io.netty.buffer.ByteBuf;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import me.catcoder.sidebar.protocol.ChannelInjector;
@@ -47,6 +48,7 @@ public class ScoreboardObjective<R> {
      * Resolves the title per player. When {@code null}, the static {@link #displayName} is used.
      * Volatile because it is read from the async broadcast threads.
      */
+    @Getter(AccessLevel.NONE)
     private volatile ThrowingFunction<Player, R, Throwable> displayNameUpdater;
 
     ScoreboardObjective(@NonNull String name,
@@ -68,6 +70,19 @@ public class ScoreboardObjective<R> {
 
     void setDisplayNameUpdater(@NonNull ThrowingFunction<Player, R, Throwable> displayNameUpdater) {
         this.displayNameUpdater = displayNameUpdater;
+    }
+
+    /**
+     * Resolves the title as it is shown to the given player.
+     * Unlike {@link #getDisplayName()}, this honours a per-player or conditional title.
+     *
+     * @param player target player
+     * @return the title shown to that player
+     */
+    @SneakyThrows
+    public R getDisplayName(@NonNull Player player) {
+        ThrowingFunction<Player, R, Throwable> updater = displayNameUpdater;
+        return updater != null ? updater.apply(player) : displayName;
     }
 
     void updateValue(@NonNull Player player) {
@@ -128,7 +143,7 @@ public class ScoreboardObjective<R> {
 
         if (mode == ADD_OBJECTIVE || mode == UPDATE_VALUE) {
             // resolved per player, so conditional titles can differ between viewers
-            R title = displayNameUpdater != null ? displayNameUpdater.apply(player) : displayName;
+            R title = getDisplayName(player);
 
             String legacyText = textProvider.asLegacyMessage(player, title);
             // Since 1.13 characters limit for display name was removed
