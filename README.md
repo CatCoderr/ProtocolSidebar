@@ -18,6 +18,7 @@
 * [Basic usage](#basic-usage)
 * [Conditional lines](#conditional-lines)
 * [Conditional titles](#conditional-titles)
+* [Line limits](#line-limits)
 * [Score number formatting](#score-number-formatting)
 * [Sidebar title animations](#sidebar-title-animations)
 * [Sidebar Pager](#sidebar-pager)
@@ -170,7 +171,8 @@ sidebar.setTitle(player -> isVip(player) ? vipTitle : normalTitle);
 ```
 
 For a list of conditions, use `ConditionalTitle`. Conditions are checked in the order they
-were added and the first match wins; `otherwise` is used when nothing matches:
+were added and the first match wins. `otherwise` is required, because a player matching no
+condition has to be given some title:
 
 ```java
 import static me.catcoder.sidebar.util.PlayerPredicates.*;
@@ -186,9 +188,11 @@ sidebar.setTitle(ConditionalTitle.<Component>create()
 Client versions are resolved through ViaVersion. Without ViaVersion installed, every player
 reports the server version.
 
-The title is resolved when a player is added as a viewer. If your conditions depend on state
-that changes later (rank, world, game phase), call `sidebar.updateTitle()` to re-evaluate it
-for all current viewers.
+The title is resolved for every objective packet, so it is re-evaluated whenever a player is
+added as a viewer. There is no automatic tick: if your conditions depend on state that changes
+later (rank, world, game phase), call `sidebar.updateTitle()`.
+
+`setTitle` snapshots the conditions, so mutating the `ConditionalTitle` afterwards has no effect.
 
 `PlayerPredicates` also works with [conditional lines](#conditional-lines):
 
@@ -197,6 +201,23 @@ sidebar.addConditionalLine(player -> Component.text("1.8 only"), clientVersionAt
 ```
 
 Setting a plain title again with `setTitle(component)` clears the conditional title.
+
+To read the title as a specific player sees it, use `getObjective().getDisplayName(player)`.
+The no-argument `getDisplayName()` returns the static title only.
+
+## Line limits
+
+A sidebar has two different limits:
+
+* **`Sidebar.MAX_VISIBLE_LINES` (15)** how many lines the client renders. Beyond this it shows
+  the highest scored lines and drops the rest.
+* **`Sidebar.MAX_LINES_COUNT` (22)** how many lines a sidebar can hold. Every line permanently
+  owns one unique invisible team entry, visible or not, and that alphabet runs out at 22.
+
+Since conditional lines are hidden per player, a sidebar may hold more lines than the client
+renders, as long as no player ever sees more than 15 at once. `addLine` therefore only rejects
+what cannot work: a 23rd line of any kind, or a 16th line without a display condition. If a
+player does end up with more than 15 visible lines, a warning is logged once per sidebar.
 
 ## Sidebar Title Animations
 

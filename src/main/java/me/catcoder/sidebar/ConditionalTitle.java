@@ -91,7 +91,20 @@ public final class ConditionalTitle<R> {
     }
 
     /**
+     * Whether a fallback title was set via {@link #otherwise}.
+     * Without one, {@link #toUpdater()} throws for a player matching no condition.
+     *
+     * @return true if a fallback title is set
+     */
+    public boolean hasFallback() {
+        return fallback != null;
+    }
+
+    /**
      * Converts this conditional title to a per-player title updater.
+     * <p>
+     * The conditions are snapshot, so mutating this instance afterward does not
+     * affect the returned updater.
      *
      * @return the title updater
      */

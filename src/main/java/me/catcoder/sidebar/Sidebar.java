@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.experimental.FieldDefaults;
+import me.catcoder.sidebar.protocol.ScoreboardPackets;
 import me.catcoder.sidebar.text.TextIterator;
 import me.catcoder.sidebar.text.TextProvider;
 import me.catcoder.sidebar.util.RandomString;
@@ -22,6 +23,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.*;
+import java.util.logging.Level;
 
 /**
  * Represents a sidebar.
@@ -34,10 +36,14 @@ import java.util.*;
 public class Sidebar<R> {
 
     private static final String OBJECTIVE_PREFIX = "PS-";
-    private static final int MAX_LINES_COUNT = 15;
+    public static final int MAX_VISIBLE_LINES = 15;
+    public static final int MAX_LINES_COUNT = ScoreboardPackets.COLORS.length;
 
     private final Set<UUID> viewers = Collections.synchronizedSet(new HashSet<>());
     private final List<SidebarLine<R>> lines = new ArrayList<>();
+    private final LineIndexAllocator indexAllocator = new LineIndexAllocator(MAX_LINES_COUNT);
+
+    private boolean warnedAboutOverflow;
     @Getter
     private final ScoreboardObjective<R> objective;
 
@@ -121,8 +127,9 @@ public class Sidebar<R> {
      * The updater is invoked for each viewer separately, so the title
      * may differ between players.
      * <p>
-     * The title is resolved when a player is added as a viewer. Call
-     * {@link #updateTitle()} to re-evaluate it for all current viewers.
+     * The title is resolved for every objective packet sent to a player, so it is
+     * re-evaluated whenever a player is added as a viewer. Call {@link #updateTitle()}
+     * to re-evaluate it for all current viewers.
      *
      * @param updater - the function that produces the title for a player
      */
@@ -136,13 +143,17 @@ public class Sidebar<R> {
 
     /**
      * Update the title of the sidebar with a title chosen by conditions.
-     * <p>
-     * The title is resolved when a player is added as a viewer. Call
-     * {@link #updateTitle()} to re-evaluate it for all current viewers.
+     * Resolved per player like {@link #setTitle(ThrowingFunction)}, and the conditions are
+     * snapshotted, so mutating {@code title} afterward has no effect.
      *
-     * @param title - the conditional title
+     * @param title - the conditional title, requires a {@link ConditionalTitle#otherwise} title
      */
     public void setTitle(@NonNull ConditionalTitle<R> title) {
+        // fail here rather than while building a packet for the first player that matches nothing
+        Preconditions.checkArgument(title.hasFallback(),
+                "ConditionalTitle requires an otherwise(...) title, "
+                        + "players matching no condition cannot be given a title");
+
         setTitle(title.toUpdater());
     }
 
@@ -183,6 +194,9 @@ public class Sidebar<R> {
      */
     public void shiftLine(SidebarLine<R> line, int offset) {
         synchronized (lines) {
+            Preconditions.checkArgument(lines.contains(line), "Line %s is not a part of this sidebar", line);
+            Preconditions.checkPositionIndex(offset, lines.size() - 1, "Line offset");
+
             lines.remove(line);
             lines.add(offset, line);
         }
@@ -275,7 +289,7 @@ public class Sidebar<R> {
      * @return SidebarLine instance
      */
     public SidebarLine<R> addUpdatableLine(@NonNull ThrowingFunction<Player, R, Throwable> updater) {
-        return addLine(updater, false, x -> true);
+        return addLine(updater, false, SidebarLine.ALWAYS_VISIBLE);
     }
 
     /**
@@ -295,7 +309,7 @@ public class Sidebar<R> {
      * @return SidebarLine instance
      */
     public SidebarLine<R> addLine(@NonNull R text) {
-        return addLine(x -> text, true, x -> true);
+        return addLine(x -> text, true, SidebarLine.ALWAYS_VISIBLE);
     }
 
     /**
@@ -310,16 +324,37 @@ public class Sidebar<R> {
     private SidebarLine<R> addLine(@NonNull ThrowingFunction<Player, R, Throwable> updater, boolean staticText,
                                    @NonNull ThrowingPredicate<Player, Throwable> predicate) {
         synchronized (lines) {
-            Preconditions.checkArgument(
-                    lines.size() <= MAX_LINES_COUNT, "Cannot add more than %s lines to a sidebar", MAX_LINES_COUNT);
+            Preconditions.checkArgument(lines.size() < MAX_LINES_COUNT,
+                    "Cannot add more than %s lines to a sidebar", MAX_LINES_COUNT);
+
+            if (predicate == SidebarLine.ALWAYS_VISIBLE) {
+                Preconditions.checkArgument(unconditionalLineCount() < MAX_VISIBLE_LINES,
+                        "Cannot add more than %s always visible lines to a sidebar, the client renders "
+                                + "at most that many. Use addConditionalLine(..) for lines that are not "
+                                + "always shown.", MAX_VISIBLE_LINES);
+            }
+
+            int index = indexAllocator.allocate();
 
             SidebarLine<R> line = new SidebarLine<>(
-                    updater, objective.getName() + lines.size(),
-                    staticText, lines.size(), textProvider, predicate);
+                    updater, objective.getName() + index,
+                    staticText, index, textProvider, predicate);
 
             lines.add(line);
             return line;
         }
+    }
+
+    private int unconditionalLineCount() {
+        int count = 0;
+
+        for (SidebarLine<R> line : lines) {
+            if (!line.isConditional()) {
+                count++;
+            }
+        }
+
+        return count;
     }
 
     /**
@@ -329,7 +364,13 @@ public class Sidebar<R> {
      */
     public void removeLine(@NonNull SidebarLine<R> line) {
         synchronized (lines) {
-            if (lines.remove(line) && line.getScore() != -1) {
+            if (!lines.remove(line)) {
+                return;
+            }
+
+            indexAllocator.release(line.getIndex());
+
+            if (line.getScore() != -1) {
                 broadcast(p -> line.removeTeam(p, objective.getName()));
                 updateAllLines();
             }
@@ -377,30 +418,82 @@ public class Sidebar<R> {
 
     /**
      * Update all dynamic lines of the sidebar.
-     * Except lines with their own update task. (see {@link SidebarLine#updatePeriodically(long, long, Sidebar)})
+     * Lines with their own update task keep their text, only their score is sent.
+     * (see {@link SidebarLine#updatePeriodically(long, long, Sidebar)})
      */
     public void updateAllLines() {
         synchronized (lines) {
-            int index = lines.size();
+            LineAction[] actions = new LineAction[lines.size()];
+            int score = lines.size();
 
-            for (SidebarLine<R> line : lines) {
+            for (int i = 0; i < lines.size(); i++) {
+                SidebarLine<R> line = lines.get(i);
+
                 // if line is not created yet
                 if (line.getScore() == -1) {
-                    line.setScore(index--);
-                    broadcast(p -> line.createTeam(p, objective.getName()));
+                    line.setScore(score--);
+                    actions[i] = LineAction.CREATE;
                     continue;
                 }
 
                 if (line.updateTask != null && !line.updateTask.isCancelled()) {
-                    // Don't update the line if it's already has its own update task
+                    // its own task owns the text, but the score is positional and has to follow
+                    line.setScore(score--);
+                    actions[i] = LineAction.SCORE_ONLY;
                     continue;
                 }
 
-                line.setScore(index--);
-
-                broadcast(p -> line.updateTeam(p, objective.getName()));
+                line.setScore(score--);
+                actions[i] = LineAction.UPDATE;
             }
+
+            broadcast(player -> {
+                int visible = 0;
+
+                for (int i = 0; i < actions.length; i++) {
+                    SidebarLine<R> line = lines.get(i);
+                    boolean shown;
+
+                    switch (actions[i]) {
+                        case CREATE:
+                            shown = line.createTeam(player, objective.getName());
+                            break;
+                        case UPDATE:
+                            shown = line.updateTeam(player, objective.getName());
+                            break;
+                        default:
+                            shown = line.updateScore(player, objective.getName());
+                            break;
+                    }
+
+                    if (shown) {
+                        visible++;
+                    }
+                }
+
+                warnOnOverflow(player, visible);
+            });
         }
+    }
+
+    private void warnOnOverflow(@NonNull Player player, int visible) {
+        if (warnedAboutOverflow || visible <= MAX_VISIBLE_LINES) {
+            return;
+        }
+
+        warnedAboutOverflow = true;
+
+        plugin.getLogger().warning(String.format(
+                "Sidebar %s has %s lines visible for %s, but the client renders at most %s. "
+                        + "The lowest scored lines will not be shown. "
+                        + "This is logged once per sidebar.",
+                objective.getName(), visible, player.getName(), MAX_VISIBLE_LINES));
+    }
+
+    private enum LineAction {
+        CREATE,
+        UPDATE,
+        SCORE_ONLY
     }
 
     /**
@@ -440,6 +533,7 @@ public class Sidebar<R> {
 
         synchronized (lines) {
             lines.clear();
+            indexAllocator.releaseAll();
         }
 
         tasks.clear();
@@ -457,15 +551,35 @@ public class Sidebar<R> {
             objective.create(player);
 
             synchronized (lines) {
-                for (SidebarLine<R> line : lines) {
-                    line.createTeam(player, objective.getName());
+                if (hasUnscoredLines()) {
+                    updateAllLines();
                 }
+
+                int visible = 0;
+
+                for (SidebarLine<R> line : lines) {
+                    if (line.createTeam(player, objective.getName())) {
+                        visible++;
+                    }
+                }
+
+                warnOnOverflow(player, visible);
             }
 
             objective.display(player);
 
             viewers.add(player.getUniqueId());
         }
+    }
+
+    private boolean hasUnscoredLines() {
+        for (SidebarLine<R> line : lines) {
+            if (line.getScore() == -1) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -520,8 +634,8 @@ public class Sidebar<R> {
                 try {
                     consumer.accept(player);
                 } catch (Throwable e) {
-                    throw new RuntimeException("An error occurred while updating sidebar for player: " + player.getName(),
-                            e);
+                    plugin.getLogger().log(Level.SEVERE,
+                            "An error occurred while updating sidebar for player: " + player.getName(), e);
                 }
             }
         }

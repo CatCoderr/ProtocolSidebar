@@ -18,6 +18,8 @@ import org.bukkit.entity.Player;
 @ToString
 public class SidebarLine<R> {
 
+    static final ThrowingPredicate<Player, Throwable> ALWAYS_VISIBLE = player -> true;
+
     private final String teamName;
 
     @Setter(AccessLevel.PACKAGE)
@@ -98,6 +100,28 @@ public class SidebarLine<R> {
     }
 
     /**
+     * Whether this line has a display condition, i.e. whether it may be hidden from some players.
+     *
+     * @return true if the line has a display condition
+     */
+    public boolean isConditional() {
+        return displayCondition != ALWAYS_VISIBLE;
+    }
+
+    /**
+     * Sends only the score of this line, leaving its text alone.
+     */
+    boolean updateScore(@NonNull Player player, @NonNull String objective) throws Throwable {
+        boolean visible = displayCondition.test(player);
+
+        sendPacket(player, ScoreboardPackets.createScorePacket(
+                player, visible ? 0 : 1, objective, score, index, textProvider,
+                scoreNumberFormat, visible ? scoreNumberFormatter : null));
+
+        return visible;
+    }
+
+    /**
      * Sets updater for this line. Updater is a function that takes player as an argument and returns
      * text that will be displayed for this player.
      *
@@ -118,7 +142,7 @@ public class SidebarLine<R> {
         this.updater = player -> updater.get();
     }
 
-    void updateTeam(@NonNull Player player, @NonNull String objective) throws Throwable {
+    boolean updateTeam(@NonNull Player player, @NonNull String objective) throws Throwable {
         boolean visible = displayCondition.test(player);
 
         if (!isStaticText() && visible) {
@@ -132,11 +156,13 @@ public class SidebarLine<R> {
             // if player doesn't meet display condition, remove score
             sendPacket(player, ScoreboardPackets.createScorePacket(
                     player, 1, objective, score, index, textProvider, scoreNumberFormat, null));
-            return;
+            return false;
         }
 
         sendPacket(player, ScoreboardPackets.createScorePacket(
                 player, 0, objective, score, index, textProvider, scoreNumberFormat, scoreNumberFormatter));
+
+        return true;
     }
 
     void removeTeam(@NonNull Player player, @NonNull String objective) {
@@ -147,7 +173,7 @@ public class SidebarLine<R> {
                 player, null, textProvider));
     }
 
-    void createTeam(@NonNull Player player, @NonNull String objective) throws Throwable {
+    boolean createTeam(@NonNull Player player, @NonNull String objective) throws Throwable {
         boolean visible = displayCondition.test(player);
 
         R text = visible ? updater.apply(player) : textProvider.emptyMessage();
@@ -159,6 +185,8 @@ public class SidebarLine<R> {
             sendPacket(player, ScoreboardPackets.createScorePacket(
                     player, 0, objective, score, index, textProvider, scoreNumberFormat, scoreNumberFormatter));
         }
+
+        return visible;
     }
 
     @SneakyThrows

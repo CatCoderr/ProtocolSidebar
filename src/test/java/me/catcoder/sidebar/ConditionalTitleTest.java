@@ -6,7 +6,9 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 public class ConditionalTitleTest {
 
@@ -79,5 +81,24 @@ public class ConditionalTitleTest {
         title.when(p -> true, "added later");
 
         assertEquals("fallback", updater.apply(player("alice")));
+    }
+
+    @Test
+    public void testHasFallbackReflectsOtherwise() {
+        assertFalse(ConditionalTitle.<String>create()
+                .when(p -> true, "titleA")
+                .hasFallback());
+
+        assertTrue(ConditionalTitle.<String>create()
+                .when(p -> true, "titleA")
+                .otherwise("fallback")
+                .hasFallback());
+    }
+
+    @Test
+    public void testHasFallbackWithFunctionForm() {
+        assertTrue(ConditionalTitle.<String>create()
+                .otherwise(p -> "fallback " + p.getName())
+                .hasFallback());
     }
 }
