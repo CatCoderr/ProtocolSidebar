@@ -13,7 +13,7 @@ val paperVersion = "1.20.4-R0.1-SNAPSHOT"
 val viaVersionVersion = "5.11.0"
 val viaNBTVersion = "5.3.0"
 val miniPlaceholdersVersion = "2.3.0"
-val lombokVersion = "1.18.46"
+val lombokVersion = "1.18.48"
 val foliaLibVersion = "0.5.2"
 
 allprojects {
