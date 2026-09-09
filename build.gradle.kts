@@ -61,8 +61,8 @@ allprojects {
         compileOnly("com.viaversion:viaversion-common:${viaVersionVersion}")
         compileOnly("com.viaversion:viaversion-bukkit:${viaVersionVersion}")
 
-        compileOnly("io.netty:netty-buffer:4.2.17.Final")
-        compileOnly("io.netty:netty-handler:4.2.17.Final")
+        compileOnly("io.netty:netty-buffer:4.2.18.Final")
+        compileOnly("io.netty:netty-handler:4.2.18.Final")
 
         compileOnly("io.github.miniplaceholders:miniplaceholders-api:${miniPlaceholdersVersion}")
 
