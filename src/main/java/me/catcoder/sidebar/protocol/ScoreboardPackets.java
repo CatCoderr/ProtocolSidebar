@@ -174,7 +174,14 @@ public class ScoreboardPackets {
             jsonSuffix = provider.asJsonMessage(player, provider.fromLegacyMessage(suffix));
         }
 
-        if (serverVersion >= ProtocolConstants.MINECRAFT_1_20_3) {
+        if (serverVersion >= ProtocolConstants.MINECRAFT_26_2) {
+            packet.writeComponent(jsonPrefix);
+            packet.writeComponent(jsonSuffix);
+            packet.writeVarInt(0);
+            packet.writeVarInt(0);
+            packet.writeBoolean(false);
+            packet.writeByte(10);
+        } else if (serverVersion >= ProtocolConstants.MINECRAFT_1_20_3) {
             writeDefaults(serverVersion, packet);
             packet.writeComponent(jsonPrefix);
             packet.writeComponent(jsonSuffix);
