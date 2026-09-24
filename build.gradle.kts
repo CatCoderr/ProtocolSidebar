@@ -44,7 +44,7 @@ allprojects {
     }
     dependencies {
         testImplementation("junit:junit:4.13.2")
-        testImplementation("org.mockito:mockito-core:5.23.0")
+        testImplementation("org.mockito:mockito-core:5.24.0")
         testImplementation("org.powermock:powermock-module-junit4:2.0.9")
         testImplementation("org.powermock:powermock-api-mockito2:2.0.9")
 
