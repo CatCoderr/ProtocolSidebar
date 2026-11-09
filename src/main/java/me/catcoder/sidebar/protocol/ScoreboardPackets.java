@@ -180,7 +180,7 @@ public class ScoreboardPackets {
             packet.writeVarInt(0);
             packet.writeVarInt(0);
             packet.writeBoolean(false);
-            packet.writeByte(10);
+            packet.writeByte(3);
         } else if (serverVersion >= ProtocolConstants.MINECRAFT_1_20_3) {
             writeDefaults(serverVersion, packet);
             packet.writeComponent(jsonPrefix);
@@ -204,7 +204,7 @@ public class ScoreboardPackets {
     }
 
     private static void writeDefaults(int serverVersion, @NonNull NetOutput packet) {
-        packet.writeByte(10); // friendly tags
+        packet.writeByte(3); // friendly tags
         if (serverVersion <= ProtocolConstants.MINECRAFT_1_21_4) {
             packet.writeString("always"); // name tag visibility
             if (serverVersion >= ProtocolConstants.MINECRAFT_1_9) {
